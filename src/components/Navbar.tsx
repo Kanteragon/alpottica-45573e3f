@@ -4,9 +4,9 @@ import { Search, User, Heart, ShoppingCart } from "lucide-react";
 import logo from "@/assets/alpottica-logo.jpg.asset.json";
 
 const NAV = [
-  { label: "KLİPSLİ MODELLER", to: "/" },
-  { label: "OUTLET MODELLER", to: "/" },
-  { label: "TÜM MODELLER", to: "/" },
+  { label: "KLİPSLİ MODELLER", to: "/urunler", search: { tag: "klipsli" as const } },
+  { label: "OUTLET MODELLER", to: "/urunler", search: { tag: "outlet" as const } },
+  { label: "TÜM MODELLER", to: "/urunler", search: { tag: "tumu" as const } },
 ];
 
 export function Navbar() {
@@ -45,6 +45,7 @@ export function Navbar() {
             <Link
               key={item.label}
               to={item.to}
+              search={item.search}
               className={`text-[13px] tracking-[0.18em] font-medium transition-colors ${
                 scrolled
                   ? "text-brand-ink hover:text-brand-cta"
