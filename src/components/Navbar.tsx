@@ -38,37 +38,38 @@ export function Navbar() {
   return (
     <header
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
-        solid
-          ? "bg-white/95 backdrop-blur-md shadow-[0_2px_20px_rgba(0,0,0,0.06)]"
-          : "bg-transparent"
+        solid ? "bg-white/95 backdrop-blur-md shadow-[0_2px_20px_rgba(0,0,0,0.06)]" : "bg-transparent"
       }`}
     >
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-10 h-20 grid grid-cols-[auto_1fr_auto] items-center gap-8">
+      <div className="max-w-[1720px] mx-auto pl-3 pr-6 lg:pl-4 lg:pr-10 h-20 grid grid-cols-[auto_1fr_auto] items-center gap-8">
         <Link to="/" className="flex items-center shrink-0" aria-label="Alpottica">
           {logoSrc ? (
             <img
               src={logoSrc}
               alt="Alpottica Istanbul"
               style={{ maxWidth: `${logoMax}px` }}
-              className={`h-14 w-auto object-contain transition-all duration-500 border-0 outline-none ${
-                solid ? "invert" : "invert-0"
-              }`}
+              className={`h-14 w-auto object-contain transition-all duration-500 border-0 outline-none ${solid ? "invert" : "invert-0"}`}
             />
           ) : (
             <span className={`font-display tracking-widest text-2xl ${solid ? "text-brand-ink" : "text-white"}`}>ALPOTTICA</span>
           )}
         </Link>
 
-        <nav className="hidden lg:flex items-center justify-center gap-10">
+        <nav className="hidden lg:flex items-center justify-center gap-12">
           {items.map((item) => (
             <a
               key={item.id}
               href={item.url}
-              className={`text-[13px] tracking-[0.18em] font-medium transition-colors ${
+              className={`group relative text-[15px] tracking-[0.16em] font-medium transition-colors py-2 ${
                 solid ? "text-brand-ink hover:text-brand-cta" : "text-white/95 hover:text-white"
               }`}
             >
               {item.label}
+              <span
+                className={`pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-0 h-[2px] w-0 group-hover:w-full transition-all duration-300 ${
+                  solid ? "bg-brand-cta" : "bg-white"
+                }`}
+              />
             </a>
           ))}
         </nav>

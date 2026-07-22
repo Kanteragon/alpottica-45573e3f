@@ -9,10 +9,15 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UyelikSozlesmesiRouteImport } from './routes/uyelik-sozlesmesi'
 import { Route as UrunlerRouteImport } from './routes/urunler'
 import { Route as SepetRouteImport } from './routes/sepet'
 import { Route as OdemeRouteImport } from './routes/odeme'
+import { Route as KullanimKosullariRouteImport } from './routes/kullanim-kosullari'
+import { Route as IletisimRouteImport } from './routes/iletisim'
 import { Route as HesabimRouteImport } from './routes/hesabim'
+import { Route as HakkimizdaRouteImport } from './routes/hakkimizda'
+import { Route as GizlilikSozlesmesiRouteImport } from './routes/gizlilik-sozlesmesi'
 import { Route as GirisRouteImport } from './routes/giris'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
@@ -22,6 +27,7 @@ import { Route as AdminVitrinRouteImport } from './routes/admin.vitrin'
 import { Route as AdminUrunlerRouteImport } from './routes/admin.urunler'
 import { Route as AdminSliderlarRouteImport } from './routes/admin.sliderlar'
 import { Route as AdminSiparislerRouteImport } from './routes/admin.siparisler'
+import { Route as AdminScriptlerRouteImport } from './routes/admin.scriptler'
 import { Route as AdminOzelliklerRouteImport } from './routes/admin.ozellikler'
 import { Route as AdminMenuRouteImport } from './routes/admin.menu'
 import { Route as AdminMarkalarRouteImport } from './routes/admin.markalar'
@@ -30,6 +36,11 @@ import { Route as AdminKategorilerRouteImport } from './routes/admin.kategoriler
 import { Route as AdminAyarlarRouteImport } from './routes/admin.ayarlar'
 import { Route as AdminAktarimRouteImport } from './routes/admin.aktarim'
 
+const UyelikSozlesmesiRoute = UyelikSozlesmesiRouteImport.update({
+  id: '/uyelik-sozlesmesi',
+  path: '/uyelik-sozlesmesi',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const UrunlerRoute = UrunlerRouteImport.update({
   id: '/urunler',
   path: '/urunler',
@@ -45,9 +56,29 @@ const OdemeRoute = OdemeRouteImport.update({
   path: '/odeme',
   getParentRoute: () => rootRouteImport,
 } as any)
+const KullanimKosullariRoute = KullanimKosullariRouteImport.update({
+  id: '/kullanim-kosullari',
+  path: '/kullanim-kosullari',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IletisimRoute = IletisimRouteImport.update({
+  id: '/iletisim',
+  path: '/iletisim',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HesabimRoute = HesabimRouteImport.update({
   id: '/hesabim',
   path: '/hesabim',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HakkimizdaRoute = HakkimizdaRouteImport.update({
+  id: '/hakkimizda',
+  path: '/hakkimizda',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GizlilikSozlesmesiRoute = GizlilikSozlesmesiRouteImport.update({
+  id: '/gizlilik-sozlesmesi',
+  path: '/gizlilik-sozlesmesi',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GirisRoute = GirisRouteImport.update({
@@ -95,6 +126,11 @@ const AdminSiparislerRoute = AdminSiparislerRouteImport.update({
   path: '/siparisler',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminScriptlerRoute = AdminScriptlerRouteImport.update({
+  id: '/scriptler',
+  path: '/scriptler',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminOzelliklerRoute = AdminOzelliklerRouteImport.update({
   id: '/ozellikler',
   path: '/ozellikler',
@@ -135,10 +171,15 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/giris': typeof GirisRoute
+  '/gizlilik-sozlesmesi': typeof GizlilikSozlesmesiRoute
+  '/hakkimizda': typeof HakkimizdaRoute
   '/hesabim': typeof HesabimRoute
+  '/iletisim': typeof IletisimRoute
+  '/kullanim-kosullari': typeof KullanimKosullariRoute
   '/odeme': typeof OdemeRoute
   '/sepet': typeof SepetRoute
   '/urunler': typeof UrunlerRoute
+  '/uyelik-sozlesmesi': typeof UyelikSozlesmesiRoute
   '/admin/aktarim': typeof AdminAktarimRoute
   '/admin/ayarlar': typeof AdminAyarlarRoute
   '/admin/kategoriler': typeof AdminKategorilerRoute
@@ -146,6 +187,7 @@ export interface FileRoutesByFullPath {
   '/admin/markalar': typeof AdminMarkalarRoute
   '/admin/menu': typeof AdminMenuRoute
   '/admin/ozellikler': typeof AdminOzelliklerRoute
+  '/admin/scriptler': typeof AdminScriptlerRoute
   '/admin/siparisler': typeof AdminSiparislerRoute
   '/admin/sliderlar': typeof AdminSliderlarRoute
   '/admin/urunler': typeof AdminUrunlerRoute
@@ -156,10 +198,15 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/giris': typeof GirisRoute
+  '/gizlilik-sozlesmesi': typeof GizlilikSozlesmesiRoute
+  '/hakkimizda': typeof HakkimizdaRoute
   '/hesabim': typeof HesabimRoute
+  '/iletisim': typeof IletisimRoute
+  '/kullanim-kosullari': typeof KullanimKosullariRoute
   '/odeme': typeof OdemeRoute
   '/sepet': typeof SepetRoute
   '/urunler': typeof UrunlerRoute
+  '/uyelik-sozlesmesi': typeof UyelikSozlesmesiRoute
   '/admin/aktarim': typeof AdminAktarimRoute
   '/admin/ayarlar': typeof AdminAyarlarRoute
   '/admin/kategoriler': typeof AdminKategorilerRoute
@@ -167,6 +214,7 @@ export interface FileRoutesByTo {
   '/admin/markalar': typeof AdminMarkalarRoute
   '/admin/menu': typeof AdminMenuRoute
   '/admin/ozellikler': typeof AdminOzelliklerRoute
+  '/admin/scriptler': typeof AdminScriptlerRoute
   '/admin/siparisler': typeof AdminSiparislerRoute
   '/admin/sliderlar': typeof AdminSliderlarRoute
   '/admin/urunler': typeof AdminUrunlerRoute
@@ -179,10 +227,15 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRouteWithChildren
   '/giris': typeof GirisRoute
+  '/gizlilik-sozlesmesi': typeof GizlilikSozlesmesiRoute
+  '/hakkimizda': typeof HakkimizdaRoute
   '/hesabim': typeof HesabimRoute
+  '/iletisim': typeof IletisimRoute
+  '/kullanim-kosullari': typeof KullanimKosullariRoute
   '/odeme': typeof OdemeRoute
   '/sepet': typeof SepetRoute
   '/urunler': typeof UrunlerRoute
+  '/uyelik-sozlesmesi': typeof UyelikSozlesmesiRoute
   '/admin/aktarim': typeof AdminAktarimRoute
   '/admin/ayarlar': typeof AdminAyarlarRoute
   '/admin/kategoriler': typeof AdminKategorilerRoute
@@ -190,6 +243,7 @@ export interface FileRoutesById {
   '/admin/markalar': typeof AdminMarkalarRoute
   '/admin/menu': typeof AdminMenuRoute
   '/admin/ozellikler': typeof AdminOzelliklerRoute
+  '/admin/scriptler': typeof AdminScriptlerRoute
   '/admin/siparisler': typeof AdminSiparislerRoute
   '/admin/sliderlar': typeof AdminSliderlarRoute
   '/admin/urunler': typeof AdminUrunlerRoute
@@ -203,10 +257,15 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/giris'
+    | '/gizlilik-sozlesmesi'
+    | '/hakkimizda'
     | '/hesabim'
+    | '/iletisim'
+    | '/kullanim-kosullari'
     | '/odeme'
     | '/sepet'
     | '/urunler'
+    | '/uyelik-sozlesmesi'
     | '/admin/aktarim'
     | '/admin/ayarlar'
     | '/admin/kategoriler'
@@ -214,6 +273,7 @@ export interface FileRouteTypes {
     | '/admin/markalar'
     | '/admin/menu'
     | '/admin/ozellikler'
+    | '/admin/scriptler'
     | '/admin/siparisler'
     | '/admin/sliderlar'
     | '/admin/urunler'
@@ -224,10 +284,15 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/giris'
+    | '/gizlilik-sozlesmesi'
+    | '/hakkimizda'
     | '/hesabim'
+    | '/iletisim'
+    | '/kullanim-kosullari'
     | '/odeme'
     | '/sepet'
     | '/urunler'
+    | '/uyelik-sozlesmesi'
     | '/admin/aktarim'
     | '/admin/ayarlar'
     | '/admin/kategoriler'
@@ -235,6 +300,7 @@ export interface FileRouteTypes {
     | '/admin/markalar'
     | '/admin/menu'
     | '/admin/ozellikler'
+    | '/admin/scriptler'
     | '/admin/siparisler'
     | '/admin/sliderlar'
     | '/admin/urunler'
@@ -246,10 +312,15 @@ export interface FileRouteTypes {
     | '/'
     | '/admin'
     | '/giris'
+    | '/gizlilik-sozlesmesi'
+    | '/hakkimizda'
     | '/hesabim'
+    | '/iletisim'
+    | '/kullanim-kosullari'
     | '/odeme'
     | '/sepet'
     | '/urunler'
+    | '/uyelik-sozlesmesi'
     | '/admin/aktarim'
     | '/admin/ayarlar'
     | '/admin/kategoriler'
@@ -257,6 +328,7 @@ export interface FileRouteTypes {
     | '/admin/markalar'
     | '/admin/menu'
     | '/admin/ozellikler'
+    | '/admin/scriptler'
     | '/admin/siparisler'
     | '/admin/sliderlar'
     | '/admin/urunler'
@@ -269,15 +341,27 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   GirisRoute: typeof GirisRoute
+  GizlilikSozlesmesiRoute: typeof GizlilikSozlesmesiRoute
+  HakkimizdaRoute: typeof HakkimizdaRoute
   HesabimRoute: typeof HesabimRoute
+  IletisimRoute: typeof IletisimRoute
+  KullanimKosullariRoute: typeof KullanimKosullariRoute
   OdemeRoute: typeof OdemeRoute
   SepetRoute: typeof SepetRoute
   UrunlerRoute: typeof UrunlerRoute
+  UyelikSozlesmesiRoute: typeof UyelikSozlesmesiRoute
   UrunSlugRoute: typeof UrunSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/uyelik-sozlesmesi': {
+      id: '/uyelik-sozlesmesi'
+      path: '/uyelik-sozlesmesi'
+      fullPath: '/uyelik-sozlesmesi'
+      preLoaderRoute: typeof UyelikSozlesmesiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/urunler': {
       id: '/urunler'
       path: '/urunler'
@@ -299,11 +383,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof OdemeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/kullanim-kosullari': {
+      id: '/kullanim-kosullari'
+      path: '/kullanim-kosullari'
+      fullPath: '/kullanim-kosullari'
+      preLoaderRoute: typeof KullanimKosullariRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/iletisim': {
+      id: '/iletisim'
+      path: '/iletisim'
+      fullPath: '/iletisim'
+      preLoaderRoute: typeof IletisimRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/hesabim': {
       id: '/hesabim'
       path: '/hesabim'
       fullPath: '/hesabim'
       preLoaderRoute: typeof HesabimRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hakkimizda': {
+      id: '/hakkimizda'
+      path: '/hakkimizda'
+      fullPath: '/hakkimizda'
+      preLoaderRoute: typeof HakkimizdaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gizlilik-sozlesmesi': {
+      id: '/gizlilik-sozlesmesi'
+      path: '/gizlilik-sozlesmesi'
+      fullPath: '/gizlilik-sozlesmesi'
+      preLoaderRoute: typeof GizlilikSozlesmesiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/giris': {
@@ -369,6 +481,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSiparislerRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/scriptler': {
+      id: '/admin/scriptler'
+      path: '/scriptler'
+      fullPath: '/admin/scriptler'
+      preLoaderRoute: typeof AdminScriptlerRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/ozellikler': {
       id: '/admin/ozellikler'
       path: '/ozellikler'
@@ -429,6 +548,7 @@ interface AdminRouteChildren {
   AdminMarkalarRoute: typeof AdminMarkalarRoute
   AdminMenuRoute: typeof AdminMenuRoute
   AdminOzelliklerRoute: typeof AdminOzelliklerRoute
+  AdminScriptlerRoute: typeof AdminScriptlerRoute
   AdminSiparislerRoute: typeof AdminSiparislerRoute
   AdminSliderlarRoute: typeof AdminSliderlarRoute
   AdminUrunlerRoute: typeof AdminUrunlerRoute
@@ -444,6 +564,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminMarkalarRoute: AdminMarkalarRoute,
   AdminMenuRoute: AdminMenuRoute,
   AdminOzelliklerRoute: AdminOzelliklerRoute,
+  AdminScriptlerRoute: AdminScriptlerRoute,
   AdminSiparislerRoute: AdminSiparislerRoute,
   AdminSliderlarRoute: AdminSliderlarRoute,
   AdminUrunlerRoute: AdminUrunlerRoute,
@@ -457,10 +578,15 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   GirisRoute: GirisRoute,
+  GizlilikSozlesmesiRoute: GizlilikSozlesmesiRoute,
+  HakkimizdaRoute: HakkimizdaRoute,
   HesabimRoute: HesabimRoute,
+  IletisimRoute: IletisimRoute,
+  KullanimKosullariRoute: KullanimKosullariRoute,
   OdemeRoute: OdemeRoute,
   SepetRoute: SepetRoute,
   UrunlerRoute: UrunlerRoute,
+  UyelikSozlesmesiRoute: UyelikSozlesmesiRoute,
   UrunSlugRoute: UrunSlugRoute,
 }
 export const routeTree = rootRouteImport
