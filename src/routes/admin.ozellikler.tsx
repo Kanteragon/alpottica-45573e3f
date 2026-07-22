@@ -141,10 +141,12 @@ function AttrForm({ attr, nextSira, onClose }: { attr: Attr | null; nextSira: nu
   const save = async () => {
     if (!f.ad) return toast.error("Ad zorunlu");
     setBusy(true);
+    const newSlug = f.slug || slugify(f.ad);
+    const newDegerler = f.degerler.split(",").map((s) => s.trim()).filter(Boolean);
     const payload = {
       ad: f.ad,
-      slug: f.slug || slugify(f.ad),
-      degerler: f.degerler.split(",").map((s) => s.trim()).filter(Boolean),
+      slug: newSlug,
+      degerler: newDegerler,
       filterable: f.filterable,
       show_in_detail: f.show_in_detail,
       sira: Number(f.sira),
@@ -152,11 +154,31 @@ function AttrForm({ attr, nextSira, onClose }: { attr: Attr | null; nextSira: nu
     const { error } = isNew
       ? await supabase.from("product_attributes").insert(payload)
       : await supabase.from("product_attributes").update(payload).eq("id", attr!.id);
+    if (error) { setBusy(false); return toast.error(error.message); }
+
+    // Propagate rename/value changes to all products
+    if (!isNew && attr) {
+      const oldDegerler = attr.degerler ?? [];
+      const valueMap: Record<string, string> = {};
+      for (let i = 0; i < oldDegerler.length; i++) {
+        const nv = newDegerler[i];
+        if (nv && nv !== oldDegerler[i]) valueMap[oldDegerler[i]] = nv;
+      }
+      const oldKeys = Array.from(new Set([attr.slug, attr.ad, newSlug, f.ad].filter(Boolean)));
+      const { data: cnt, error: rpcErr } = await supabase.rpc("apply_attribute_rename", {
+        old_keys: oldKeys,
+        new_key: newSlug,
+        value_map: valueMap,
+      });
+      if (rpcErr) { setBusy(false); return toast.error("Ürün güncelleme hatası: " + rpcErr.message); }
+      if (cnt && cnt > 0) toast.success(`${cnt} ürün güncellendi`);
+    }
+
     setBusy(false);
-    if (error) return toast.error(error.message);
     toast.success("Kaydedildi");
     onClose();
   };
+
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
