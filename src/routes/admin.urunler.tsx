@@ -514,15 +514,23 @@ function AttrsTab({
 }) {
   const [newSlug, setNewSlug] = useState("");
   const [newVal, setNewVal] = useState("");
-  const rows = attrs
-    .map((a) => ({ attr: a, val: value[a.slug] }))
-    .filter((r) => r.val);
+  const norm = (s: string) =>
+    s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const attrByKey = new Map<string, typeof attrs[number]>();
+  for (const a of attrs) {
+    attrByKey.set(norm(a.slug), a);
+    attrByKey.set(norm(a.ad), a);
+  }
+  const rows = Object.entries(value)
+    .filter(([, v]) => v != null && String(v).trim() !== "")
+    .map(([k, v]) => ({ key: k, attr: attrByKey.get(norm(k)) ?? null, val: String(v) }));
 
-  const del = (slug: string) => {
+  const del = (key: string) => {
     const next = { ...value };
-    delete next[slug];
+    delete next[key];
     onChange(next);
   };
+
 
   const add = () => {
     if (!newSlug || !newVal) return toast.error("Özellik ve değer seçin");
@@ -549,18 +557,22 @@ function AttrsTab({
             {rows.length === 0 && (
               <tr><td colSpan={6} className="p-6 text-center text-muted-foreground italic">Henüz özellik eklenmedi.</td></tr>
             )}
-            {rows.map(({ attr, val }) => (
-              <tr key={attr.slug} className="border-t">
-                <td className="p-3 font-medium">{attr.ad}</td>
+            {rows.map(({ key, attr, val }) => (
+              <tr key={key} className="border-t">
+                <td className="p-3 font-medium">
+                  {attr?.ad ?? key}
+                  {!attr && <span className="ml-2 text-[10px] text-amber-600 uppercase tracking-widest">Eşleşmedi</span>}
+                </td>
                 <td>{val}</td>
-                <td className="text-center">{attr.filterable ? "✓" : "—"}</td>
-                <td className="text-center">{attr.show_in_detail ? "✓" : "—"}</td>
-                <td className="text-center">{attr.sira}</td>
+                <td className="text-center">{attr?.filterable ? "✓" : "—"}</td>
+                <td className="text-center">{attr?.show_in_detail ? "✓" : "—"}</td>
+                <td className="text-center">{attr?.sira ?? "—"}</td>
                 <td className="p-3 text-right">
-                  <button onClick={() => del(attr.slug)} className="p-1.5 rounded hover:bg-red-50 text-red-600"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={() => del(key)} className="p-1.5 rounded hover:bg-red-50 text-red-600"><Trash2 className="w-4 h-4" /></button>
                 </td>
               </tr>
             ))}
+
           </tbody>
         </table>
       </div>
