@@ -1,15 +1,21 @@
-import { createFileRoute, useSearch } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { z } from "zod";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ProductCard } from "@/components/ProductCard";
-import { filterProducts } from "@/lib/products";
-import { Search } from "lucide-react";
+import { useProducts, useCategories, useBrands } from "@/lib/queries";
+import { Search, Filter } from "lucide-react";
 
 const searchSchema = z.object({
-  tag: z.enum(["tumu", "klipsli", "outlet"]).optional(),
+  tag: z.string().optional(),
   q: z.string().optional(),
+  kategori: z.string().optional(),
+  marka: z.string().optional(),
+  renk: z.string().optional(),
+  ekartman: z.string().optional(),
+  min: z.number().optional(),
+  max: z.number().optional(),
 });
 
 export const Route = createFileRoute("/urunler")({
@@ -17,29 +23,47 @@ export const Route = createFileRoute("/urunler")({
   head: () => ({
     meta: [
       { title: "Tüm Ürünler — Alpottica Istanbul" },
-      {
-        name: "description",
-        content: "Alpottica'nın tüm güneş gözlüğü ve klipsli modelleri.",
-      },
+      { name: "description", content: "Alpottica'nın tüm güneş gözlüğü ve klipsli modelleri." },
+      { property: "og:title", content: "Ürünler — Alpottica" },
+      { property: "og:description", content: "Alpottica'nın tüm güneş gözlüğü ve klipsli modelleri." },
     ],
   }),
   component: Products,
 });
 
-const TABS: { key: "tumu" | "klipsli" | "outlet"; label: string }[] = [
-  { key: "tumu", label: "TÜM MODELLER" },
-  { key: "klipsli", label: "KLİPSLİ MODELLER" },
-  { key: "outlet", label: "OUTLET" },
-];
-
 function Products() {
-  const search = useSearch({ from: "/urunler" });
-  const activeTag = search.tag ?? "tumu";
+  const search = Route.useSearch();
   const [query, setQuery] = useState(search.q ?? "");
   const [visible, setVisible] = useState(24);
 
-  const list = useMemo(() => filterProducts(activeTag, query), [activeTag, query]);
+  const { data: cats } = useCategories();
+  const { data: brands } = useBrands();
+
+  const { data: products = [], isLoading } = useProducts({
+    tag: search.tag,
+    q: query,
+    kategori_id: search.kategori,
+    marka_id: search.marka,
+    color: search.renk,
+    size: search.ekartman,
+    minPrice: search.min,
+    maxPrice: search.max,
+  });
+
+  const list = useMemo(() => products.filter((p) => p.stock > 0), [products]);
   const shown = list.slice(0, visible);
+
+  const colors = useMemo(() => Array.from(new Set(products.map((p) => p.color).filter(Boolean))).sort(), [products]);
+  const sizes = useMemo(() => Array.from(new Set(products.map((p) => p.size).filter(Boolean))).sort(), [products]);
+
+  const setSearchParam = (patch: Record<string, string | undefined>) => {
+    const params = new URLSearchParams(window.location.search);
+    Object.entries(patch).forEach(([k, v]) => {
+      if (!v) params.delete(k);
+      else params.set(k, v);
+    });
+    window.location.search = params.toString();
+  };
 
   return (
     <div className="bg-background text-foreground min-h-screen">
@@ -48,60 +72,66 @@ function Products() {
 
       <section className="bg-brand-sand/40 border-b border-border">
         <div className="max-w-[1600px] mx-auto px-6 lg:px-10 py-14">
-          <p className="text-xs tracking-[0.4em] text-muted-foreground mb-3">
-            KOLEKSİYON
-          </p>
-          <h1 className="font-display text-5xl md:text-7xl text-brand-ink mb-6">
-            Alpottica Modelleri
-          </h1>
+          <p className="text-xs tracking-[0.4em] text-muted-foreground mb-3">KOLEKSİYON</p>
+          <h1 className="font-display text-5xl md:text-7xl text-brand-ink mb-6">Alpottica Modelleri</h1>
           <p className="text-muted-foreground max-w-2xl">
-            {list.length} ürün · Polarize, antifar ve klipsli seçenekler.
+            {isLoading ? "Yükleniyor..." : `${list.length} ürün · Polarize, antifar ve klipsli seçenekler.`}
           </p>
         </div>
       </section>
 
-      <div className="max-w-[1600px] mx-auto px-6 lg:px-10 py-8 sticky top-20 z-30 bg-background/95 backdrop-blur border-b border-border">
-        <div className="flex flex-wrap items-center gap-4 justify-between">
+      <div className="max-w-[1600px] mx-auto px-6 lg:px-10 py-6 sticky top-20 z-30 bg-background/95 backdrop-blur border-b border-border">
+        <div className="flex flex-wrap items-center gap-3 justify-between">
           <div className="flex flex-wrap gap-2">
-            {TABS.map((t) => (
-              <a
-                key={t.key}
-                href={`/urunler?tag=${t.key}`}
-                className={`px-5 py-2.5 text-xs tracking-[0.2em] rounded-full border transition ${
-                  activeTag === t.key
-                    ? "bg-brand-ink text-white border-brand-ink"
-                    : "border-border text-brand-ink hover:border-brand-ink"
-                }`}
-              >
-                {t.label}
-              </a>
-            ))}
+            <a href="/urunler" className={`px-5 py-2.5 text-xs tracking-[0.2em] rounded-full border transition ${!search.tag || search.tag === "tumu" ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink"}`}>TÜM MODELLER</a>
+            <a href="/urunler?tag=klipsli" className={`px-5 py-2.5 text-xs tracking-[0.2em] rounded-full border transition ${search.tag === "klipsli" ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink"}`}>KLİPSLİ</a>
+            <a href="/urunler?tag=outlet" className={`px-5 py-2.5 text-xs tracking-[0.2em] rounded-full border transition ${search.tag === "outlet" ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink"}`}>OUTLET</a>
           </div>
           <div className="relative w-full md:w-80">
             <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <input
               value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                setVisible(24);
-              }}
+              onChange={(e) => { setQuery(e.target.value); setVisible(24); }}
               placeholder="Ürün ara..."
-              className="w-full pl-11 pr-4 py-2.5 text-sm rounded-full border border-border bg-white focus:outline-none focus:border-brand-ink transition"
+              className="w-full pl-11 pr-4 py-2.5 text-sm rounded-full border border-border bg-white focus:outline-none focus:border-brand-ink"
             />
           </div>
+        </div>
+
+        <div className="flex flex-wrap gap-3 mt-4 text-xs items-center">
+          <Filter className="w-4 h-4 text-muted-foreground" />
+          <select value={search.kategori ?? ""} onChange={(e) => setSearchParam({ kategori: e.target.value || undefined })} className="border border-border rounded-full px-3 py-1.5 bg-white">
+            <option value="">Tüm Kategoriler</option>
+            {cats?.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+          <select value={search.marka ?? ""} onChange={(e) => setSearchParam({ marka: e.target.value || undefined })} className="border border-border rounded-full px-3 py-1.5 bg-white">
+            <option value="">Tüm Markalar</option>
+            {brands?.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
+          <select value={search.renk ?? ""} onChange={(e) => setSearchParam({ renk: e.target.value || undefined })} className="border border-border rounded-full px-3 py-1.5 bg-white">
+            <option value="">Tüm Renkler</option>
+            {colors.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+          <select value={search.ekartman ?? ""} onChange={(e) => setSearchParam({ ekartman: e.target.value || undefined })} className="border border-border rounded-full px-3 py-1.5 bg-white">
+            <option value="">Tüm Ekartmanlar</option>
+            {sizes.map((s) => <option key={s} value={s}>{s} mm</option>)}
+          </select>
+          <input type="number" placeholder="Min ₺" value={search.min ?? ""} onChange={(e) => setSearchParam({ min: e.target.value || undefined })} className="w-24 border border-border rounded-full px-3 py-1.5 bg-white" />
+          <input type="number" placeholder="Max ₺" value={search.max ?? ""} onChange={(e) => setSearchParam({ max: e.target.value || undefined })} className="w-24 border border-border rounded-full px-3 py-1.5 bg-white" />
+          {(search.kategori || search.marka || search.renk || search.ekartman || search.min || search.max) && (
+            <a href="/urunler" className="text-brand-cta underline">Filtreleri temizle</a>
+          )}
         </div>
       </div>
 
       <section className="max-w-[1600px] mx-auto px-6 lg:px-10 py-12">
         {shown.length === 0 ? (
           <p className="text-center text-muted-foreground py-20">
-            Sonuç bulunamadı.
+            {isLoading ? "Yükleniyor..." : "Sonuç bulunamadı."}
           </p>
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 lg:gap-6">
-            {shown.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
+            {shown.map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
         )}
 
