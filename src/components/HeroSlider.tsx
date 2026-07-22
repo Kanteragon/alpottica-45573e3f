@@ -6,14 +6,13 @@ import slidePilota from "@/assets/slide-pilota.jpg";
 import slideOutlet from "@/assets/slide-outlet.jpg";
 
 type Slide = {
-  id: string; baslik: string; alt_baslik: string; gorsel: string;
-  buton_yazi: string; buton_link: string;
+  id: string; gorsel: string; buton_link: string;
 };
 
 const FALLBACK: Slide[] = [
-  { id: "k", baslik: "KLİPSLİLER", alt_baslik: "Yeni seri klipsli koleksiyon", gorsel: slideKlips, buton_yazi: "HEMEN İNCELE", buton_link: "/urunler?tag=klipsli" },
-  { id: "p", baslik: "PİLOTA", alt_baslik: "Yeni ürün — havayı kes", gorsel: slidePilota, buton_yazi: "KEŞFET", buton_link: "/urunler" },
-  { id: "o", baslik: "OUTLET", alt_baslik: "Sezon sonu fırsatlar", gorsel: slideOutlet, buton_yazi: "OUTLETİ GÖR", buton_link: "/urunler?tag=outlet" },
+  { id: "k", gorsel: slideKlips, buton_link: "/urunler?tag=klipsli" },
+  { id: "p", gorsel: slidePilota, buton_link: "/urunler" },
+  { id: "o", gorsel: slideOutlet, buton_link: "/urunler?tag=outlet" },
 ];
 
 function useDevice(): "mobile" | "tablet" | "desktop" {
@@ -41,12 +40,9 @@ export function HeroSlider() {
         })
         .map((s) => ({
           id: s.id,
-          baslik: s.baslik ?? "",
-          alt_baslik: s.alt_baslik ?? "",
           gorsel: s.gorsel?.startsWith("/hero-")
             ? (s.gorsel.includes("klips") ? slideKlips : s.gorsel.includes("pilota") ? slidePilota : slideOutlet)
             : s.gorsel,
-          buton_yazi: s.buton_yazi ?? "İNCELE",
           buton_link: s.buton_link ?? "/urunler",
         }))
     : FALLBACK;
@@ -63,13 +59,20 @@ export function HeroSlider() {
   const go = (n: number) => setIdx((n + list.length) % list.length);
 
   return (
-    <section className="relative w-full h-[85vh] min-h-[500px] max-h-[900px] overflow-hidden bg-brand-sand">
+    <section className="relative w-screen h-screen -mt-20 overflow-hidden bg-brand-sand">
       {list.map((s, i) => (
-        <div key={s.id} className={`absolute inset-0 transition-opacity duration-[1200ms] ease-out ${i === idx ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
-          <a href={s.buton_link || "/urunler"} className="block absolute inset-0">
-            <img src={s.gorsel} alt="" className="absolute inset-0 w-full h-full object-contain" loading={i === 0 ? "eager" : "lazy"} />
-          </a>
-        </div>
+        <a
+          key={s.id}
+          href={s.buton_link || "/urunler"}
+          className={`absolute inset-0 block transition-opacity duration-[1200ms] ease-out ${i === idx ? "opacity-100 z-10" : "opacity-0 pointer-events-none"}`}
+        >
+          <img
+            src={s.gorsel}
+            alt=""
+            className="absolute inset-0 w-full h-full object-contain"
+            loading={i === 0 ? "eager" : "lazy"}
+          />
+        </a>
       ))}
 
       <button onClick={() => go(idx - 1)} aria-label="Önceki" className="absolute left-4 lg:left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/15 backdrop-blur-md border border-white/25 text-white flex items-center justify-center hover:bg-white/25 transition">
@@ -87,4 +90,3 @@ export function HeroSlider() {
     </section>
   );
 }
-
