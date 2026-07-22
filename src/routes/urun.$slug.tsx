@@ -5,7 +5,7 @@ import { Footer } from "@/components/Footer";
 import { formatTL, discountPct } from "@/lib/products";
 import { useProduct, useProducts, useAttributes } from "@/lib/queries";
 import { ProductCard } from "@/components/ProductCard";
-import { ShoppingCart, Heart, ShieldCheck, Truck, RefreshCcw } from "lucide-react";
+import { ShoppingCart, Heart, ShieldCheck, Truck, RefreshCcw, ArrowLeft } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { toast } from "sonner";
 
@@ -83,6 +83,16 @@ function ProductDetail() {
     <div className="bg-background min-h-screen">
       <Navbar />
       <div className="h-20" />
+
+      <div className="max-w-[1600px] mx-auto px-6 lg:px-10 pt-6">
+        <button
+          onClick={() => window.history.back()}
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-ink transition"
+        >
+          <ArrowLeft className="w-4 h-4" /> Geri
+        </button>
+      </div>
+
 
       <section className="max-w-[1600px] mx-auto px-6 lg:px-10 py-12 grid lg:grid-cols-2 gap-12">
         <div>
