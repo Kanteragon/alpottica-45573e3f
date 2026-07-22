@@ -304,21 +304,36 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
     etiketler: form.etiketler.split(",").map((s) => s.trim()).filter(Boolean),
     slug: form.slug || form.stok_kodu.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
     aktif: form.aktif,
-    kategori_id: form.kategori_id || null,
+    kategori_id: categoryIds[0] ?? (form.kategori_id || null),
     marka_id: form.marka_id || null,
     ozellikler: form.ozellikler,
     model_kodu: form.model_kodu || null,
     barkod: form.barkod || null,
   });
 
+  const syncCategories = async (productId: string) => {
+    await supabase.from("product_categories").delete().eq("product_id", productId);
+    if (categoryIds.length) {
+      await supabase.from("product_categories").insert(
+        categoryIds.map((cid) => ({ product_id: productId, category_id: cid }))
+      );
+    }
+  };
+
   const save = async (keepOpen = false) => {
     setBusy(true);
     const payload = buildPayload();
-    const { error } = isNew
-      ? await supabase.from("products").insert(payload)
-      : await supabase.from("products").update(payload).eq("id", product!.id);
+    let productId = product?.id;
+    if (isNew) {
+      const { data, error } = await supabase.from("products").insert(payload).select("id").single();
+      if (error) { setBusy(false); return toast.error(error.message); }
+      productId = data?.id;
+    } else {
+      const { error } = await supabase.from("products").update(payload).eq("id", product!.id);
+      if (error) { setBusy(false); return toast.error(error.message); }
+    }
+    if (productId) await syncCategories(productId);
     setBusy(false);
-    if (error) return toast.error(error.message);
     toast.success(isNew ? "Eklendi" : "Güncellendi");
     qc.invalidateQueries({ queryKey: ["admin-products"] });
     if (!keepOpen) onClose();
