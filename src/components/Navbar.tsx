@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { User, Heart, ShoppingCart } from "lucide-react";
-import defaultLogo from "@/assets/alpottica-logo.jpg.asset.json";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 import { useMenu } from "@/lib/queries";
