@@ -584,6 +584,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      apply_attribute_rename: {
+        Args: { new_key: string; old_keys: string[]; value_map: Json }
+        Returns: number
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
