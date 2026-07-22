@@ -31,7 +31,7 @@ function SettingsPage() {
       const { error } = await supabase.from("site_settings").upsert({
         id: 1,
         logo_url: logoUrl || null,
-        logo_max_width: Math.max(40, Math.min(600, Number(maxWidth) || 180)),
+        logo_max_width: Math.max(40, Math.min(600, Number(maxWidth) || 260)),
         updated_at: new Date().toISOString(),
       });
       if (error) throw error;
