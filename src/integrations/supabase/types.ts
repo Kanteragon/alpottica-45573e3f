@@ -289,6 +289,42 @@ export type Database = {
         }
         Relationships: []
       }
+      product_attributes: {
+        Row: {
+          ad: string
+          created_at: string
+          degerler: string[]
+          filterable: boolean
+          id: string
+          show_in_detail: boolean
+          sira: number
+          slug: string
+          updated_at: string
+        }
+        Insert: {
+          ad: string
+          created_at?: string
+          degerler?: string[]
+          filterable?: boolean
+          id?: string
+          show_in_detail?: boolean
+          sira?: number
+          slug: string
+          updated_at?: string
+        }
+        Update: {
+          ad?: string
+          created_at?: string
+          degerler?: string[]
+          filterable?: boolean
+          id?: string
+          show_in_detail?: boolean
+          sira?: number
+          slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           aciklama: string | null
@@ -433,6 +469,9 @@ export type Database = {
           created_at: string
           gorsel: string
           id: string
+          show_desktop: boolean
+          show_mobile: boolean
+          show_tablet: boolean
           sira: number
         }
         Insert: {
@@ -444,6 +483,9 @@ export type Database = {
           created_at?: string
           gorsel: string
           id?: string
+          show_desktop?: boolean
+          show_mobile?: boolean
+          show_tablet?: boolean
           sira?: number
         }
         Update: {
@@ -455,6 +497,9 @@ export type Database = {
           created_at?: string
           gorsel?: string
           id?: string
+          show_desktop?: boolean
+          show_mobile?: boolean
+          show_tablet?: boolean
           sira?: number
         }
         Relationships: []

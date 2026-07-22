@@ -127,3 +127,19 @@ export function useShowcase() {
     },
   });
 }
+
+export type AttributeDef = {
+  id: string; ad: string; slug: string; degerler: string[];
+  filterable: boolean; show_in_detail: boolean; sira: number;
+};
+
+export function useAttributes() {
+  return useQuery({
+    queryKey: ["attrs"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("product_attributes").select("*").order("sira");
+      if (error) throw error;
+      return (data ?? []) as AttributeDef[];
+    },
+  });
+}

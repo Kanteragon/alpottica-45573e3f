@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { formatTL, discountPct } from "@/lib/products";
-import { useProduct, useProducts } from "@/lib/queries";
+import { useProduct, useProducts, useAttributes } from "@/lib/queries";
 import { ProductCard } from "@/components/ProductCard";
 import { ShoppingCart, Heart, ShieldCheck, Truck, RefreshCcw } from "lucide-react";
 import { useCart } from "@/lib/cart";
@@ -23,8 +23,22 @@ function ProductDetail() {
   const { slug } = Route.useParams();
   const { data: product, isLoading } = useProduct(slug);
   const { data: allProducts = [] } = useProducts();
+  const { data: attrs = [] } = useAttributes();
   const { add } = useCart();
   const [active, setActive] = useState<string>("");
+  const [selectedAttrs, setSelectedAttrs] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (product) {
+      const initial: Record<string, string> = {};
+      attrs.forEach((a) => {
+        const v = (product as unknown as { ozellikler?: Record<string, string> }).ozellikler?.[a.slug]
+          ?? (a.slug === "renk" ? product.color : a.slug === "cam_rengi" ? product.lensColor : a.slug === "ekartman" ? product.size : "");
+        if (v) initial[a.slug] = v;
+      });
+      setSelectedAttrs(initial);
+    }
+  }, [product, attrs]);
 
   if (isLoading) {
     return (
@@ -92,30 +106,24 @@ function ProductDetail() {
             <p className="text-muted-foreground mb-6 leading-relaxed">{product.aciklama}</p>
           )}
 
-          <dl className="grid grid-cols-2 gap-4 mb-8 p-5 rounded-2xl bg-brand-sand/30">
-            {product.color && (
-              <div>
-                <dt className="text-[11px] tracking-widest text-muted-foreground uppercase">Çerçeve Rengi</dt>
-                <dd className="text-sm text-brand-ink font-medium mt-1">{product.color}</dd>
+          <div className="space-y-4 mb-8">
+            {attrs.filter((a) => a.show_in_detail && a.degerler.length > 0).map((a) => (
+              <div key={a.id}>
+                <label className="block text-[11px] tracking-widest text-muted-foreground uppercase mb-2">{a.ad}</label>
+                <select
+                  value={selectedAttrs[a.slug] ?? ""}
+                  onChange={(e) => setSelectedAttrs({ ...selectedAttrs, [a.slug]: e.target.value })}
+                  className="w-full border border-border rounded-full px-4 py-3 bg-white text-sm font-medium text-brand-ink focus:outline-none focus:border-brand-ink"
+                >
+                  <option value="">— Seçiniz —</option>
+                  {a.degerler.map((v) => (
+                    <option key={v} value={v}>{v}</option>
+                  ))}
+                </select>
               </div>
-            )}
-            {product.lensColor && (
-              <div>
-                <dt className="text-[11px] tracking-widest text-muted-foreground uppercase">Cam Rengi</dt>
-                <dd className="text-sm text-brand-ink font-medium mt-1">{product.lensColor}</dd>
-              </div>
-            )}
-            {product.size && (
-              <div>
-                <dt className="text-[11px] tracking-widest text-muted-foreground uppercase">Ekartman</dt>
-                <dd className="text-sm text-brand-ink font-medium mt-1">{product.size} mm</dd>
-              </div>
-            )}
-            <div>
-              <dt className="text-[11px] tracking-widest text-muted-foreground uppercase">Stok</dt>
-              <dd className="text-sm text-brand-ink font-medium mt-1">{product.stock} adet mevcut</dd>
-            </div>
-          </dl>
+            ))}
+            <p className="text-xs text-muted-foreground">Stok: <strong className="text-brand-ink">{product.stock} adet mevcut</strong></p>
+          </div>
 
           <div className="flex gap-3 mb-8">
             <button
