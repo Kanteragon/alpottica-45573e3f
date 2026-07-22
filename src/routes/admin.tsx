@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
-import { LayoutDashboard, Package, ShoppingBag, Images, Menu as MenuIcon, Star, Users, Upload, Tag, LogOut, Store, Sliders } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Images, Menu as MenuIcon, Star, Users, Upload, Tag, LogOut, Store, Sliders, Settings } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin Panel — Alpottica" }, { name: "robots", content: "noindex" }] }),
@@ -20,6 +20,7 @@ const LINKS = [
   { to: "/admin/sliderlar", label: "Sliderlar", icon: Images },
   { to: "/admin/menu", label: "Menü", icon: MenuIcon },
   { to: "/admin/vitrin", label: "Vitrin", icon: Star },
+  { to: "/admin/ayarlar", label: "Genel Ayarlar", icon: Settings },
 ];
 
 function AdminLayout() {
