@@ -298,9 +298,9 @@ function FavoritesTab() {
       ) : (
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
           {favorites.map((f) => {
-            const p = f.products as { id: string; slug: string; urun_adi: string; satis_fiyati: number; resim: string | null } | null;
+            const p = f.products as { id: string; slug: string; urun_adi: string; satis_fiyati: number; resimler: string[] | null } | null;
             if (!p) return null;
-            const img = p.resim?.split(";")[0]?.trim();
+            const img = p.resimler?.[0];
             return (
               <div key={f.id} className="border rounded-2xl p-3">
                 <Link to="/urun/$slug" params={{ slug: p.slug }} className="block">
