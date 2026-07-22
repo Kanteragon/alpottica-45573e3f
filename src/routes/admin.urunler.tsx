@@ -16,6 +16,7 @@ type P = {
   ozellikler: Record<string, string> | null; etiketler: string[] | null;
   aciklama: string | null; model_kodu: string | null; barkod: string | null;
   kategori_id: string | null; marka_id: string | null; alis_fiyati: number;
+  variant_group_id?: string | null;
 };
 
 function AdminProducts() {
@@ -117,8 +118,8 @@ function AdminProducts() {
       <div className="bg-white rounded-2xl border overflow-hidden">
         <div className="overflow-x-auto max-h-[70vh] overflow-y-auto">
           <table className="w-full text-sm">
-            <thead className="text-left text-xs uppercase tracking-widest text-muted-foreground border-b bg-brand-sand/30 sticky top-0">
-              <tr>
+            <thead className="text-left text-xs uppercase tracking-widest text-muted-foreground border-b bg-brand-ink text-white sticky top-0 z-10">
+              <tr className="[&_th]:p-3 [&_th]:font-semibold [&_th]:text-white/90">
                 <th className="p-3 w-8">
                   <input type="checkbox" checked={selected.size > 0 && selected.size === filtered.slice(0, 500).length} onChange={selectAll} />
                 </th>
