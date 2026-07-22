@@ -12,6 +12,7 @@ type OrderItem = { id: string; adet: number; birim_fiyat: number; urun_adi_snaps
 type Order = {
   id: string; ad_soyad: string; telefon: string; email: string;
   created_at: string; adres: string; notlar: string | null;
+  sehir?: string | null; ilce?: string | null; mahalle?: string | null; posta_kodu?: string | null;
   odeme_tipi: string; toplam: number; durum: string;
   order_items?: OrderItem[];
 };
@@ -128,10 +129,28 @@ function Orders() {
                   </div>
                 </div>
                 {expanded === o.id && (
-                  <div className="mt-4 pt-4 border-t space-y-2 text-sm">
-                    <p><strong>Adres:</strong> {o.adres}</p>
-                    {o.notlar && <p><strong>Not:</strong> {o.notlar}</p>}
-                    <div className="mt-2">
+                  <div className="mt-4 pt-4 border-t space-y-3 text-sm">
+                    <div className="grid md:grid-cols-2 gap-3 bg-brand-sand/30 rounded-xl p-4">
+                      <div>
+                        <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-1">Teslimat Adresi</p>
+                        <p className="font-medium text-brand-ink">{o.ad_soyad}</p>
+                        <p className="text-muted-foreground">{o.telefon}</p>
+                        {(o.sehir || o.ilce) && (
+                          <p className="mt-1">
+                            <strong>{[o.mahalle, o.ilce, o.sehir].filter(Boolean).join(" / ")}</strong>
+                            {o.posta_kodu && <span className="ml-2 text-muted-foreground">PK: {o.posta_kodu}</span>}
+                          </p>
+                        )}
+                        <p className="mt-1">{o.adres}</p>
+                      </div>
+                      {o.notlar && (
+                        <div>
+                          <p className="text-[11px] uppercase tracking-widest text-muted-foreground mb-1">Not</p>
+                          <p>{o.notlar}</p>
+                        </div>
+                      )}
+                    </div>
+                    <div>
                       <p className="font-medium mb-1 flex items-center gap-2"><Package className="w-4 h-4" /> Ürünler</p>
                       {o.order_items?.map((it) => (
                         <div key={it.id} className="flex justify-between py-1 text-muted-foreground">
