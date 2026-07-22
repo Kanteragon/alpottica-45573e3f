@@ -49,16 +49,17 @@ function Checkout() {
     (async () => {
       if (!user) return;
       const { data } = await supabase.from("profiles").select("full_name,phone,address").eq("id", user.id).maybeSingle();
-      const { data: addr } = await supabase.from("addresses").select("*").eq("user_id", user.id).order("is_default", { ascending: false }).limit(1).maybeSingle();
+      const { data: addrRaw } = await supabase.from("addresses").select("*").eq("user_id", user.id).order("is_default", { ascending: false }).limit(1).maybeSingle();
+      const addr = (addrRaw ?? {}) as Record<string, string | null>;
       setForm((f) => ({
         ...f,
-        full_name: f.full_name || data?.full_name || addr?.ad_soyad || "",
-        phone: f.phone || data?.phone || addr?.telefon || "",
-        address: f.address || addr?.adres || data?.address || "",
-        sehir: f.sehir || addr?.sehir || "",
-        ilce: f.ilce || addr?.ilce || "",
-        mahalle: f.mahalle || addr?.mahalle || "",
-        posta_kodu: f.posta_kodu || addr?.posta_kodu || "",
+        full_name: f.full_name || data?.full_name || addr.ad_soyad || "",
+        phone: f.phone || data?.phone || addr.telefon || "",
+        address: f.address || addr.adres || data?.address || "",
+        sehir: f.sehir || addr.sehir || "",
+        ilce: f.ilce || addr.ilce || "",
+        mahalle: f.mahalle || addr.mahalle || "",
+        posta_kodu: f.posta_kodu || addr.posta_kodu || "",
       }));
     })();
   }, [user]);
