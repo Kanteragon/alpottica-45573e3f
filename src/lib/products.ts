@@ -15,6 +15,7 @@ export type Product = {
   aciklama?: string | null;
   kategori_id?: string | null;
   marka_id?: string | null;
+  ozellikler?: Record<string, string>;
 };
 
 export type DbProduct = {
