@@ -122,17 +122,24 @@ function Import() {
         });
       }
 
+      // Dedupe by stok_kodu to avoid "cannot affect row a second time" upsert errors
+      const bySku = new Map<string, Prepared>();
+      for (const p of prepared) bySku.set(p.stok_kodu, p);
+      const deduped = Array.from(bySku.values());
+
       const chunkSize = 100;
       let done = 0;
-      for (let i = 0; i < prepared.length; i += chunkSize) {
-        const chunk = prepared.slice(i, i + chunkSize);
+      for (let i = 0; i < deduped.length; i += chunkSize) {
+        const chunk = deduped.slice(i, i + chunkSize);
         const { data: upserted, error } = await supabase
           .from("products")
           .upsert(chunk.map((p) => p.payload) as never, { onConflict: "stok_kodu" })
           .select("id, stok_kodu");
-        if (error) throw error;
+        if (error) {
+          console.error("Upsert error:", error);
+          throw new Error(`${error.message}${error.details ? " · " + error.details : ""}${error.hint ? " · " + error.hint : ""}`);
+        }
 
-        // Sync product_categories
         const idBySku = new Map((upserted ?? []).map((u) => [u.stok_kodu as string, u.id as string]));
         const links: { product_id: string; category_id: string }[] = [];
         const productIds: string[] = [];
@@ -149,16 +156,18 @@ function Import() {
           await supabase.from("product_categories").upsert(links, { onConflict: "product_id,category_id" });
         }
         done += chunk.length;
-        setProgress(`${done}/${prepared.length} yüklendi/güncellendi...`);
+        setProgress(`${done}/${deduped.length} yüklendi/güncellendi...`);
       }
-      toast.success(`${prepared.length} ürün işlendi`);
+      toast.success(`${deduped.length} ürün işlendi${prepared.length !== deduped.length ? ` (${prepared.length - deduped.length} tekrarlı satır birleştirildi)` : ""}`);
       qc.invalidateQueries();
     } catch (err) {
+      console.error("Import error:", err);
       toast.error(err instanceof Error ? err.message : "Hata");
     } finally {
       setBusy(false); setProgress("");
     }
   };
+
 
   const exportAll = async () => {
     setBusy(true);

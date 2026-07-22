@@ -54,7 +54,7 @@ export function HeroSlider() {
           <img
             src={s.gorsel}
             alt=""
-            className="absolute inset-0 w-full h-full object-cover lg:object-contain"
+            className="absolute inset-0 w-full h-full object-cover"
             loading={i === 0 ? "eager" : "lazy"}
             fetchPriority={i === 0 ? "high" : "auto"}
           />

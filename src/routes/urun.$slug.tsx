@@ -49,14 +49,33 @@ function ProductDetail() {
   const related = allProducts.filter((p) => p.id !== product.id && p.stock > 0).slice(0, 4);
 
   const rawOz = (product as unknown as { ozellikler?: Record<string, string> }).ozellikler ?? {};
-  const specs = attrs
-    .filter((a) => a.show_in_detail)
-    .map((a) => {
-      const val = rawOz[a.slug]
-        || (a.slug === "renk" ? product.color : a.slug === "cam_rengi" ? product.lensColor : a.slug === "ekartman" ? product.size : "");
-      return val ? { label: a.ad, value: String(val) } : null;
-    })
-    .filter((x): x is { label: string; value: string } => !!x);
+  const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+  const ozByNorm: Record<string, { key: string; value: string }> = {};
+  for (const [k, v] of Object.entries(rawOz)) {
+    if (v == null || String(v).trim() === "") continue;
+    ozByNorm[norm(k)] = { key: k, value: String(v) };
+  }
+  // legacy fallbacks
+  if (product.color && !ozByNorm["renk"]) ozByNorm["renk"] = { key: "Renk", value: product.color };
+  if (product.lensColor && !ozByNorm["cam_rengi"]) ozByNorm["cam_rengi"] = { key: "Cam Rengi", value: product.lensColor };
+  if (product.size && !ozByNorm["ekartman"]) ozByNorm["ekartman"] = { key: "Ekartman", value: product.size };
+
+  const shownNorms = new Set<string>();
+  const specs: { label: string; value: string }[] = [];
+  // Ordered by defined attributes first
+  for (const a of attrs.filter((a) => a.show_in_detail)) {
+    const hit = ozByNorm[norm(a.slug)] || ozByNorm[norm(a.ad)];
+    if (hit) {
+      specs.push({ label: a.ad, value: hit.value });
+      shownNorms.add(norm(a.slug));
+      shownNorms.add(norm(a.ad));
+    }
+  }
+  // Then any remaining Excel-imported attributes not covered
+  for (const [n, { key, value }] of Object.entries(ozByNorm)) {
+    if (shownNorms.has(n)) continue;
+    specs.push({ label: key, value });
+  }
 
   const waMsg = encodeURIComponent(`${product.name} adlı modeli sipariş vermek istiyorum.`);
 
