@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { formatTL, discountPct } from "@/lib/products";
-import { useProduct, useProducts } from "@/lib/queries";
+import { useProduct, useProducts, useAttributes } from "@/lib/queries";
 import { ProductCard } from "@/components/ProductCard";
 import { ShoppingCart, Heart, ShieldCheck, Truck, RefreshCcw } from "lucide-react";
 import { useCart } from "@/lib/cart";
@@ -23,8 +23,22 @@ function ProductDetail() {
   const { slug } = Route.useParams();
   const { data: product, isLoading } = useProduct(slug);
   const { data: allProducts = [] } = useProducts();
+  const { data: attrs = [] } = useAttributes();
   const { add } = useCart();
   const [active, setActive] = useState<string>("");
+  const [selectedAttrs, setSelectedAttrs] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (product) {
+      const initial: Record<string, string> = {};
+      attrs.forEach((a) => {
+        const v = (product as unknown as { ozellikler?: Record<string, string> }).ozellikler?.[a.slug]
+          ?? (a.slug === "renk" ? product.color : a.slug === "cam_rengi" ? product.lensColor : a.slug === "ekartman" ? product.size : "");
+        if (v) initial[a.slug] = v;
+      });
+      setSelectedAttrs(initial);
+    }
+  }, [product, attrs]);
 
   if (isLoading) {
     return (

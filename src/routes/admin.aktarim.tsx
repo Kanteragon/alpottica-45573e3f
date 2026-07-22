@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import { Download } from "lucide-react";
 
 export const Route = createFileRoute("/admin/aktarim")({ component: Import });
 
@@ -13,7 +14,21 @@ type Row = {
   Kategori?: string; Marka?: string; Resim?: string; Ozellik?: string; Etiketler?: string; Aktif?: string | boolean;
 };
 
+const TEMPLATE_HEADERS: Row = {
+  ModelKodu: "M100", StokKodu: "SKU-100", Barkod: "8690000000001", UrunAdi: "Alpottica Örnek Klips Model",
+  Aciklama: "Örnek açıklama metni", StokAdedi: 10, AlisFiyati: 500, ListeFiyati: 1200, SatisFiyati: 899,
+  Kategori: "Klipsli Modeller", Marka: "Alpottica",
+  Resim: "https://ornek.com/1.jpg;https://ornek.com/2.jpg",
+  Ozellik: "renk:Siyah;cam_rengi:Yeşil;ekartman:56",
+  Etiketler: "klipsli,yeni", Aktif: "Evet",
+};
+
 function slugify(s: string) { return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
+
+function isKlips(name: string, model?: string | null) {
+  const s = `${name} ${model ?? ""}`.toLowerCase();
+  return /klips|magnetic|magnet/.test(s);
+}
 
 function Import() {
   const qc = useQueryClient();
@@ -23,6 +38,13 @@ function Import() {
   const { data: cats } = useQuery({ queryKey: ["cats-all"], queryFn: async () => (await supabase.from("categories").select("id,name,slug")).data ?? [] });
   const { data: brands } = useQuery({ queryKey: ["brands-all"], queryFn: async () => (await supabase.from("brands").select("id,name,slug")).data ?? [] });
 
+  const downloadTemplate = () => {
+    const ws = XLSX.utils.json_to_sheet([TEMPLATE_HEADERS]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Sablon");
+    XLSX.writeFile(wb, "alpottica-urun-sablonu.xlsx");
+  };
+
   const handleFile = async (file: File) => {
     setBusy(true); setProgress("Excel okunuyor...");
     try {
@@ -30,7 +52,14 @@ function Import() {
       const wb = XLSX.read(buf, { type: "array" });
       const ws = wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json<Row>(ws);
-      setProgress(`${rows.length} satır bulundu, işleniyor...`);
+      setProgress(`${rows.length} satır bulundu...`);
+
+      // Ensure Klipsli category exists in map
+      let klipsId = (cats ?? []).find((c) => /klipsli/i.test(c.name))?.id ?? null;
+      if (!klipsId) {
+        const { data: newCat } = await supabase.from("categories").insert({ name: "Klipsli Modeller", slug: "klipsli-modeller", sort: 1 }).select("id").single();
+        klipsId = newCat?.id ?? null;
+      }
 
       const catMap = new Map((cats ?? []).map((c) => [c.name.toLowerCase(), c.id]));
       const brandMap = new Map((brands ?? []).map((b) => [b.name.toLowerCase(), b.id]));
@@ -41,23 +70,30 @@ function Import() {
           const catName = String(r.Kategori ?? "").trim();
           const brandName = String(r.Marka ?? "Alpottica").trim();
           const stok = Number(r.StokAdedi) || 0;
+          const name = String(r.UrunAdi);
+          const model = r.ModelKodu ? String(r.ModelKodu) : null;
+          let kategori_id = catMap.get(catName.toLowerCase()) ?? null;
+          // KLIPS RULE: if no category OR name/model contains klips/magnetic → force Klipsli
+          if (!kategori_id && (isKlips(name, model) || !catName)) kategori_id = klipsId;
+          else if (isKlips(name, model)) kategori_id = klipsId;
+
           return {
             stok_kodu: String(r.StokKodu),
-            model_kodu: r.ModelKodu ? String(r.ModelKodu) : null,
+            model_kodu: model,
             barkod: r.Barkod ? String(r.Barkod) : null,
-            urun_adi: String(r.UrunAdi),
+            urun_adi: name,
             aciklama: r.Aciklama ? String(r.Aciklama) : null,
             stok_adedi: stok,
             alis_fiyati: Number(r.AlisFiyati) || 0,
             liste_fiyati: Number(r.ListeFiyati) || 0,
             satis_fiyati: Number(r.SatisFiyati) || 0,
-            kategori_id: catMap.get(catName.toLowerCase()) ?? null,
+            kategori_id,
             marka_id: brandMap.get(brandName.toLowerCase()) ?? null,
             resimler: String(r.Resim ?? "").split(/[;,\n]/).map((s) => s.trim()).filter(Boolean),
             ozellikler: parseOzellik(String(r.Ozellik ?? "")),
             etiketler: String(r.Etiketler ?? "").split(/[,;]/).map((s) => s.trim()).filter(Boolean),
             aktif: r.Aktif === false || String(r.Aktif).toLowerCase() === "hayır" || String(r.Aktif).toLowerCase() === "no" ? false : true,
-            slug: slugify(String(r.StokKodu) + "-" + String(r.UrunAdi)).slice(0, 80),
+            slug: slugify(String(r.StokKodu) + "-" + name).slice(0, 80),
           };
         });
 
@@ -68,9 +104,9 @@ function Import() {
         const { error } = await supabase.from("products").upsert(chunk, { onConflict: "stok_kodu" });
         if (error) throw error;
         done += chunk.length;
-        setProgress(`${done}/${payload.length} yüklendi...`);
+        setProgress(`${done}/${payload.length} yüklendi/güncellendi...`);
       }
-      toast.success(`${payload.length} ürün yüklendi`);
+      toast.success(`${payload.length} ürün işlendi (yeni + güncellenen)`);
       qc.invalidateQueries();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Hata");
@@ -103,12 +139,22 @@ function Import() {
   return (
     <div>
       <h1 className="font-display text-4xl text-brand-ink mb-8">Excel Aktarım</h1>
+
+      <div className="bg-brand-sand/30 rounded-2xl p-5 mb-6 flex items-center justify-between gap-4 flex-wrap">
+        <div>
+          <p className="font-semibold">Boş Örnek Şablon</p>
+          <p className="text-sm text-muted-foreground">Doğru formatlı boş Excel şablonunu indirin, doldurun ve yükleyin.</p>
+        </div>
+        <button onClick={downloadTemplate} className="inline-flex items-center gap-2 bg-brand-ink text-white px-5 py-2.5 rounded-full text-sm">
+          <Download className="w-4 h-4" /> Örnek Excel Şablonu İndir
+        </button>
+      </div>
+
       <div className="grid md:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl border p-6">
           <h2 className="font-display text-2xl mb-3">İçe Aktar</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Excel/CSV yükleyin. Sütunlar: ModelKodu, StokKodu, Barkod, UrunAdi, Aciklama, StokAdedi, AlisFiyati, ListeFiyati, SatisFiyati, Kategori, Marka, Resim, Ozellik, Etiketler, Aktif.
-            <br/>Ozellik formatı: <code>renk:Siyah;cam_rengi:Şeffaf;ekartman:56</code>
+            Excel/CSV yükleyin. Aynı StokKodu varsa güncellenir; yoksa yeni eklenir. Kategori boşsa veya isim/modelde "klips" ya da "magnetic" geçiyorsa otomatik olarak <strong>Klipsli Modeller</strong> kategorisine atanır.
           </p>
           <input type="file" accept=".xlsx,.xls,.csv" disabled={busy} onChange={(e) => e.target.files?.[0] && handleFile(e.target.files[0])} className="w-full text-sm" />
           {progress && <p className="mt-3 text-sm text-brand-cta">{progress}</p>}

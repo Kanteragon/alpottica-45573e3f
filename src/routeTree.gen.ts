@@ -22,6 +22,7 @@ import { Route as AdminVitrinRouteImport } from './routes/admin.vitrin'
 import { Route as AdminUrunlerRouteImport } from './routes/admin.urunler'
 import { Route as AdminSliderlarRouteImport } from './routes/admin.sliderlar'
 import { Route as AdminSiparislerRouteImport } from './routes/admin.siparisler'
+import { Route as AdminOzelliklerRouteImport } from './routes/admin.ozellikler'
 import { Route as AdminMenuRouteImport } from './routes/admin.menu'
 import { Route as AdminMarkalarRouteImport } from './routes/admin.markalar'
 import { Route as AdminKullanicilarRouteImport } from './routes/admin.kullanicilar'
@@ -93,6 +94,11 @@ const AdminSiparislerRoute = AdminSiparislerRouteImport.update({
   path: '/siparisler',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminOzelliklerRoute = AdminOzelliklerRouteImport.update({
+  id: '/ozellikler',
+  path: '/ozellikler',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminMenuRoute = AdminMenuRouteImport.update({
   id: '/menu',
   path: '/menu',
@@ -132,6 +138,7 @@ export interface FileRoutesByFullPath {
   '/admin/kullanicilar': typeof AdminKullanicilarRoute
   '/admin/markalar': typeof AdminMarkalarRoute
   '/admin/menu': typeof AdminMenuRoute
+  '/admin/ozellikler': typeof AdminOzelliklerRoute
   '/admin/siparisler': typeof AdminSiparislerRoute
   '/admin/sliderlar': typeof AdminSliderlarRoute
   '/admin/urunler': typeof AdminUrunlerRoute
@@ -151,6 +158,7 @@ export interface FileRoutesByTo {
   '/admin/kullanicilar': typeof AdminKullanicilarRoute
   '/admin/markalar': typeof AdminMarkalarRoute
   '/admin/menu': typeof AdminMenuRoute
+  '/admin/ozellikler': typeof AdminOzelliklerRoute
   '/admin/siparisler': typeof AdminSiparislerRoute
   '/admin/sliderlar': typeof AdminSliderlarRoute
   '/admin/urunler': typeof AdminUrunlerRoute
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   '/admin/kullanicilar': typeof AdminKullanicilarRoute
   '/admin/markalar': typeof AdminMarkalarRoute
   '/admin/menu': typeof AdminMenuRoute
+  '/admin/ozellikler': typeof AdminOzelliklerRoute
   '/admin/siparisler': typeof AdminSiparislerRoute
   '/admin/sliderlar': typeof AdminSliderlarRoute
   '/admin/urunler': typeof AdminUrunlerRoute
@@ -194,6 +203,7 @@ export interface FileRouteTypes {
     | '/admin/kullanicilar'
     | '/admin/markalar'
     | '/admin/menu'
+    | '/admin/ozellikler'
     | '/admin/siparisler'
     | '/admin/sliderlar'
     | '/admin/urunler'
@@ -213,6 +223,7 @@ export interface FileRouteTypes {
     | '/admin/kullanicilar'
     | '/admin/markalar'
     | '/admin/menu'
+    | '/admin/ozellikler'
     | '/admin/siparisler'
     | '/admin/sliderlar'
     | '/admin/urunler'
@@ -233,6 +244,7 @@ export interface FileRouteTypes {
     | '/admin/kullanicilar'
     | '/admin/markalar'
     | '/admin/menu'
+    | '/admin/ozellikler'
     | '/admin/siparisler'
     | '/admin/sliderlar'
     | '/admin/urunler'
@@ -345,6 +357,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminSiparislerRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/ozellikler': {
+      id: '/admin/ozellikler'
+      path: '/ozellikler'
+      fullPath: '/admin/ozellikler'
+      preLoaderRoute: typeof AdminOzelliklerRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/menu': {
       id: '/admin/menu'
       path: '/menu'
@@ -389,6 +408,7 @@ interface AdminRouteChildren {
   AdminKullanicilarRoute: typeof AdminKullanicilarRoute
   AdminMarkalarRoute: typeof AdminMarkalarRoute
   AdminMenuRoute: typeof AdminMenuRoute
+  AdminOzelliklerRoute: typeof AdminOzelliklerRoute
   AdminSiparislerRoute: typeof AdminSiparislerRoute
   AdminSliderlarRoute: typeof AdminSliderlarRoute
   AdminUrunlerRoute: typeof AdminUrunlerRoute
@@ -402,6 +422,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminKullanicilarRoute: AdminKullanicilarRoute,
   AdminMarkalarRoute: AdminMarkalarRoute,
   AdminMenuRoute: AdminMenuRoute,
+  AdminOzelliklerRoute: AdminOzelliklerRoute,
   AdminSiparislerRoute: AdminSiparislerRoute,
   AdminSliderlarRoute: AdminSliderlarRoute,
   AdminUrunlerRoute: AdminUrunlerRoute,

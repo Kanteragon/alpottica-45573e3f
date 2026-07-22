@@ -1,7 +1,7 @@
 import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth";
-import { LayoutDashboard, Package, ShoppingBag, Images, Menu as MenuIcon, Star, Users, Upload, Tag, LogOut, Store } from "lucide-react";
+import { LayoutDashboard, Package, ShoppingBag, Images, Menu as MenuIcon, Star, Users, Upload, Tag, LogOut, Store, Sliders } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin Panel — Alpottica" }, { name: "robots", content: "noindex" }] }),
@@ -11,6 +11,7 @@ export const Route = createFileRoute("/admin")({
 const LINKS = [
   { to: "/admin", label: "Kontrol Paneli", icon: LayoutDashboard, exact: true },
   { to: "/admin/urunler", label: "Ürünler", icon: Package },
+  { to: "/admin/ozellikler", label: "Özellikler", icon: Sliders },
   { to: "/admin/kategoriler", label: "Kategoriler", icon: Tag },
   { to: "/admin/markalar", label: "Markalar", icon: Store },
   { to: "/admin/aktarim", label: "Excel Aktarım", icon: Upload },
