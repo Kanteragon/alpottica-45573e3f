@@ -16,9 +16,10 @@ function Dashboard() {
         supabase.from("products").select("id", { count: "exact", head: true }),
         supabase.from("orders").select("id", { count: "exact", head: true }),
         supabase.from("profiles").select("id", { count: "exact", head: true }),
-        supabase.from("orders").select("toplam"),
+        supabase.from("orders").select("toplam").neq("durum", "iptal"),
       ]);
       const total = (revenue.data ?? []).reduce((s, r) => s + Number(r.toplam), 0);
+
       return {
         products: prod.count ?? 0,
         orders: ord.count ?? 0,

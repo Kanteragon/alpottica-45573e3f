@@ -50,10 +50,11 @@ export function Navbar() {
             src={logoSrc}
             alt="Alpottica Istanbul"
             style={{ maxWidth: `${logoMax}px` }}
-            className={`h-12 w-auto object-contain transition-all duration-500 rounded-md border ${
-              solid ? "invert-0 border-transparent" : "invert brightness-200 border-white/40 bg-transparent"
+            className={`h-12 w-auto object-contain transition-all duration-500 border-0 ${
+              solid ? "invert" : "invert-0"
             }`}
           />
+
         </Link>
 
         <nav className="hidden lg:flex items-center justify-center gap-10">
