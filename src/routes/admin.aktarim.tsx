@@ -162,23 +162,44 @@ function Import() {
 
   const exportAll = async () => {
     setBusy(true);
-    const { data } = await supabase.from("products").select("*, kategori:categories(name), marka:brands(name)").limit(10000);
-    const rows = (data ?? []).map((p) => ({
-      ModelKodu: p.model_kodu, StokKodu: p.stok_kodu, Barkod: p.barkod, UrunAdi: p.urun_adi,
-      Aciklama: p.aciklama, StokAdedi: p.stok_adedi, AlisFiyati: p.alis_fiyati,
-      ListeFiyati: p.liste_fiyati, SatisFiyati: p.satis_fiyati,
-      Kategori: (p.kategori as { name: string } | null)?.name ?? "",
-      Marka: (p.marka as { name: string } | null)?.name ?? "",
-      Resim: (p.resimler ?? []).join(";"),
-      Ozellik: Object.entries((p.ozellikler ?? {}) as Record<string, string>).map(([k, v]) => `${k}:${v}`).join(";"),
-      Etiketler: (p.etiketler ?? []).join(","),
-      Aktif: p.aktif ? "Evet" : "Hayır",
-    }));
-    const ws = XLSX.utils.json_to_sheet(rows);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Urunler");
-    XLSX.writeFile(wb, `alpottica-urunler-${new Date().toISOString().slice(0, 10)}.xlsx`);
-    setBusy(false);
+    try {
+      const { data, error } = await supabase
+        .from("products")
+        .select("*, kategori:categories!products_kategori_id_fkey(name), marka:brands(name), product_categories(category:categories(name))")
+        .limit(10000);
+      if (error) throw error;
+      const rows = (data ?? []).map((p) => {
+        const multi = ((p.product_categories ?? []) as { category: { name: string } | null }[])
+          .map((r) => r.category?.name)
+          .filter(Boolean) as string[];
+        const primary = (p.kategori as { name: string } | null)?.name;
+        const catNames = Array.from(new Set([primary, ...multi].filter(Boolean))) as string[];
+        return {
+          ModelKodu: p.model_kodu, StokKodu: p.stok_kodu, Barkod: p.barkod, UrunAdi: p.urun_adi,
+          Aciklama: p.aciklama, StokAdedi: p.stok_adedi, AlisFiyati: p.alis_fiyati,
+          ListeFiyati: p.liste_fiyati, SatisFiyati: p.satis_fiyati,
+          Kategori: catNames.join(";"),
+          Marka: (p.marka as { name: string } | null)?.name ?? "",
+          Resim: (p.resimler ?? []).join(";"),
+          Ozellik: Object.entries((p.ozellikler ?? {}) as Record<string, string>).map(([k, v]) => `${k}:${v}`).join(";"),
+          Etiketler: (p.etiketler ?? []).join(","),
+          Aktif: p.aktif ? "Evet" : "Hayır",
+        };
+      });
+      if (rows.length === 0) {
+        toast.error("Dışa aktarılacak ürün bulunamadı");
+        return;
+      }
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Urunler");
+      XLSX.writeFile(wb, `alpottica-urunler-${new Date().toISOString().slice(0, 10)}.xlsx`);
+      toast.success(`${rows.length} ürün dışa aktarıldı`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Dışa aktarım hatası");
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
