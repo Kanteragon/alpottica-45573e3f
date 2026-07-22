@@ -59,7 +59,7 @@ export function HeroSlider() {
   const go = (n: number) => setIdx((n + list.length) % list.length);
 
   return (
-    <section className="relative w-screen h-screen -mt-20 overflow-hidden bg-brand-sand">
+    <section className="relative w-screen h-screen overflow-hidden bg-brand-sand">
       {list.map((s, i) => (
         <a
           key={s.id}
