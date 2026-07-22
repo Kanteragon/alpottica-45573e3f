@@ -1,11 +1,11 @@
 import slideKlips from "@/assets/slide-klips.jpg";
-import slidePilota from "@/assets/slide-pilota.jpg";
 import slideOutlet from "@/assets/slide-outlet.jpg";
+import slideAll from "@/assets/slide-all.jpg"; // Tüm modeller için uygun bir görsel referansı
 
 const CATS = [
-  { title: "Klipsli Modeller", tag: "YENİ SERİ", image: slideKlips },
-  { title: "Pilota Serisi", tag: "YENİ ÜRÜN", image: slidePilota },
-  { title: "Outlet", tag: "%30'A VARAN", image: slideOutlet },
+  { title: "Klipsli Modeller", tag: "YENİ SERİ", image: slideKlips, href: "/kategori/klipsli-modeller" },
+  { title: "Outlet Modeller", tag: "%30'A VARAN İNDİRİM", image: slideOutlet, href: "/kategori/outlet" },
+  { title: "Tüm Modeller", tag: "HEPSİNİ KEŞFET", image: slideAll, href: "/urunler" },
 ];
 
 export function CategoryShowcase() {
@@ -17,7 +17,10 @@ export function CategoryShowcase() {
             <p className="text-xs tracking-[0.4em] text-muted-foreground mb-3">KOLEKSİYON</p>
             <h2 className="font-display text-5xl md:text-6xl text-brand-ink">Öne Çıkan Seriler</h2>
           </div>
-          <a href="#" className="hidden md:inline text-sm tracking-widest text-brand-ink hover:text-brand-cta transition">
+          <a
+            href="/urunler"
+            className="hidden md:inline text-sm tracking-widest text-brand-ink hover:text-brand-cta transition"
+          >
             TÜMÜNÜ GÖR →
           </a>
         </div>
@@ -25,7 +28,7 @@ export function CategoryShowcase() {
           {CATS.map((c) => (
             <a
               key={c.title}
-              href="#"
+              href={c.href}
               className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-brand-sand"
             >
               <img
