@@ -10,12 +10,52 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UrunlerRouteImport } from './routes/urunler'
+import { Route as SepetRouteImport } from './routes/sepet'
+import { Route as OdemeRouteImport } from './routes/odeme'
+import { Route as HesabimRouteImport } from './routes/hesabim'
+import { Route as GirisRouteImport } from './routes/giris'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as UrunSlugRouteImport } from './routes/urun.$slug'
+import { Route as AdminVitrinRouteImport } from './routes/admin.vitrin'
+import { Route as AdminUrunlerRouteImport } from './routes/admin.urunler'
+import { Route as AdminSliderlarRouteImport } from './routes/admin.sliderlar'
+import { Route as AdminSiparislerRouteImport } from './routes/admin.siparisler'
+import { Route as AdminMenuRouteImport } from './routes/admin.menu'
+import { Route as AdminMarkalarRouteImport } from './routes/admin.markalar'
+import { Route as AdminKullanicilarRouteImport } from './routes/admin.kullanicilar'
+import { Route as AdminKategorilerRouteImport } from './routes/admin.kategoriler'
+import { Route as AdminAktarimRouteImport } from './routes/admin.aktarim'
 
 const UrunlerRoute = UrunlerRouteImport.update({
   id: '/urunler',
   path: '/urunler',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SepetRoute = SepetRouteImport.update({
+  id: '/sepet',
+  path: '/sepet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OdemeRoute = OdemeRouteImport.update({
+  id: '/odeme',
+  path: '/odeme',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HesabimRoute = HesabimRouteImport.update({
+  id: '/hesabim',
+  path: '/hesabim',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GirisRoute = GirisRouteImport.update({
+  id: '/giris',
+  path: '/giris',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -23,38 +63,191 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
 const UrunSlugRoute = UrunSlugRouteImport.update({
   id: '/urun/$slug',
   path: '/urun/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminVitrinRoute = AdminVitrinRouteImport.update({
+  id: '/vitrin',
+  path: '/vitrin',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUrunlerRoute = AdminUrunlerRouteImport.update({
+  id: '/urunler',
+  path: '/urunler',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSliderlarRoute = AdminSliderlarRouteImport.update({
+  id: '/sliderlar',
+  path: '/sliderlar',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSiparislerRoute = AdminSiparislerRouteImport.update({
+  id: '/siparisler',
+  path: '/siparisler',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMenuRoute = AdminMenuRouteImport.update({
+  id: '/menu',
+  path: '/menu',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMarkalarRoute = AdminMarkalarRouteImport.update({
+  id: '/markalar',
+  path: '/markalar',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminKullanicilarRoute = AdminKullanicilarRouteImport.update({
+  id: '/kullanicilar',
+  path: '/kullanicilar',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminKategorilerRoute = AdminKategorilerRouteImport.update({
+  id: '/kategoriler',
+  path: '/kategoriler',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAktarimRoute = AdminAktarimRouteImport.update({
+  id: '/aktarim',
+  path: '/aktarim',
+  getParentRoute: () => AdminRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/giris': typeof GirisRoute
+  '/hesabim': typeof HesabimRoute
+  '/odeme': typeof OdemeRoute
+  '/sepet': typeof SepetRoute
   '/urunler': typeof UrunlerRoute
+  '/admin/aktarim': typeof AdminAktarimRoute
+  '/admin/kategoriler': typeof AdminKategorilerRoute
+  '/admin/kullanicilar': typeof AdminKullanicilarRoute
+  '/admin/markalar': typeof AdminMarkalarRoute
+  '/admin/menu': typeof AdminMenuRoute
+  '/admin/siparisler': typeof AdminSiparislerRoute
+  '/admin/sliderlar': typeof AdminSliderlarRoute
+  '/admin/urunler': typeof AdminUrunlerRoute
+  '/admin/vitrin': typeof AdminVitrinRoute
   '/urun/$slug': typeof UrunSlugRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/giris': typeof GirisRoute
+  '/hesabim': typeof HesabimRoute
+  '/odeme': typeof OdemeRoute
+  '/sepet': typeof SepetRoute
   '/urunler': typeof UrunlerRoute
+  '/admin/aktarim': typeof AdminAktarimRoute
+  '/admin/kategoriler': typeof AdminKategorilerRoute
+  '/admin/kullanicilar': typeof AdminKullanicilarRoute
+  '/admin/markalar': typeof AdminMarkalarRoute
+  '/admin/menu': typeof AdminMenuRoute
+  '/admin/siparisler': typeof AdminSiparislerRoute
+  '/admin/sliderlar': typeof AdminSliderlarRoute
+  '/admin/urunler': typeof AdminUrunlerRoute
+  '/admin/vitrin': typeof AdminVitrinRoute
   '/urun/$slug': typeof UrunSlugRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/giris': typeof GirisRoute
+  '/hesabim': typeof HesabimRoute
+  '/odeme': typeof OdemeRoute
+  '/sepet': typeof SepetRoute
   '/urunler': typeof UrunlerRoute
+  '/admin/aktarim': typeof AdminAktarimRoute
+  '/admin/kategoriler': typeof AdminKategorilerRoute
+  '/admin/kullanicilar': typeof AdminKullanicilarRoute
+  '/admin/markalar': typeof AdminMarkalarRoute
+  '/admin/menu': typeof AdminMenuRoute
+  '/admin/siparisler': typeof AdminSiparislerRoute
+  '/admin/sliderlar': typeof AdminSliderlarRoute
+  '/admin/urunler': typeof AdminUrunlerRoute
+  '/admin/vitrin': typeof AdminVitrinRoute
   '/urun/$slug': typeof UrunSlugRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/urunler' | '/urun/$slug'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/giris'
+    | '/hesabim'
+    | '/odeme'
+    | '/sepet'
+    | '/urunler'
+    | '/admin/aktarim'
+    | '/admin/kategoriler'
+    | '/admin/kullanicilar'
+    | '/admin/markalar'
+    | '/admin/menu'
+    | '/admin/siparisler'
+    | '/admin/sliderlar'
+    | '/admin/urunler'
+    | '/admin/vitrin'
+    | '/urun/$slug'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/urunler' | '/urun/$slug'
-  id: '__root__' | '/' | '/urunler' | '/urun/$slug'
+  to:
+    | '/'
+    | '/giris'
+    | '/hesabim'
+    | '/odeme'
+    | '/sepet'
+    | '/urunler'
+    | '/admin/aktarim'
+    | '/admin/kategoriler'
+    | '/admin/kullanicilar'
+    | '/admin/markalar'
+    | '/admin/menu'
+    | '/admin/siparisler'
+    | '/admin/sliderlar'
+    | '/admin/urunler'
+    | '/admin/vitrin'
+    | '/urun/$slug'
+    | '/admin'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/giris'
+    | '/hesabim'
+    | '/odeme'
+    | '/sepet'
+    | '/urunler'
+    | '/admin/aktarim'
+    | '/admin/kategoriler'
+    | '/admin/kullanicilar'
+    | '/admin/markalar'
+    | '/admin/menu'
+    | '/admin/siparisler'
+    | '/admin/sliderlar'
+    | '/admin/urunler'
+    | '/admin/vitrin'
+    | '/urun/$slug'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  GirisRoute: typeof GirisRoute
+  HesabimRoute: typeof HesabimRoute
+  OdemeRoute: typeof OdemeRoute
+  SepetRoute: typeof SepetRoute
   UrunlerRoute: typeof UrunlerRoute
   UrunSlugRoute: typeof UrunSlugRoute
 }
@@ -68,12 +261,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UrunlerRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sepet': {
+      id: '/sepet'
+      path: '/sepet'
+      fullPath: '/sepet'
+      preLoaderRoute: typeof SepetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/odeme': {
+      id: '/odeme'
+      path: '/odeme'
+      fullPath: '/odeme'
+      preLoaderRoute: typeof OdemeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hesabim': {
+      id: '/hesabim'
+      path: '/hesabim'
+      fullPath: '/hesabim'
+      preLoaderRoute: typeof HesabimRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/giris': {
+      id: '/giris'
+      path: '/giris'
+      fullPath: '/giris'
+      preLoaderRoute: typeof GirisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/urun/$slug': {
       id: '/urun/$slug'
@@ -82,24 +317,110 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof UrunSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/vitrin': {
+      id: '/admin/vitrin'
+      path: '/vitrin'
+      fullPath: '/admin/vitrin'
+      preLoaderRoute: typeof AdminVitrinRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/urunler': {
+      id: '/admin/urunler'
+      path: '/urunler'
+      fullPath: '/admin/urunler'
+      preLoaderRoute: typeof AdminUrunlerRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/sliderlar': {
+      id: '/admin/sliderlar'
+      path: '/sliderlar'
+      fullPath: '/admin/sliderlar'
+      preLoaderRoute: typeof AdminSliderlarRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/siparisler': {
+      id: '/admin/siparisler'
+      path: '/siparisler'
+      fullPath: '/admin/siparisler'
+      preLoaderRoute: typeof AdminSiparislerRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/menu': {
+      id: '/admin/menu'
+      path: '/menu'
+      fullPath: '/admin/menu'
+      preLoaderRoute: typeof AdminMenuRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/markalar': {
+      id: '/admin/markalar'
+      path: '/markalar'
+      fullPath: '/admin/markalar'
+      preLoaderRoute: typeof AdminMarkalarRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/kullanicilar': {
+      id: '/admin/kullanicilar'
+      path: '/kullanicilar'
+      fullPath: '/admin/kullanicilar'
+      preLoaderRoute: typeof AdminKullanicilarRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/kategoriler': {
+      id: '/admin/kategoriler'
+      path: '/kategoriler'
+      fullPath: '/admin/kategoriler'
+      preLoaderRoute: typeof AdminKategorilerRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/aktarim': {
+      id: '/admin/aktarim'
+      path: '/aktarim'
+      fullPath: '/admin/aktarim'
+      preLoaderRoute: typeof AdminAktarimRouteImport
+      parentRoute: typeof AdminRoute
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminAktarimRoute: typeof AdminAktarimRoute
+  AdminKategorilerRoute: typeof AdminKategorilerRoute
+  AdminKullanicilarRoute: typeof AdminKullanicilarRoute
+  AdminMarkalarRoute: typeof AdminMarkalarRoute
+  AdminMenuRoute: typeof AdminMenuRoute
+  AdminSiparislerRoute: typeof AdminSiparislerRoute
+  AdminSliderlarRoute: typeof AdminSliderlarRoute
+  AdminUrunlerRoute: typeof AdminUrunlerRoute
+  AdminVitrinRoute: typeof AdminVitrinRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAktarimRoute: AdminAktarimRoute,
+  AdminKategorilerRoute: AdminKategorilerRoute,
+  AdminKullanicilarRoute: AdminKullanicilarRoute,
+  AdminMarkalarRoute: AdminMarkalarRoute,
+  AdminMenuRoute: AdminMenuRoute,
+  AdminSiparislerRoute: AdminSiparislerRoute,
+  AdminSliderlarRoute: AdminSliderlarRoute,
+  AdminUrunlerRoute: AdminUrunlerRoute,
+  AdminVitrinRoute: AdminVitrinRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
+  GirisRoute: GirisRoute,
+  HesabimRoute: HesabimRoute,
+  OdemeRoute: OdemeRoute,
+  SepetRoute: SepetRoute,
   UrunlerRoute: UrunlerRoute,
   UrunSlugRoute: UrunSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
