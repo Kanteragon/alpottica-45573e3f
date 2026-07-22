@@ -77,12 +77,19 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Alpottica Istanbul" },
-      { name: "description", content: "Alpottica Istanbul — Klipsli, polarize ve antifar filtreli premium gözlük koleksiyonu." },
+      { title: "ALPOTTICA" },
+      { name: "description", content: "Alpottica Istanbul: klipsli, polarize ve antifar filtreli premium gözlük koleksiyonu. Tek çerçevede birçok tarz, %30'a varan indirimler." },
+      { property: "og:title", content: "ALPOTTICA" },
+      { name: "twitter:title", content: "ALPOTTICA" },
+      { property: "og:description", content: "Alpottica Istanbul: klipsli, polarize ve antifar filtreli premium gözlük koleksiyonu. Tek çerçevede birçok tarz, %30'a varan indirimler." },
+      { name: "twitter:description", content: "Alpottica Istanbul: klipsli, polarize ve antifar filtreli premium gözlük koleksiyonu. Tek çerçevede birçok tarz, %30'a varan indirimler." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/9cc7d6f9-9b48-400f-808e-ec294f522670/id-preview-00251e9e--7de9669e-7507-40e4-a6ca-e3df8a5d835c.lovable.app-1784631961591.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/9cc7d6f9-9b48-400f-808e-ec294f522670/id-preview-00251e9e--7de9669e-7507-40e4-a6ca-e3df8a5d835c.lovable.app-1784631961591.png" },
+      { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:type", content: "website" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
