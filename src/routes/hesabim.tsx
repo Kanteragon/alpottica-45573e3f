@@ -1,11 +1,12 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useAuth } from "@/lib/auth";
 import { supabase } from "@/integrations/supabase/client";
 import { formatTL } from "@/lib/products";
+import { TR_ILLER, TR_IL_LIST } from "@/lib/tr-locations";
 import { toast } from "sonner";
 import { User, MapPin, Package, Heart, Lock, LogOut } from "lucide-react";
 
@@ -159,8 +160,12 @@ function AddressesTab({ userId }: { userId: string }) {
   const [form, setForm] = useState({ baslik: "", ad_soyad: "", telefon: "", adres: "", sehir: "", ilce: "" });
   const [busy, setBusy] = useState(false);
 
+  const districts = useMemo(() => (form.sehir ? TR_ILLER[form.sehir] ?? [] : []), [form.sehir]);
+
   const add = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!form.sehir) return toast.error("İl seçin");
+    if (!form.ilce) return toast.error("İlçe seçin");
     setBusy(true);
     try {
       const { error } = await supabase.from("addresses").insert({ ...form, user_id: userId });
@@ -193,7 +198,7 @@ function AddressesTab({ userId }: { userId: string }) {
                 <div>
                   <p className="font-semibold text-brand-ink">{a.baslik}</p>
                   <p className="text-sm text-muted-foreground">{a.ad_soyad} • {a.telefon}</p>
-                  <p className="text-sm mt-1">{a.adres} {a.ilce && `• ${a.ilce}`} {a.sehir && `• ${a.sehir}`}</p>
+                  <p className="text-sm mt-1">{a.adres} {a.ilce && `• ${a.ilce}`} {a.sehir && `/ ${a.sehir}`}</p>
                 </div>
                 <button onClick={() => del(a.id)} className="text-xs text-red-600 hover:underline">Sil</button>
               </div>
@@ -210,11 +215,32 @@ function AddressesTab({ userId }: { userId: string }) {
           <Field label="Telefon" value={form.telefon} onChange={(v) => setForm({ ...form, telefon: v })} />
         </div>
         <div className="grid md:grid-cols-2 gap-4">
-          <Field label="İl" value={form.sehir} onChange={(v) => setForm({ ...form, sehir: v })} />
-          <Field label="İlçe" value={form.ilce} onChange={(v) => setForm({ ...form, ilce: v })} />
+          <div>
+            <label className="block text-xs tracking-widest text-muted-foreground uppercase mb-2">İl</label>
+            <select
+              value={form.sehir}
+              onChange={(e) => setForm({ ...form, sehir: e.target.value, ilce: "" })}
+              className="w-full border border-border rounded-full px-4 py-2.5 bg-white focus:outline-none focus:border-brand-ink"
+            >
+              <option value="">İl seçin…</option>
+              {TR_IL_LIST.map((il) => <option key={il} value={il}>{il}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs tracking-widest text-muted-foreground uppercase mb-2">İlçe</label>
+            <select
+              value={form.ilce}
+              onChange={(e) => setForm({ ...form, ilce: e.target.value })}
+              disabled={!form.sehir}
+              className="w-full border border-border rounded-full px-4 py-2.5 bg-white focus:outline-none focus:border-brand-ink disabled:opacity-50"
+            >
+              <option value="">{form.sehir ? "İlçe seçin…" : "Önce il seçin"}</option>
+              {districts.map((ilce) => <option key={ilce} value={ilce}>{ilce}</option>)}
+            </select>
+          </div>
         </div>
         <div>
-          <label className="block text-xs tracking-widest text-muted-foreground uppercase mb-2">Adres</label>
+          <label className="block text-xs tracking-widest text-muted-foreground uppercase mb-2">Açık Adres</label>
           <textarea value={form.adres} onChange={(e) => setForm({ ...form, adres: e.target.value })} rows={3} className="w-full border border-border rounded-2xl p-3 focus:outline-none focus:border-brand-ink" />
         </div>
         <button disabled={busy} className="bg-brand-ink text-white px-6 py-3 rounded-full text-sm font-semibold tracking-widest disabled:opacity-60">

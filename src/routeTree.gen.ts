@@ -27,6 +27,7 @@ import { Route as AdminMenuRouteImport } from './routes/admin.menu'
 import { Route as AdminMarkalarRouteImport } from './routes/admin.markalar'
 import { Route as AdminKullanicilarRouteImport } from './routes/admin.kullanicilar'
 import { Route as AdminKategorilerRouteImport } from './routes/admin.kategoriler'
+import { Route as AdminAyarlarRouteImport } from './routes/admin.ayarlar'
 import { Route as AdminAktarimRouteImport } from './routes/admin.aktarim'
 
 const UrunlerRoute = UrunlerRouteImport.update({
@@ -119,6 +120,11 @@ const AdminKategorilerRoute = AdminKategorilerRouteImport.update({
   path: '/kategoriler',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminAyarlarRoute = AdminAyarlarRouteImport.update({
+  id: '/ayarlar',
+  path: '/ayarlar',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAktarimRoute = AdminAktarimRouteImport.update({
   id: '/aktarim',
   path: '/aktarim',
@@ -134,6 +140,7 @@ export interface FileRoutesByFullPath {
   '/sepet': typeof SepetRoute
   '/urunler': typeof UrunlerRoute
   '/admin/aktarim': typeof AdminAktarimRoute
+  '/admin/ayarlar': typeof AdminAyarlarRoute
   '/admin/kategoriler': typeof AdminKategorilerRoute
   '/admin/kullanicilar': typeof AdminKullanicilarRoute
   '/admin/markalar': typeof AdminMarkalarRoute
@@ -154,6 +161,7 @@ export interface FileRoutesByTo {
   '/sepet': typeof SepetRoute
   '/urunler': typeof UrunlerRoute
   '/admin/aktarim': typeof AdminAktarimRoute
+  '/admin/ayarlar': typeof AdminAyarlarRoute
   '/admin/kategoriler': typeof AdminKategorilerRoute
   '/admin/kullanicilar': typeof AdminKullanicilarRoute
   '/admin/markalar': typeof AdminMarkalarRoute
@@ -176,6 +184,7 @@ export interface FileRoutesById {
   '/sepet': typeof SepetRoute
   '/urunler': typeof UrunlerRoute
   '/admin/aktarim': typeof AdminAktarimRoute
+  '/admin/ayarlar': typeof AdminAyarlarRoute
   '/admin/kategoriler': typeof AdminKategorilerRoute
   '/admin/kullanicilar': typeof AdminKullanicilarRoute
   '/admin/markalar': typeof AdminMarkalarRoute
@@ -199,6 +208,7 @@ export interface FileRouteTypes {
     | '/sepet'
     | '/urunler'
     | '/admin/aktarim'
+    | '/admin/ayarlar'
     | '/admin/kategoriler'
     | '/admin/kullanicilar'
     | '/admin/markalar'
@@ -219,6 +229,7 @@ export interface FileRouteTypes {
     | '/sepet'
     | '/urunler'
     | '/admin/aktarim'
+    | '/admin/ayarlar'
     | '/admin/kategoriler'
     | '/admin/kullanicilar'
     | '/admin/markalar'
@@ -240,6 +251,7 @@ export interface FileRouteTypes {
     | '/sepet'
     | '/urunler'
     | '/admin/aktarim'
+    | '/admin/ayarlar'
     | '/admin/kategoriler'
     | '/admin/kullanicilar'
     | '/admin/markalar'
@@ -392,6 +404,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminKategorilerRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/ayarlar': {
+      id: '/admin/ayarlar'
+      path: '/ayarlar'
+      fullPath: '/admin/ayarlar'
+      preLoaderRoute: typeof AdminAyarlarRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/aktarim': {
       id: '/admin/aktarim'
       path: '/aktarim'
@@ -404,6 +423,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAktarimRoute: typeof AdminAktarimRoute
+  AdminAyarlarRoute: typeof AdminAyarlarRoute
   AdminKategorilerRoute: typeof AdminKategorilerRoute
   AdminKullanicilarRoute: typeof AdminKullanicilarRoute
   AdminMarkalarRoute: typeof AdminMarkalarRoute
@@ -418,6 +438,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAktarimRoute: AdminAktarimRoute,
+  AdminAyarlarRoute: AdminAyarlarRoute,
   AdminKategorilerRoute: AdminKategorilerRoute,
   AdminKullanicilarRoute: AdminKullanicilarRoute,
   AdminMarkalarRoute: AdminMarkalarRoute,

@@ -1,19 +1,21 @@
 import { useEffect, useState } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
-import { Search, User, Heart, ShoppingCart } from "lucide-react";
-import logo from "@/assets/alpottica-logo.jpg.asset.json";
+import { User, Heart, ShoppingCart } from "lucide-react";
+import defaultLogo from "@/assets/alpottica-logo.jpg.asset.json";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 import { useMenu } from "@/lib/queries";
+import { useSiteSettings } from "@/lib/settings";
+import { SearchBox } from "@/components/SearchBox";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const { count } = useCart();
   const { user, isAdmin } = useAuth();
   const { data: menu } = useMenu();
+  const { data: settings } = useSiteSettings();
   const path = useRouterState({ select: (s) => s.location.pathname });
 
-  // Only home shows the transparent hero state; all other pages force solid
   const isHome = path === "/";
   const solid = !isHome || scrolled;
 
@@ -31,6 +33,9 @@ export function Navbar() {
     { id: "3", label: "TÜM MODELLER", url: "/urunler" },
   ];
 
+  const logoSrc = settings?.logo_url || defaultLogo.url;
+  const logoMax = settings?.logo_max_width ?? 180;
+
   return (
     <header
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
@@ -42,8 +47,9 @@ export function Navbar() {
       <div className="max-w-[1600px] mx-auto px-6 lg:px-10 h-20 grid grid-cols-[auto_1fr_auto] items-center gap-8">
         <Link to="/" className="flex items-center shrink-0">
           <img
-            src={logo.url}
+            src={logoSrc}
             alt="Alpottica Istanbul"
+            style={{ maxWidth: `${logoMax}px` }}
             className={`h-12 w-auto object-contain transition-all duration-500 rounded-md border ${
               solid ? "invert-0 border-transparent" : "invert brightness-200 border-white/40 bg-transparent"
             }`}
@@ -65,7 +71,7 @@ export function Navbar() {
         </nav>
 
         <div className={`flex items-center gap-5 transition-colors ${solid ? "text-brand-ink" : "text-white"}`}>
-          <button aria-label="Ara" className="hover:opacity-70 transition"><Search className="w-5 h-5" /></button>
+          <SearchBox solid={solid} />
           {user ? (
             <Link to={isAdmin ? "/admin" : "/hesabim"} aria-label="Hesabım" className="hover:opacity-70 hidden sm:block">
               <User className="w-5 h-5" />
