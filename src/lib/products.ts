@@ -54,6 +54,7 @@ export function mapDbProduct(r: DbProduct): Product {
     aciklama: r.aciklama,
     kategori_id: r.kategori_id ?? null,
     marka_id: r.marka_id ?? null,
+    ozellikler: oz,
   };
 }
 
