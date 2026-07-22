@@ -1,25 +1,25 @@
-import slideKlips from "@/assets/slide-klips.jpg";
-import slideOutlet from "@/assets/slide-outlet.jpg";
-import slideAll from "@/assets/slide-pilota.jpg";
+import slideKlips from "https://cqcwjcbxpmbntwcetwuo.supabase.co/storage/v1/object/sign/product-images/imports/c826d43165782a15_0003555_retro-antracite-trio.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNzAxODRhYy0wODRhLTQ5NWYtOTg4MC0xYjZiYTAyODY2M2MiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LWltYWdlcy9pbXBvcnRzL2M4MjZkNDMxNjU3ODJhMTVfMDAwMzU1NV9yZXRyby1hbnRyYWNpdGUtdHJpby5qcGVnIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4NDcyNjkyOSwiZXhwIjoyMTAwMDg2OTI5fQ.RMgYXXMXrvAPQ1eEVAUscZOgxjrj-bnY8eI1CCD3VKY";
+import slideOutlet from "https://cqcwjcbxpmbntwcetwuo.supabase.co/storage/v1/object/sign/product-images/catalog/7799469a62a26062.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNzAxODRhYy0wODRhLTQ5NWYtOTg4MC0xYjZiYTAyODY2M2MiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LWltYWdlcy9jYXRhbG9nLzc3OTk0NjlhNjJhMjYwNjIuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQ3MjM0MzksImV4cCI6MjEwMDA4MzQzOX0.XUS389ZCsZ3zBVbNQmqthB55pc8Pm6PrnJYRv5WaIKA";
+import slideAll from "https://cqcwjcbxpmbntwcetwuo.supabase.co/storage/v1/object/sign/product-images/catalog/2d342e813f48573f.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNzAxODRhYy0wODRhLTQ5NWYtOTg4MC0xYjZiYTAyODY2M2MiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LWltYWdlcy9jYXRhbG9nLzJkMzQyZTgxM2Y0ODU3M2YuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQ3MjM0MzcsImV4cCI6MjEwMDA4MzQzN30.5_R20vHcDTTN2vHAMFc3irPAlY_3Gp8lrXBp7DgRVhA";
 
 const CATS = [
   {
     title: "Klipsli Modeller",
     tag: "YENİ SERİ",
     image: slideKlips,
-    href: "https://cqcwjcbxpmbntwcetwuo.supabase.co/storage/v1/object/sign/product-images/imports/5ca0b78d24a96534_0003589_rotondo-nero-trio.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNzAxODRhYy0wODRhLTQ5NWYtOTg4MC0xYjZiYTAyODY2M2MiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LWltYWdlcy9pbXBvcnRzLzVjYTBiNzhkMjRhOTY1MzRfMDAwMzU4OV9yb3RvbmRvLW5lcm8tdHJpby5qcGVnIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4NDcyNjkyNCwiZXhwIjoyMTAwMDg2OTI0fQ.6YB4Fw3Zr39p3LmwNlCLFXGRBVDtbH9mRXNf9Nh9RYg",
+    href: "/urunler?tag=klipsli",
   },
   {
     title: "Outlet Modeller",
     tag: "%30'A VARAN İNDİRİM",
     image: slideOutlet,
-    href: "https://cqcwjcbxpmbntwcetwuo.supabase.co/storage/v1/object/sign/product-images/catalog/7799469a62a26062.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNzAxODRhYy0wODRhLTQ5NWYtOTg4MC0xYjZiYTAyODY2M2MiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LWltYWdlcy9jYXRhbG9nLzc3OTk0NjlhNjJhMjYwNjIuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQ3MjM0MzksImV4cCI6MjEwMDA4MzQzOX0.XUS389ZCsZ3zBVbNQmqthB55pc8Pm6PrnJYRv5WaIKA",
+    href: "/urunler?tag=outlet",
   },
   {
     title: "Tüm Modeller",
     tag: "HEPSİNİ KEŞFET",
     image: slideAll,
-    href: "https://cqcwjcbxpmbntwcetwuo.supabase.co/storage/v1/object/sign/product-images/catalog/fff8540d0027c14f.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNzAxODRhYy0wODRhLTQ5NWYtOTg4MC0xYjZiYTAyODY2M2MiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LWltYWdlcy9jYXRhbG9nL2ZmZjg1NDBkMDAyN2MxNGYuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQ3MjM0MzgsImV4cCI6MjEwMDA4MzQzOH0.oLMdzY_FgRpaiC8-z-1fcRDg0QZF52B9OWOwahePUfY",
+    href: "/urunler?tag=tumu",
   },
 ];
 
