@@ -14,7 +14,7 @@ export function useSiteSettings() {
         .maybeSingle();
       return {
         logo_url: data?.logo_url ?? null,
-        logo_max_width: data?.logo_max_width ?? 180,
+        logo_max_width: data?.logo_max_width ?? 260,
       };
     },
     staleTime: 60_000,
