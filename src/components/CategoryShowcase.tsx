@@ -1,6 +1,6 @@
 import slideKlips from "@/assets/slide-klips.jpg";
 import slideOutlet from "@/assets/slide-outlet.jpg";
-import slideAll from "@/assets/slide-all.jpg"; // Tüm modeller için uygun bir görsel referansı
+import slideAll from "@/assets/slide-pilota.jpg";
 
 const CATS = [
   { title: "Klipsli Modeller", tag: "YENİ SERİ", image: slideKlips, href: "/urunler?tag=klipsli" },
