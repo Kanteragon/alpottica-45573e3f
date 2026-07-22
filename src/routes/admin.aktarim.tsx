@@ -75,7 +75,8 @@ function Import() {
         return null;
       };
 
-      type Prepared = { payload: Record<string, unknown>; categoryIds: string[]; stok_kodu: string };
+      type Payload = { stok_kodu: string; urun_adi: string; slug: string; [k: string]: unknown };
+      type Prepared = { payload: Payload; categoryIds: string[]; stok_kodu: string };
       const prepared: Prepared[] = [];
       for (const r of rows) {
         if (!r.StokKodu || !r.UrunAdi) continue;
