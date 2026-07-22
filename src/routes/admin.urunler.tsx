@@ -274,6 +274,22 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
     barkod: product?.barkod ?? "",
     ozellikler: (product?.ozellikler ?? {}) as Record<string, string>,
   });
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
+  const [catsLoaded, setCatsLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!product) { setCatsLoaded(true); return; }
+    let cancel = false;
+    (async () => {
+      const { data } = await supabase.from("product_categories").select("category_id").eq("product_id", product.id);
+      if (cancel) return;
+      const ids = (data ?? []).map((r) => r.category_id as string);
+      const merged = Array.from(new Set([product.kategori_id, ...ids].filter(Boolean) as string[]));
+      setCategoryIds(merged);
+      setCatsLoaded(true);
+    })();
+    return () => { cancel = true; };
+  }, [product]);
   const [busy, setBusy] = useState(false);
 
   const buildPayload = () => ({
