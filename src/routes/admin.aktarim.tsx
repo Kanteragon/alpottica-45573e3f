@@ -27,7 +27,7 @@ function slugify(s: string) { return s.toLowerCase().replace(/[^a-z0-9]+/g, "-")
 
 function isKlips(name: string, model?: string | null) {
   const s = `${name} ${model ?? ""}`.toLowerCase();
-  return /klips|magnetic|magnet/.test(s);
+  return /klips|magnetic|magnet|trio/.test(s);
 }
 
 function Import() {
