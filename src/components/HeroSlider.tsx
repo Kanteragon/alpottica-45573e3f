@@ -66,21 +66,9 @@ export function HeroSlider() {
     <section className="relative w-full h-screen min-h-[720px] overflow-hidden bg-brand-sand">
       {list.map((s, i) => (
         <div key={s.id} className={`absolute inset-0 transition-opacity duration-[1200ms] ease-out ${i === idx ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
-          <img src={s.gorsel} alt="" className="absolute inset-0 w-full h-full object-cover" loading={i === 0 ? "eager" : "lazy"} />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/25 to-transparent" />
-          <div className="relative z-10 h-full max-w-[1600px] mx-auto px-6 lg:px-16 flex items-center">
-            <div className="max-w-2xl text-white pt-24">
-              <p className={`text-sm md:text-base tracking-[0.5em] font-light mb-6 transition-all duration-1000 ${i === idx ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-                {s.alt_baslik}
-              </p>
-              <h1 className={`font-display text-[15vw] md:text-[8rem] lg:text-[10rem] leading-[0.9] mb-8 drop-shadow-[0_4px_30px_rgba(0,0,0,0.3)] transition-all duration-1000 delay-150 ${i === idx ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"}`}>
-                {s.baslik}
-              </h1>
-              <a href={s.buton_link} className={`inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-brand-cta text-white text-sm font-semibold tracking-wider hover:opacity-90 transition shadow-lg mt-6 ${i === idx ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-                {s.buton_yazi}
-              </a>
-            </div>
-          </div>
+          <a href={s.buton_link || "/urunler"} className="block absolute inset-0">
+            <img src={s.gorsel} alt="" className="absolute inset-0 w-full h-full object-cover" loading={i === 0 ? "eager" : "lazy"} />
+          </a>
         </div>
       ))}
 
@@ -99,3 +87,4 @@ export function HeroSlider() {
     </section>
   );
 }
+
