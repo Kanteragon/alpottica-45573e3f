@@ -492,6 +492,27 @@ export type Database = {
           },
         ]
       }
+      site_settings: {
+        Row: {
+          id: number
+          logo_max_width: number
+          logo_url: string | null
+          updated_at: string
+        }
+        Insert: {
+          id?: number
+          logo_max_width?: number
+          logo_url?: string | null
+          updated_at?: string
+        }
+        Update: {
+          id?: number
+          logo_max_width?: number
+          logo_url?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sliders: {
         Row: {
           aktif: boolean
