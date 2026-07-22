@@ -489,7 +489,15 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
               />
             )}
 
-            {["discount","showcase","seo","links","variants","notify","orders","moves","shelves","reviews"].includes(tab) && (
+            {tab === "variants" && (
+              <VariantsTab
+                productId={product?.id ?? null}
+                groupId={form.variant_group_id}
+                onGroupIdChange={(id) => setForm({ ...form, variant_group_id: id })}
+              />
+            )}
+
+            {["discount","showcase","seo","links","notify","orders","moves","shelves","reviews"].includes(tab) && (
               <div className="text-sm text-muted-foreground italic border rounded-xl p-8 text-center">
                 Bu sekme yakında aktif olacak.
               </div>
