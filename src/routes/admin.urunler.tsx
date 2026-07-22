@@ -273,6 +273,7 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
     marka_id: product?.marka_id ?? "",
     model_kodu: product?.model_kodu ?? "",
     barkod: product?.barkod ?? "",
+    variant_group_id: product?.variant_group_id ?? "",
     ozellikler: (product?.ozellikler ?? {}) as Record<string, string>,
   });
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
@@ -310,6 +311,7 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
     ozellikler: form.ozellikler,
     model_kodu: form.model_kodu || null,
     barkod: form.barkod || null,
+    variant_group_id: form.variant_group_id || null,
   });
 
   const syncCategories = async (productId: string) => {
