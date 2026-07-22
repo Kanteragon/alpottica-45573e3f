@@ -5,7 +5,7 @@ import { Footer } from "@/components/Footer";
 import { formatTL, discountPct } from "@/lib/products";
 import { useProduct, useProducts, useAttributes } from "@/lib/queries";
 import { ProductCard } from "@/components/ProductCard";
-import { ShoppingCart, Heart, ShieldCheck, Truck, RefreshCcw } from "lucide-react";
+import { ShoppingCart, Heart, ShieldCheck, Truck, RefreshCcw, ArrowLeft } from "lucide-react";
 import { useCart } from "@/lib/cart";
 import { toast } from "sonner";
 
