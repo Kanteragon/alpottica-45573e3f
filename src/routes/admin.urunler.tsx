@@ -442,14 +442,34 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
             )}
 
             {tab === "category" && (
-              <div className="grid grid-cols-2 gap-4">
-                <F label="Kategori">
-                  <select value={form.kategori_id} onChange={(e) => setForm({ ...form, kategori_id: e.target.value })} className="input">
-                    <option value="">—</option>
-                    {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
+              <div className="space-y-5">
+                <F label="Kategoriler (birden fazla seçilebilir)">
+                  {!catsLoaded ? (
+                    <p className="text-sm text-muted-foreground">Yükleniyor…</p>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-72 overflow-y-auto border rounded-xl p-3 bg-white">
+                      {cats.map((c) => {
+                        const checked = categoryIds.includes(c.id);
+                        return (
+                          <label key={c.id} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer text-sm ${checked ? "bg-brand-sand/50" : "hover:bg-brand-sand/20"}`}>
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(e) => {
+                                setCategoryIds((prev) =>
+                                  e.target.checked ? [...prev, c.id] : prev.filter((id) => id !== c.id)
+                                );
+                              }}
+                            />
+                            <span>{c.name}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-2">İlk seçilen kategori ana kategori olarak kaydedilir.</p>
                 </F>
-                <F label="Marka">
+                <F label="Marka" className="max-w-sm">
                   <select value={form.marka_id} onChange={(e) => setForm({ ...form, marka_id: e.target.value })} className="input">
                     <option value="">—</option>
                     {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
