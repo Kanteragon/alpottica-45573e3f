@@ -84,6 +84,16 @@ function ProductDetail() {
       <Navbar />
       <div className="h-20" />
 
+      <div className="max-w-[1600px] mx-auto px-6 lg:px-10 pt-6">
+        <button
+          onClick={() => window.history.back()}
+          className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-brand-ink transition"
+        >
+          <ArrowLeft className="w-4 h-4" /> Geri
+        </button>
+      </div>
+
+
       <section className="max-w-[1600px] mx-auto px-6 lg:px-10 py-12 grid lg:grid-cols-2 gap-12">
         <div>
           <div className="aspect-square bg-brand-sand/30 rounded-3xl overflow-hidden mb-4 flex items-center justify-center">
