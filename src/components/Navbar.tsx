@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import { Search, User, Heart, ShoppingCart } from "lucide-react";
 import logo from "@/assets/alpottica-logo.jpg.asset.json";
 import { useCart } from "@/lib/cart";
@@ -11,13 +11,19 @@ export function Navbar() {
   const { count } = useCart();
   const { user, isAdmin } = useAuth();
   const { data: menu } = useMenu();
+  const path = useRouterState({ select: (s) => s.location.pathname });
+
+  // Only home shows the transparent hero state; all other pages force solid
+  const isHome = path === "/";
+  const solid = !isHome || scrolled;
 
   useEffect(() => {
+    if (!isHome) return;
     const onScroll = () => setScrolled(window.scrollY > 40);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+  }, [isHome]);
 
   const items = menu?.length ? menu : [
     { id: "1", label: "KLİPSLİ MODELLER", url: "/urunler?tag=klipsli" },
@@ -28,7 +34,9 @@ export function Navbar() {
   return (
     <header
       className={`fixed top-0 inset-x-0 z-50 transition-all duration-500 ${
-        scrolled ? "bg-white/95 backdrop-blur-md shadow-[0_2px_20px_rgba(0,0,0,0.06)]" : "bg-transparent"
+        solid
+          ? "bg-white/95 backdrop-blur-md shadow-[0_2px_20px_rgba(0,0,0,0.06)] border-b border-black/5"
+          : "bg-transparent"
       }`}
     >
       <div className="max-w-[1600px] mx-auto px-6 lg:px-10 h-20 grid grid-cols-[auto_1fr_auto] items-center gap-8">
@@ -37,7 +45,7 @@ export function Navbar() {
             src={logo.url}
             alt="Alpottica Istanbul"
             className={`h-12 w-auto object-contain transition-all duration-500 rounded-md border ${
-              scrolled ? "invert-0 border-transparent" : "invert brightness-200 border-white/40 bg-transparent"
+              solid ? "invert-0 border-transparent" : "invert brightness-200 border-white/40 bg-transparent"
             }`}
           />
         </Link>
@@ -48,7 +56,7 @@ export function Navbar() {
               key={item.id}
               href={item.url}
               className={`text-[13px] tracking-[0.18em] font-medium transition-colors ${
-                scrolled ? "text-brand-ink hover:text-brand-cta" : "text-white/95 hover:text-white"
+                solid ? "text-brand-ink hover:text-brand-cta" : "text-white/95 hover:text-white"
               }`}
             >
               {item.label}
@@ -56,7 +64,7 @@ export function Navbar() {
           ))}
         </nav>
 
-        <div className={`flex items-center gap-5 transition-colors ${scrolled ? "text-brand-ink" : "text-white"}`}>
+        <div className={`flex items-center gap-5 transition-colors ${solid ? "text-brand-ink" : "text-white"}`}>
           <button aria-label="Ara" className="hover:opacity-70 transition"><Search className="w-5 h-5" /></button>
           {user ? (
             <Link to={isAdmin ? "/admin" : "/hesabim"} aria-label="Hesabım" className="hover:opacity-70 hidden sm:block">
@@ -67,9 +75,9 @@ export function Navbar() {
               <User className="w-5 h-5" />
             </Link>
           )}
-          <button aria-label="Favoriler" className="hover:opacity-70 hidden sm:block">
+          <Link to="/hesabim" search={{ tab: "favorites" }} aria-label="Favoriler" className="hover:opacity-70 hidden sm:block">
             <Heart className="w-5 h-5" />
-          </button>
+          </Link>
           <Link to="/sepet" aria-label="Sepet" className="hover:opacity-70 relative">
             <ShoppingCart className="w-5 h-5" />
             {count > 0 && (
