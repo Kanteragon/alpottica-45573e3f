@@ -635,3 +635,117 @@ function F({ label, children, className = "" }: { label: string; children: React
     </div>
   );
 }
+
+function VariantsTab({ productId, groupId, onGroupIdChange }: { productId: string | null; groupId: string; onGroupIdChange: (id: string) => void }) {
+  const [siblings, setSiblings] = useState<{ id: string; urun_adi: string; stok_kodu: string; resimler: string[] | null; slug: string }[]>([]);
+  const [search, setSearch] = useState("");
+  const [results, setResults] = useState<{ id: string; urun_adi: string; stok_kodu: string; resimler: string[] | null; variant_group_id: string | null }[]>([]);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      if (!groupId) { setSiblings([]); return; }
+      const { data } = await supabase
+        .from("products")
+        .select("id, urun_adi, stok_kodu, resimler, slug")
+        .eq("variant_group_id", groupId);
+      setSiblings((data ?? []) as typeof siblings);
+    })();
+  }, [groupId, productId]);
+
+  const runSearch = async () => {
+    if (!search.trim()) return;
+    const { data } = await supabase
+      .from("products")
+      .select("id, urun_adi, stok_kodu, resimler, variant_group_id")
+      .or(`urun_adi.ilike.%${search}%,stok_kodu.ilike.%${search}%`)
+      .neq("id", productId ?? "00000000-0000-0000-0000-000000000000")
+      .limit(20);
+    setResults((data ?? []) as typeof results);
+  };
+
+  const linkTo = async (otherId: string, otherGroupId: string | null) => {
+    if (!productId) return toast.error("Önce ürünü kaydedin");
+    setBusy(true);
+    try {
+      // Determine the target group id: use current one, or the other's, or generate a new one.
+      let target = groupId || otherGroupId;
+      if (!target) {
+        target = crypto.randomUUID();
+      }
+      await supabase.from("products").update({ variant_group_id: target }).eq("id", productId);
+      await supabase.from("products").update({ variant_group_id: target }).eq("id", otherId);
+      // If other belonged to a different group, migrate its whole group into ours
+      if (otherGroupId && otherGroupId !== target) {
+        await supabase.from("products").update({ variant_group_id: target }).eq("variant_group_id", otherGroupId);
+      }
+      onGroupIdChange(target);
+      toast.success("Bağlandı");
+      setSearch(""); setResults([]);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Hata");
+    } finally { setBusy(false); }
+  };
+
+  const unlink = async (otherId: string) => {
+    if (!confirm("Bu ürünün varyasyon bağı kaldırılsın mı?")) return;
+    await supabase.from("products").update({ variant_group_id: null }).eq("id", otherId);
+    if (otherId === productId) onGroupIdChange("");
+    setSiblings((s) => s.filter((x) => x.id !== otherId));
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="border rounded-2xl p-5 bg-white">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <p className="font-semibold text-brand-ink">Bağlı Varyasyonlar</p>
+            <p className="text-xs text-muted-foreground">Aynı gruba dâhil ürünler, ürün detay sayfasında renk/model seçenekleri olarak görüntülenir.</p>
+          </div>
+          {groupId && <code className="text-[10px] text-muted-foreground">grup: {groupId.slice(0, 8)}</code>}
+        </div>
+        {siblings.length === 0 ? (
+          <p className="text-sm text-muted-foreground italic">Henüz bağlı ürün yok.</p>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {siblings.map((s) => (
+              <div key={s.id} className={`border rounded-xl p-3 flex gap-3 items-center ${s.id === productId ? "border-brand-ink bg-brand-sand/30" : ""}`}>
+                <div className="w-14 h-14 bg-brand-sand/40 rounded shrink-0 overflow-hidden">
+                  {s.resimler?.[0] && <img src={s.resimler[0]} className="w-full h-full object-contain" alt="" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{s.urun_adi}</p>
+                  <p className="text-[11px] font-mono text-muted-foreground">{s.stok_kodu}</p>
+                </div>
+                <button onClick={() => unlink(s.id)} className="text-red-600 p-1.5 rounded hover:bg-red-50"><Trash2 className="w-4 h-4" /></button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="border rounded-2xl p-5 bg-white">
+        <p className="font-semibold text-brand-ink mb-3">Ürün Bağla</p>
+        <div className="flex gap-2 mb-4">
+          <input value={search} onChange={(e) => setSearch(e.target.value)} onKeyDown={(e) => e.key === "Enter" && runSearch()} placeholder="Ürün adı veya stok kodu ara..." className="flex-1 border rounded-full px-4 py-2 text-sm" />
+          <button onClick={runSearch} className="admin-btn-primary">Ara</button>
+        </div>
+        {results.length > 0 && (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {results.map((r) => (
+              <button key={r.id} disabled={busy} onClick={() => linkTo(r.id, r.variant_group_id)} className="border rounded-xl p-3 flex gap-3 items-center text-left hover:border-brand-ink transition disabled:opacity-50">
+                <div className="w-12 h-12 bg-brand-sand/40 rounded shrink-0 overflow-hidden">
+                  {r.resimler?.[0] && <img src={r.resimler[0]} className="w-full h-full object-contain" alt="" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm truncate">{r.urun_adi}</p>
+                  <p className="text-[11px] font-mono text-muted-foreground">{r.stok_kodu}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
