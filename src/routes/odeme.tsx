@@ -7,7 +7,6 @@ import { useAuth } from "@/lib/auth";
 import { formatTL } from "@/lib/products";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { z } from "zod";
 
 export const Route = createFileRoute("/odeme")({
   head: () => ({
@@ -17,16 +16,6 @@ export const Route = createFileRoute("/odeme")({
     ],
   }),
   component: Checkout,
-});
-
-const schema = z.object({
-  full_name: z.string().min(3, "Ad Soyad zorunlu"),
-  phone: z.string().min(10, "Telefon zorunlu"),
-  email: z.string().email("Geçerli e-posta girin"),
-  address: z.string().min(10, "Adres zorunlu"),
-  password: z.string().min(6, "Şifre en az 6 karakter"),
-  payment: z.enum(["nakit", "kart"]),
-  notes: z.string().optional(),
 });
 
 function Checkout() {
@@ -39,46 +28,88 @@ function Checkout() {
     email: user?.email ?? "",
     address: "",
     password: "",
+    createAccount: false,
     payment: "nakit" as "nakit" | "kart",
     notes: "",
   });
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (user?.email) setForm((f) => ({ ...f, email: user.email! }));
+    if (user?.email) setForm((f) => ({ ...f, email: user.email!, createAccount: false }));
+  }, [user]);
+
+  useEffect(() => {
+    // Prefill from profile if signed in
+    (async () => {
+      if (!user) return;
+      const { data } = await supabase.from("profiles").select("full_name,phone,address").eq("id", user.id).maybeSingle();
+      if (data) {
+        setForm((f) => ({
+          ...f,
+          full_name: f.full_name || data.full_name || "",
+          phone: f.phone || data.phone || "",
+          address: f.address || data.address || "",
+        }));
+      }
+    })();
   }, [user]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) return toast.error("Sepetiniz boş");
 
-    const parsed = schema.safeParse(form);
-    if (!parsed.success) {
-      return toast.error(parsed.error.errors[0].message);
+    // Basic validation
+    if (form.full_name.trim().length < 3) return toast.error("Ad Soyad zorunlu");
+    if (form.phone.trim().length < 10) return toast.error("Geçerli telefon girin");
+    if (!/^\S+@\S+\.\S+$/.test(form.email)) return toast.error("Geçerli e-posta girin");
+    if (form.address.trim().length < 10) return toast.error("Adres zorunlu");
+    if (!user && form.createAccount && form.password.length < 6) {
+      return toast.error("Şifre en az 6 karakter olmalıdır");
     }
-    setBusy(true);
 
+    setBusy(true);
     try {
       let userId = user?.id ?? null;
 
-      if (!userId) {
+      // Optional account creation for guest
+      if (!user && form.createAccount && form.password) {
         const { data, error } = await supabase.auth.signUp({
-          email: form.email,
+          email: form.email.trim(),
           password: form.password,
           options: {
             emailRedirectTo: window.location.origin,
             data: { full_name: form.full_name, phone: form.phone },
           },
         });
-        if (error && !error.message.includes("already registered")) throw error;
-        userId = data.user?.id ?? null;
+        if (error) {
+          // If already registered, try signing in
+          if (/already|registered|exists/i.test(error.message)) {
+            const { data: si, error: siErr } = await supabase.auth.signInWithPassword({
+              email: form.email.trim(),
+              password: form.password,
+            });
+            if (siErr) throw new Error("Bu e-posta zaten kayıtlı; şifre hatalı.");
+            userId = si.user?.id ?? null;
+          } else {
+            throw error;
+          }
+        } else {
+          userId = data.user?.id ?? null;
+          if (!userId) {
+            const { data: si } = await supabase.auth.signInWithPassword({
+              email: form.email.trim(),
+              password: form.password,
+            });
+            userId = si.user?.id ?? null;
+          }
+        }
 
-        if (!userId) {
-          const { data: signIn, error: siErr } = await supabase.auth.signInWithPassword({
-            email: form.email, password: form.password,
-          });
-          if (siErr) throw siErr;
-          userId = signIn.user?.id ?? null;
+        if (userId) {
+          await supabase.from("profiles").update({
+            full_name: form.full_name,
+            phone: form.phone,
+            address: form.address,
+          }).eq("id", userId);
         }
       }
 
@@ -110,7 +141,7 @@ function Checkout() {
 
       clear();
       toast.success("Siparişiniz alındı!");
-      nav({ to: "/hesabim" });
+      nav({ to: userId ? "/hesabim" : "/" });
     } catch (err) {
       console.error(err);
       toast.error(err instanceof Error ? err.message : "Sipariş oluşturulamadı");
@@ -148,7 +179,19 @@ function Checkout() {
             </div>
             <Input label="E-posta" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} disabled={!!user} />
             {!user && (
-              <Input label="Şifre (üyelik için)" type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} />
+              <>
+                <label className="flex items-center gap-2 text-sm">
+                  <input
+                    type="checkbox"
+                    checked={form.createAccount}
+                    onChange={(e) => setForm({ ...form, createAccount: e.target.checked })}
+                  />
+                  <span>Hesap oluştur (isteğe bağlı — siparişlerini takip edebilirsin)</span>
+                </label>
+                {form.createAccount && (
+                  <Input label="Şifre (en az 6 karakter)" type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} />
+                )}
+              </>
             )}
             <div>
               <label className="block text-xs tracking-widest text-muted-foreground uppercase mb-2">Adres</label>

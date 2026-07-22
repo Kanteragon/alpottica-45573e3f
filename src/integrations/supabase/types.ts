@@ -14,6 +14,48 @@ export type Database = {
   }
   public: {
     Tables: {
+      addresses: {
+        Row: {
+          ad_soyad: string
+          adres: string
+          baslik: string
+          created_at: string
+          id: string
+          ilce: string | null
+          is_default: boolean
+          sehir: string | null
+          telefon: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ad_soyad: string
+          adres: string
+          baslik: string
+          created_at?: string
+          id?: string
+          ilce?: string | null
+          is_default?: boolean
+          sehir?: string | null
+          telefon: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ad_soyad?: string
+          adres?: string
+          baslik?: string
+          created_at?: string
+          id?: string
+          ilce?: string | null
+          is_default?: boolean
+          sehir?: string | null
+          telefon?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       announcements: {
         Row: {
           aktif: boolean
@@ -79,6 +121,35 @@ export type Database = {
           sort?: number
         }
         Relationships: []
+      }
+      favorites: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "favorites_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       menu_items: {
         Row: {

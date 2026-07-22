@@ -1,9 +1,11 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth";
+import { ensureAdminUser } from "@/lib/admin-bootstrap.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/giris")({
@@ -16,35 +18,68 @@ export const Route = createFileRoute("/giris")({
   component: Login,
 });
 
+const ADMIN_USERNAME = "adminalpottica";
+const ADMIN_EMAIL = "adminalpottica@alpottica.com";
+
 function Login() {
   const nav = useNavigate();
   const { user, isAdmin } = useAuth();
-  const [mode, setMode] = useState<"login" | "register" | "admin">("login");
+  const bootstrapAdmin = useServerFn(ensureAdminUser);
+  const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (user) nav({ to: isAdmin ? "/admin" : "/hesabim" });
   }, [user, isAdmin, nav]);
 
+  const resolveEmail = (input: string) => {
+    const v = input.trim();
+    if (!v.includes("@") && v.toLowerCase() === ADMIN_USERNAME) return ADMIN_EMAIL;
+    return v;
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     try {
       if (mode === "register") {
+        if (password.length < 6) throw new Error("Şifre en az 6 karakter olmalıdır.");
         const { error } = await supabase.auth.signUp({
-          email, password,
+          email: email.trim(),
+          password,
           options: { emailRedirectTo: window.location.origin, data: { full_name: fullName, phone } },
         });
         if (error) throw error;
-        toast.success("Kayıt oluşturuldu, giriş yapıldı.");
+        // auto-confirm is on → session should exist
+        const { data: s } = await supabase.auth.getSession();
+        if (!s.session) {
+          await supabase.auth.signInWithPassword({ email: email.trim(), password });
+        }
+        if (address.trim()) {
+          const { data: u } = await supabase.auth.getUser();
+          if (u.user) {
+            await supabase.from("profiles").update({ address, full_name: fullName, phone }).eq("id", u.user.id);
+          }
+        }
+        toast.success("Kayıt oluşturuldu.");
       } else {
-        const loginEmail = mode === "admin" && !email.includes("@")
-          ? "adminalpottica@alpottica.com" : email;
-        const { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
+        const loginEmail = resolveEmail(email);
+        let { error } = await supabase.auth.signInWithPassword({ email: loginEmail, password });
+        if (error && loginEmail === ADMIN_EMAIL) {
+          // bootstrap the admin user then retry
+          try {
+            await bootstrapAdmin();
+            const retry = await supabase.auth.signInWithPassword({ email: loginEmail, password });
+            error = retry.error;
+          } catch (bErr) {
+            console.error(bErr);
+          }
+        }
         if (error) throw error;
         toast.success("Giriş başarılı");
       }
@@ -61,30 +96,35 @@ function Login() {
       <div className="h-20" />
       <div className="max-w-md mx-auto px-6 py-16">
         <h1 className="font-display text-4xl text-brand-ink text-center mb-2">
-          {mode === "register" ? "Kayıt Ol" : mode === "admin" ? "Admin Girişi" : "Giriş Yap"}
+          {mode === "register" ? "Kayıt Ol" : "Giriş Yap"}
         </h1>
         <p className="text-center text-muted-foreground text-sm mb-8">Alpottica Istanbul</p>
 
         <div className="flex bg-brand-sand/40 rounded-full p-1 mb-6">
-          <button onClick={() => setMode("login")} className={`flex-1 py-2 text-xs tracking-widest rounded-full ${mode === "login" ? "bg-white shadow" : ""}`}>MÜŞTERİ</button>
-          <button onClick={() => setMode("register")} className={`flex-1 py-2 text-xs tracking-widest rounded-full ${mode === "register" ? "bg-white shadow" : ""}`}>KAYIT</button>
-          <button onClick={() => setMode("admin")} className={`flex-1 py-2 text-xs tracking-widest rounded-full ${mode === "admin" ? "bg-white shadow" : ""}`}>ADMİN</button>
+          <button type="button" onClick={() => setMode("login")} className={`flex-1 py-2 text-xs tracking-widest rounded-full ${mode === "login" ? "bg-white shadow" : ""}`}>GİRİŞ YAP</button>
+          <button type="button" onClick={() => setMode("register")} className={`flex-1 py-2 text-xs tracking-widest rounded-full ${mode === "register" ? "bg-white shadow" : ""}`}>KAYIT OL</button>
         </div>
 
         <form onSubmit={submit} className="space-y-4 bg-white p-6 rounded-2xl border">
           {mode === "register" && (
             <>
-              <Field label="Ad Soyad" value={fullName} onChange={setFullName} />
-              <Field label="Telefon" value={phone} onChange={setPhone} />
+              <Field label="Ad Soyad" value={fullName} onChange={setFullName} required />
+              <Field label="Telefon" value={phone} onChange={setPhone} required />
             </>
           )}
           <Field
-            label={mode === "admin" ? "Kullanıcı adı veya E-posta" : "E-posta"}
+            label={mode === "login" ? "E-posta veya kullanıcı adı" : "E-posta"}
             value={email}
             onChange={setEmail}
-            placeholder={mode === "admin" ? "adminalpottica" : ""}
+            required
           />
-          <Field label="Şifre" type="password" value={password} onChange={setPassword} />
+          <Field label="Şifre" type="password" value={password} onChange={setPassword} required />
+          {mode === "register" && (
+            <div>
+              <label className="block text-xs tracking-widest text-muted-foreground uppercase mb-2">Teslimat Adresi</label>
+              <textarea value={address} onChange={(e) => setAddress(e.target.value)} rows={3} className="w-full border border-border rounded-2xl p-3 focus:outline-none focus:border-brand-ink" />
+            </div>
+          )}
           <button disabled={busy} className="w-full bg-brand-cta text-white py-3 rounded-full font-semibold tracking-wider hover:opacity-90 disabled:opacity-60">
             {busy ? "..." : mode === "register" ? "KAYIT OL" : "GİRİŞ YAP"}
           </button>
@@ -99,11 +139,11 @@ function Login() {
   );
 }
 
-function Field({ label, value, onChange, type = "text", placeholder }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string; }) {
+function Field({ label, value, onChange, type = "text", placeholder, required }: { label: string; value: string; onChange: (v: string) => void; type?: string; placeholder?: string; required?: boolean }) {
   return (
     <div>
       <label className="block text-xs tracking-widest text-muted-foreground uppercase mb-2">{label}</label>
-      <input type={type} value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full border border-border rounded-full px-4 py-2.5 focus:outline-none focus:border-brand-ink" />
+      <input type={type} value={value} required={required} onChange={(e) => onChange(e.target.value)} placeholder={placeholder} className="w-full border border-border rounded-full px-4 py-2.5 focus:outline-none focus:border-brand-ink" />
     </div>
   );
 }
