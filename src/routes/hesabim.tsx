@@ -278,7 +278,7 @@ function FavoritesTab() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("favorites")
-        .select("id,product_id,products(id,slug,urun_adi,satis_fiyati,resim)")
+        .select("id,product_id,products(id,slug,urun_adi,satis_fiyati,resimler)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
