@@ -3,7 +3,7 @@ import slideOutlet from "@/assets/slide-outlet.jpg";
 import slideAll from "@/assets/slide-all.jpg"; // Tüm modeller için uygun bir görsel referansı
 
 const CATS = [
-  { title: "Klipsli Modeller", tag: "YENİ SERİ", image: slideKlips, href: "/kategori/klipsli-modeller" },
+  { title: "Klipsli Modeller", tag: "YENİ SERİ", image: slideKlips, href: "/urunler?tag=klipsli" },
   { title: "Outlet Modeller", tag: "%30'A VARAN İNDİRİM", image: slideOutlet, href: "/kategori/outlet" },
   { title: "Tüm Modeller", tag: "HEPSİNİ KEŞFET", image: slideAll, href: "/urunler" },
 ];
