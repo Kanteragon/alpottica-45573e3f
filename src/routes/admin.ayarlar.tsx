@@ -15,7 +15,7 @@ function SettingsPage() {
   const qc = useQueryClient();
   const { data: settings } = useSiteSettings();
   const [logoUrl, setLogoUrl] = useState<string>("");
-  const [maxWidth, setMaxWidth] = useState<number>(180);
+  const [maxWidth, setMaxWidth] = useState<number>(260);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
