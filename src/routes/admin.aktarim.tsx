@@ -54,7 +54,7 @@ function Import() {
       const rows = XLSX.utils.sheet_to_json<Row>(ws);
       setProgress(`${rows.length} satır bulundu...`);
 
-      // Ensure Klipsli category exists in map
+      // Ensure Klipsli category exists
       let klipsId = (cats ?? []).find((c) => /klipsli/i.test(c.name))?.id ?? null;
       if (!klipsId) {
         const { data: newCat } = await supabase.from("categories").insert({ name: "Klipsli Modeller", slug: "klipsli-modeller", sort: 1 }).select("id").single();
@@ -64,20 +64,43 @@ function Import() {
       const catMap = new Map((cats ?? []).map((c) => [c.name.toLowerCase(), c.id]));
       const brandMap = new Map((brands ?? []).map((b) => [b.name.toLowerCase(), b.id]));
 
-      const payload = rows
-        .filter((r) => r.StokKodu && r.UrunAdi)
-        .map((r) => {
-          const catName = String(r.Kategori ?? "").trim();
-          const brandName = String(r.Marka ?? "Alpottica").trim();
-          const stok = Number(r.StokAdedi) || 0;
-          const name = String(r.UrunAdi);
-          const model = r.ModelKodu ? String(r.ModelKodu) : null;
-          let kategori_id = catMap.get(catName.toLowerCase()) ?? null;
-          // KLIPS RULE: if no category OR name/model contains klips/magnetic → force Klipsli
-          if (!kategori_id && (isKlips(name, model) || !catName)) kategori_id = klipsId;
-          else if (isKlips(name, model)) kategori_id = klipsId;
+      // helper: resolve or create a category by name
+      const resolveCat = async (rawName: string): Promise<string | null> => {
+        const key = rawName.trim().toLowerCase();
+        if (!key) return null;
+        if (catMap.has(key)) return catMap.get(key)!;
+        const slug = key.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+        const { data: created } = await supabase.from("categories").insert({ name: rawName.trim(), slug, sort: 99 }).select("id").single();
+        if (created?.id) { catMap.set(key, created.id); return created.id; }
+        return null;
+      };
 
-          return {
+      type Prepared = { payload: Record<string, unknown>; categoryIds: string[]; stok_kodu: string };
+      const prepared: Prepared[] = [];
+      for (const r of rows) {
+        if (!r.StokKodu || !r.UrunAdi) continue;
+        const catRaw = String(r.Kategori ?? "").trim();
+        const brandName = String(r.Marka ?? "Alpottica").trim();
+        const stok = Number(r.StokAdedi) || 0;
+        const name = String(r.UrunAdi);
+        const model = r.ModelKodu ? String(r.ModelKodu) : null;
+
+        // Split multi-category on ; (also support , when no colon)
+        const catParts = catRaw.split(";").map((s) => s.trim()).filter(Boolean);
+        const catIds: string[] = [];
+        for (const c of catParts) {
+          const id = await resolveCat(c);
+          if (id) catIds.push(id);
+        }
+        // Klips rule
+        if ((catIds.length === 0 || isKlips(name, model)) && klipsId && !catIds.includes(klipsId)) {
+          catIds.unshift(klipsId);
+        }
+
+        prepared.push({
+          stok_kodu: String(r.StokKodu),
+          categoryIds: catIds,
+          payload: {
             stok_kodu: String(r.StokKodu),
             model_kodu: model,
             barkod: r.Barkod ? String(r.Barkod) : null,
@@ -87,26 +110,47 @@ function Import() {
             alis_fiyati: Number(r.AlisFiyati) || 0,
             liste_fiyati: Number(r.ListeFiyati) || 0,
             satis_fiyati: Number(r.SatisFiyati) || 0,
-            kategori_id,
+            kategori_id: catIds[0] ?? null,
             marka_id: brandMap.get(brandName.toLowerCase()) ?? null,
             resimler: String(r.Resim ?? "").split(/[;,\n]/).map((s) => s.trim()).filter(Boolean),
             ozellikler: parseOzellik(String(r.Ozellik ?? "")),
             etiketler: String(r.Etiketler ?? "").split(/[,;]/).map((s) => s.trim()).filter(Boolean),
             aktif: r.Aktif === false || String(r.Aktif).toLowerCase() === "hayır" || String(r.Aktif).toLowerCase() === "no" ? false : true,
             slug: slugify(String(r.StokKodu) + "-" + name).slice(0, 80),
-          };
+          },
         });
+      }
 
       const chunkSize = 100;
       let done = 0;
-      for (let i = 0; i < payload.length; i += chunkSize) {
-        const chunk = payload.slice(i, i + chunkSize);
-        const { error } = await supabase.from("products").upsert(chunk, { onConflict: "stok_kodu" });
+      for (let i = 0; i < prepared.length; i += chunkSize) {
+        const chunk = prepared.slice(i, i + chunkSize);
+        const { data: upserted, error } = await supabase
+          .from("products")
+          .upsert(chunk.map((p) => p.payload), { onConflict: "stok_kodu" })
+          .select("id, stok_kodu");
         if (error) throw error;
+
+        // Sync product_categories
+        const idBySku = new Map((upserted ?? []).map((u) => [u.stok_kodu as string, u.id as string]));
+        const links: { product_id: string; category_id: string }[] = [];
+        const productIds: string[] = [];
+        for (const p of chunk) {
+          const pid = idBySku.get(p.stok_kodu);
+          if (!pid) continue;
+          productIds.push(pid);
+          for (const cid of p.categoryIds) links.push({ product_id: pid, category_id: cid });
+        }
+        if (productIds.length) {
+          await supabase.from("product_categories").delete().in("product_id", productIds);
+        }
+        if (links.length) {
+          await supabase.from("product_categories").upsert(links, { onConflict: "product_id,category_id" });
+        }
         done += chunk.length;
-        setProgress(`${done}/${payload.length} yüklendi/güncellendi...`);
+        setProgress(`${done}/${prepared.length} yüklendi/güncellendi...`);
       }
-      toast.success(`${payload.length} ürün işlendi (yeni + güncellenen)`);
+      toast.success(`${prepared.length} ürün işlendi`);
       qc.invalidateQueries();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Hata");
