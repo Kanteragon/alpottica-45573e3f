@@ -128,7 +128,7 @@ function Import() {
         const chunk = prepared.slice(i, i + chunkSize);
         const { data: upserted, error } = await supabase
           .from("products")
-          .upsert(chunk.map((p) => p.payload), { onConflict: "stok_kodu" })
+          .upsert(chunk.map((p) => p.payload) as never, { onConflict: "stok_kodu" })
           .select("id, stok_kodu");
         if (error) throw error;
 
