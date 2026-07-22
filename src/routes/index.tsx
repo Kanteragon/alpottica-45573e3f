@@ -18,7 +18,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "ALPOTTICA" },
       {
         property: "og:description",
-        content: "Alpottica Istanbul: klipsli, polarize ve antifar filtreli premium gözlük koleksiyonu. Tek çerçevede birçok tarz, %30'a varan indirimler.",
+        content:
+          "Alpottica Istanbul: klipsli, polarize ve antifar filtreli premium gözlük koleksiyonu. Tek çerçevede birçok tarz, %30'a varan indirimler.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -33,8 +34,9 @@ function Index() {
       <Navbar />
       <HeroSlider />
       <FeatureStrip />
-      <FeaturedProducts />
       <CategoryShowcase />
+      <FeaturedProducts />
+
       <Footer />
     </div>
   );
