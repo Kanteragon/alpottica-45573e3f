@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { formatTL, discountPct } from "@/lib/products";
@@ -26,19 +26,6 @@ function ProductDetail() {
   const { data: attrs = [] } = useAttributes();
   const { add } = useCart();
   const [active, setActive] = useState<string>("");
-  const [selectedAttrs, setSelectedAttrs] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    if (product) {
-      const initial: Record<string, string> = {};
-      attrs.forEach((a) => {
-        const v = (product as unknown as { ozellikler?: Record<string, string> }).ozellikler?.[a.slug]
-          ?? (a.slug === "renk" ? product.color : a.slug === "cam_rengi" ? product.lensColor : a.slug === "ekartman" ? product.size : "");
-        if (v) initial[a.slug] = v;
-      });
-      setSelectedAttrs(initial);
-    }
-  }, [product, attrs]);
 
   if (isLoading) {
     return (
@@ -60,6 +47,18 @@ function ProductDetail() {
   const gallery = product.images.length ? product.images : [product.image].filter(Boolean);
   const currentImage = active || gallery[0] || "";
   const related = allProducts.filter((p) => p.id !== product.id && p.stock > 0).slice(0, 4);
+
+  const rawOz = (product as unknown as { ozellikler?: Record<string, string> }).ozellikler ?? {};
+  const specs = attrs
+    .filter((a) => a.show_in_detail)
+    .map((a) => {
+      const val = rawOz[a.slug]
+        || (a.slug === "renk" ? product.color : a.slug === "cam_rengi" ? product.lensColor : a.slug === "ekartman" ? product.size : "");
+      return val ? { label: a.ad, value: String(val) } : null;
+    })
+    .filter((x): x is { label: string; value: string } => !!x);
+
+  const waMsg = encodeURIComponent(`${product.name} adlı modeli sipariş vermek istiyorum.`);
 
   return (
     <div className="bg-background min-h-screen">
@@ -106,26 +105,23 @@ function ProductDetail() {
             <p className="text-muted-foreground mb-6 leading-relaxed">{product.aciklama}</p>
           )}
 
-          <div className="space-y-4 mb-8">
-            {attrs.filter((a) => a.show_in_detail && a.degerler.length > 0).map((a) => (
-              <div key={a.id}>
-                <label className="block text-[11px] tracking-widest text-muted-foreground uppercase mb-2">{a.ad}</label>
-                <select
-                  value={selectedAttrs[a.slug] ?? ""}
-                  onChange={(e) => setSelectedAttrs({ ...selectedAttrs, [a.slug]: e.target.value })}
-                  className="w-full border border-border rounded-full px-4 py-3 bg-white text-sm font-medium text-brand-ink focus:outline-none focus:border-brand-ink"
-                >
-                  <option value="">— Seçiniz —</option>
-                  {a.degerler.map((v) => (
-                    <option key={v} value={v}>{v}</option>
-                  ))}
-                </select>
-              </div>
-            ))}
-            <p className="text-xs text-muted-foreground">Stok: <strong className="text-brand-ink">{product.stock} adet mevcut</strong></p>
-          </div>
+          {specs.length > 0 && (
+            <div className="mb-8 border border-border rounded-2xl overflow-hidden">
+              <div className="px-5 py-3 bg-brand-sand/40 text-[11px] tracking-widest uppercase text-brand-ink font-semibold">Ürün Özellikleri</div>
+              <dl className="divide-y divide-border">
+                {specs.map((s) => (
+                  <div key={s.label} className="grid grid-cols-[160px_1fr] gap-3 px-5 py-3 text-sm">
+                    <dt className="text-muted-foreground">{s.label}</dt>
+                    <dd className="text-brand-ink font-medium">{s.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          )}
 
-          <div className="flex gap-3 mb-8">
+          <p className="text-xs text-muted-foreground mb-6">Stok: <strong className="text-brand-ink">{product.stock} adet mevcut</strong></p>
+
+          <div className="flex gap-3 mb-4">
             <button
               onClick={() => {
                 add({
@@ -143,7 +139,7 @@ function ProductDetail() {
             </button>
           </div>
 
-          <a href="https://wa.me/905466460244" target="_blank" rel="noreferrer" className="block text-center w-full py-4 rounded-full border border-border text-brand-ink text-sm tracking-widest hover:border-brand-ink transition mb-8">
+          <a href={`https://wa.me/905466460244?text=${waMsg}`} target="_blank" rel="noreferrer" className="block text-center w-full py-4 rounded-full bg-[#25D366] text-white text-sm tracking-widest font-semibold hover:opacity-90 transition mb-8">
             WHATSAPP İLE SİPARİŞ
           </a>
 

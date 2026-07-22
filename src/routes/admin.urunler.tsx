@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatTL } from "@/lib/products";
 import { toast } from "sonner";
-import { Pencil, Trash2, Eye, EyeOff, Plus, X } from "lucide-react";
+import { Pencil, Trash2, Eye, EyeOff, Plus, X, Save, Copy, Printer, ExternalLink, PackagePlus } from "lucide-react";
 import { ImageUploader } from "@/components/ImageUploader";
 import { useCategories, useBrands, useAttributes } from "@/lib/queries";
 
@@ -225,12 +225,37 @@ function BulkUpdate({ ids, onClose }: { ids: string[]; onClose: () => void }) {
   );
 }
 
+type TabKey =
+  | "info" | "stock" | "price" | "discount" | "showcase" | "seo" | "images"
+  | "category" | "links" | "variants" | "attrs" | "notify" | "orders" | "moves" | "shelves" | "reviews";
+
+const TABS: { key: TabKey; label: string }[] = [
+  { key: "info", label: "Ürün Bilgileri" },
+  { key: "stock", label: "Stok Bilgileri" },
+  { key: "price", label: "Fiyat Bilgileri" },
+  { key: "discount", label: "İndirimler" },
+  { key: "showcase", label: "Vitrin Bilgileri" },
+  { key: "seo", label: "Seo Bilgileri" },
+  { key: "images", label: "Ürün Resimleri" },
+  { key: "category", label: "Kategori / Marka" },
+  { key: "links", label: "Ürün Bağlantıları" },
+  { key: "variants", label: "Ürün Varyasyonları" },
+  { key: "attrs", label: "Ürün Özellikleri" },
+  { key: "notify", label: "Gelince Haber Ver" },
+  { key: "orders", label: "Bulunduğu Siparişler" },
+  { key: "moves", label: "Stok Hareketleri" },
+  { key: "shelves", label: "Bulunduğu Raflar" },
+  { key: "reviews", label: "Ürün Yorumları" },
+];
+
 function ProductForm({ product, onClose }: { product: P | null; onClose: () => void }) {
   const isNew = !product;
   const { data: cats = [] } = useCategories();
   const { data: brands = [] } = useBrands();
   const { data: attrs = [] } = useAttributes();
+  const qc = useQueryClient();
 
+  const [tab, setTab] = useState<TabKey>("attrs");
   const [form, setForm] = useState({
     stok_kodu: product?.stok_kodu ?? "",
     urun_adi: product?.urun_adi ?? "",
@@ -251,96 +276,279 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
   });
   const [busy, setBusy] = useState(false);
 
-  const save = async () => {
+  const buildPayload = () => ({
+    stok_kodu: form.stok_kodu,
+    urun_adi: form.urun_adi,
+    aciklama: form.aciklama || null,
+    stok_adedi: Number(form.stok_adedi),
+    alis_fiyati: Number(form.alis_fiyati),
+    liste_fiyati: Number(form.liste_fiyati),
+    satis_fiyati: Number(form.satis_fiyati),
+    resimler: form.resimler,
+    etiketler: form.etiketler.split(",").map((s) => s.trim()).filter(Boolean),
+    slug: form.slug || form.stok_kodu.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
+    aktif: form.aktif,
+    kategori_id: form.kategori_id || null,
+    marka_id: form.marka_id || null,
+    ozellikler: form.ozellikler,
+    model_kodu: form.model_kodu || null,
+    barkod: form.barkod || null,
+  });
+
+  const save = async (keepOpen = false) => {
     setBusy(true);
-    const payload = {
-      stok_kodu: form.stok_kodu,
-      urun_adi: form.urun_adi,
-      aciklama: form.aciklama || null,
-      stok_adedi: Number(form.stok_adedi),
-      alis_fiyati: Number(form.alis_fiyati),
-      liste_fiyati: Number(form.liste_fiyati),
-      satis_fiyati: Number(form.satis_fiyati),
-      resimler: form.resimler,
-      etiketler: form.etiketler.split(",").map((s) => s.trim()).filter(Boolean),
-      slug: form.slug || form.stok_kodu.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
-      aktif: form.aktif,
-      kategori_id: form.kategori_id || null,
-      marka_id: form.marka_id || null,
-      ozellikler: form.ozellikler,
-      model_kodu: form.model_kodu || null,
-      barkod: form.barkod || null,
-    };
+    const payload = buildPayload();
     const { error } = isNew
       ? await supabase.from("products").insert(payload)
       : await supabase.from("products").update(payload).eq("id", product!.id);
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success(isNew ? "Eklendi" : "Güncellendi");
+    qc.invalidateQueries({ queryKey: ["admin-products"] });
+    if (!keepOpen) onClose();
+  };
+
+  const duplicate = async () => {
+    if (!product) return;
+    const payload = { ...buildPayload(), stok_kodu: `${form.stok_kodu}-KOPYA`, slug: `${form.slug}-kopya` };
+    const { error } = await supabase.from("products").insert(payload);
+    if (error) return toast.error(error.message);
+    toast.success("Kopyalandı");
+    qc.invalidateQueries({ queryKey: ["admin-products"] });
     onClose();
   };
 
+  const remove = async () => {
+    if (!product || !confirm("Ürün silinsin mi?")) return;
+    const { error } = await supabase.from("products").delete().eq("id", product.id);
+    if (error) return toast.error(error.message);
+    toast.success("Silindi");
+    qc.invalidateQueries({ queryKey: ["admin-products"] });
+    onClose();
+  };
+
+  const stockAdjust = async () => {
+    const raw = prompt("Stok değişimi (örn: +5 veya -3):", "+1");
+    if (!raw) return;
+    const delta = Number(raw);
+    if (Number.isNaN(delta)) return toast.error("Geçerli sayı girin");
+    setForm({ ...form, stok_adedi: Math.max(0, Number(form.stok_adedi) + delta) });
+  };
+
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-3xl w-full max-h-[92vh] overflow-auto">
-        <div className="flex items-center justify-between p-5 border-b sticky top-0 bg-white z-10">
-          <h2 className="font-display text-2xl">{isNew ? "Yeni Ürün" : "Ürün Düzenle"}</h2>
-          <button onClick={onClose}><X className="w-5 h-5" /></button>
-        </div>
-        <div className="p-5 grid grid-cols-2 gap-4">
-          <F label="Stok Kodu"><input value={form.stok_kodu} onChange={(e) => setForm({ ...form, stok_kodu: e.target.value })} className="input" /></F>
-          <F label="Model Kodu"><input value={form.model_kodu} onChange={(e) => setForm({ ...form, model_kodu: e.target.value })} className="input" /></F>
-          <F label="Ürün Adı" className="col-span-2"><input value={form.urun_adi} onChange={(e) => setForm({ ...form, urun_adi: e.target.value })} className="input" /></F>
-          <F label="Açıklama" className="col-span-2"><textarea rows={3} value={form.aciklama} onChange={(e) => setForm({ ...form, aciklama: e.target.value })} className="input" /></F>
-          <F label="Kategori">
-            <select value={form.kategori_id} onChange={(e) => setForm({ ...form, kategori_id: e.target.value })} className="input">
-              <option value="">—</option>
-              {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
-          </F>
-          <F label="Marka">
-            <select value={form.marka_id} onChange={(e) => setForm({ ...form, marka_id: e.target.value })} className="input">
-              <option value="">—</option>
-              {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-            </select>
-          </F>
-          <F label="Barkod"><input value={form.barkod} onChange={(e) => setForm({ ...form, barkod: e.target.value })} className="input" /></F>
-          <F label="Slug"><input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="input" /></F>
-          <F label="Stok Adedi"><input type="number" value={form.stok_adedi} onChange={(e) => setForm({ ...form, stok_adedi: Number(e.target.value) })} className="input" /></F>
-          <F label="Alış Fiyatı"><input type="number" step="0.01" value={form.alis_fiyati} onChange={(e) => setForm({ ...form, alis_fiyati: Number(e.target.value) })} className="input" /></F>
-          <F label="Liste Fiyatı"><input type="number" step="0.01" value={form.liste_fiyati} onChange={(e) => setForm({ ...form, liste_fiyati: Number(e.target.value) })} className="input" /></F>
-          <F label="Satış Fiyatı"><input type="number" step="0.01" value={form.satis_fiyati} onChange={(e) => setForm({ ...form, satis_fiyati: Number(e.target.value) })} className="input" /></F>
-
-          {attrs.map((a) => (
-            <F key={a.id} label={a.ad}>
-              <select
-                value={form.ozellikler[a.slug] ?? ""}
-                onChange={(e) => setForm({ ...form, ozellikler: { ...form.ozellikler, [a.slug]: e.target.value } })}
-                className="input"
-              >
-                <option value="">—</option>
-                {a.degerler.map((v) => <option key={v} value={v}>{v}</option>)}
-              </select>
-            </F>
-          ))}
-
-          <F label="Etiketler (virgülle)" className="col-span-2"><input value={form.etiketler} onChange={(e) => setForm({ ...form, etiketler: e.target.value })} className="input" /></F>
-
-          <div className="col-span-2">
-            <p className="block text-[11px] uppercase tracking-widest text-muted-foreground mb-2">Ürün Görselleri</p>
-            <ImageUploader bucket="product-images" value={form.resimler} onChange={(urls) => setForm({ ...form, resimler: urls })} />
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4">
+      <div className="bg-brand-sand/30 rounded-2xl w-full max-w-6xl max-h-[95vh] flex flex-col overflow-hidden">
+        <div className="flex items-center justify-between p-4 border-b bg-white">
+          <div>
+            <p className="text-[11px] tracking-widest text-muted-foreground uppercase">Katalog · Ürünler</p>
+            <h2 className="font-display text-2xl text-brand-ink">{isNew ? "Yeni Ürün" : form.urun_adi || "Ürün Düzenle"}</h2>
           </div>
-
-          <F label="Durum" className="col-span-2">
-            <label className="inline-flex items-center gap-2"><input type="checkbox" checked={form.aktif} onChange={(e) => setForm({ ...form, aktif: e.target.checked })} /> Aktif</label>
-          </F>
+          <div className="flex flex-wrap gap-2 justify-end">
+            {product && (
+              <a href={`/urun/${product.slug}`} target="_blank" rel="noreferrer" className="admin-btn-outline"><ExternalLink className="w-3.5 h-3.5" /> Ön İzleme</a>
+            )}
+            <button onClick={stockAdjust} className="admin-btn-outline"><PackagePlus className="w-3.5 h-3.5" /> Stok Ekle / Çıkar</button>
+            {product && <button onClick={duplicate} className="admin-btn-outline"><Copy className="w-3.5 h-3.5" /> Ürünü Kopyala</button>}
+            <button disabled={busy} onClick={() => save(false)} className="admin-btn-primary"><Save className="w-3.5 h-3.5" /> Kaydet</button>
+            <button disabled={busy} onClick={() => save(true)} className="admin-btn-primary">Kaydet ve Devam Et</button>
+            {product && <button onClick={remove} className="admin-btn-danger"><Trash2 className="w-3.5 h-3.5" /> Sil</button>}
+            <button onClick={() => window.print()} className="admin-btn-outline"><Printer className="w-3.5 h-3.5" /> Yazdır</button>
+            <button onClick={onClose} className="p-2 hover:bg-brand-sand rounded"><X className="w-5 h-5" /></button>
+          </div>
         </div>
-        <div className="p-5 border-t flex justify-end gap-3 bg-white sticky bottom-0">
-          <button onClick={onClose} className="px-5 py-2 rounded-full border">İptal</button>
-          <button disabled={busy} onClick={save} className="px-5 py-2 rounded-full bg-brand-ink text-white disabled:opacity-60">{busy ? "..." : "Kaydet"}</button>
+
+        <div className="flex flex-1 overflow-hidden">
+          <aside className="w-60 shrink-0 bg-white border-r overflow-y-auto">
+            <nav className="py-2">
+              {TABS.map((t) => (
+                <button
+                  key={t.key}
+                  onClick={() => setTab(t.key)}
+                  className={`w-full text-left px-4 py-2.5 text-sm border-l-4 transition ${
+                    tab === t.key
+                      ? "border-brand-cta bg-brand-sand/40 text-brand-ink font-semibold"
+                      : "border-transparent text-muted-foreground hover:bg-brand-sand/20"
+                  }`}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </nav>
+          </aside>
+
+          <div className="flex-1 overflow-y-auto p-6 bg-white">
+            {tab === "info" && (
+              <div className="grid grid-cols-2 gap-4">
+                <F label="Stok Kodu"><input value={form.stok_kodu} onChange={(e) => setForm({ ...form, stok_kodu: e.target.value })} className="input" /></F>
+                <F label="Model Kodu"><input value={form.model_kodu} onChange={(e) => setForm({ ...form, model_kodu: e.target.value })} className="input" /></F>
+                <F label="Barkod"><input value={form.barkod} onChange={(e) => setForm({ ...form, barkod: e.target.value })} className="input" /></F>
+                <F label="Slug"><input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="input" /></F>
+                <F label="Ürün Adı" className="col-span-2"><input value={form.urun_adi} onChange={(e) => setForm({ ...form, urun_adi: e.target.value })} className="input" /></F>
+                <F label="Açıklama" className="col-span-2"><textarea rows={5} value={form.aciklama} onChange={(e) => setForm({ ...form, aciklama: e.target.value })} className="input" /></F>
+                <F label="Etiketler (virgülle)" className="col-span-2"><input value={form.etiketler} onChange={(e) => setForm({ ...form, etiketler: e.target.value })} className="input" /></F>
+                <F label="Durum" className="col-span-2">
+                  <label className="inline-flex items-center gap-2"><input type="checkbox" checked={form.aktif} onChange={(e) => setForm({ ...form, aktif: e.target.checked })} /> Aktif</label>
+                </F>
+              </div>
+            )}
+
+            {tab === "stock" && (
+              <div className="grid grid-cols-2 gap-4 max-w-md">
+                <F label="Stok Adedi"><input type="number" value={form.stok_adedi} onChange={(e) => setForm({ ...form, stok_adedi: Number(e.target.value) })} className="input" /></F>
+              </div>
+            )}
+
+            {tab === "price" && (
+              <div className="grid grid-cols-3 gap-4">
+                <F label="Alış Fiyatı"><input type="number" step="0.01" value={form.alis_fiyati} onChange={(e) => setForm({ ...form, alis_fiyati: Number(e.target.value) })} className="input" /></F>
+                <F label="Liste Fiyatı"><input type="number" step="0.01" value={form.liste_fiyati} onChange={(e) => setForm({ ...form, liste_fiyati: Number(e.target.value) })} className="input" /></F>
+                <F label="Satış Fiyatı"><input type="number" step="0.01" value={form.satis_fiyati} onChange={(e) => setForm({ ...form, satis_fiyati: Number(e.target.value) })} className="input" /></F>
+              </div>
+            )}
+
+            {tab === "images" && (
+              <ImageUploader bucket="product-images" value={form.resimler} onChange={(urls) => setForm({ ...form, resimler: urls })} />
+            )}
+
+            {tab === "category" && (
+              <div className="grid grid-cols-2 gap-4">
+                <F label="Kategori">
+                  <select value={form.kategori_id} onChange={(e) => setForm({ ...form, kategori_id: e.target.value })} className="input">
+                    <option value="">—</option>
+                    {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </F>
+                <F label="Marka">
+                  <select value={form.marka_id} onChange={(e) => setForm({ ...form, marka_id: e.target.value })} className="input">
+                    <option value="">—</option>
+                    {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  </select>
+                </F>
+              </div>
+            )}
+
+            {tab === "attrs" && (
+              <AttrsTab
+                attrs={attrs}
+                value={form.ozellikler}
+                onChange={(oz) => setForm({ ...form, ozellikler: oz })}
+              />
+            )}
+
+            {["discount","showcase","seo","links","variants","notify","orders","moves","shelves","reviews"].includes(tab) && (
+              <div className="text-sm text-muted-foreground italic border rounded-xl p-8 text-center">
+                Bu sekme yakında aktif olacak.
+              </div>
+            )}
+          </div>
         </div>
       </div>
-      <style>{`.input { width: 100%; border: 1px solid var(--border); border-radius: 12px; padding: 8px 12px; font-size: 14px; background: white; }`}</style>
+      <style>{`
+        .input { width: 100%; border: 1px solid #e5e5e5; border-radius: 10px; padding: 8px 12px; font-size: 14px; background: white; }
+        .admin-btn-outline { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; border: 1px solid #d4d4d4; font-size: 12px; background: white; }
+        .admin-btn-primary { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: #0a0a0a; color: white; font-size: 12px; }
+        .admin-btn-primary:disabled { opacity: 0.6; }
+        .admin-btn-danger { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: #dc2626; color: white; font-size: 12px; }
+      `}</style>
+    </div>
+  );
+}
+
+function AttrsTab({
+  attrs, value, onChange,
+}: {
+  attrs: { id: string; ad: string; slug: string; degerler: string[]; filterable: boolean; show_in_detail: boolean; sira: number }[];
+  value: Record<string, string>;
+  onChange: (v: Record<string, string>) => void;
+}) {
+  const [newSlug, setNewSlug] = useState("");
+  const [newVal, setNewVal] = useState("");
+  const rows = attrs
+    .map((a) => ({ attr: a, val: value[a.slug] }))
+    .filter((r) => r.val);
+
+  const del = (slug: string) => {
+    const next = { ...value };
+    delete next[slug];
+    onChange(next);
+  };
+
+  const add = () => {
+    if (!newSlug || !newVal) return toast.error("Özellik ve değer seçin");
+    onChange({ ...value, [newSlug]: newVal });
+    setNewSlug(""); setNewVal("");
+  };
+
+  const chosenAttr = attrs.find((a) => a.slug === newSlug);
+
+  return (
+    <div>
+      <div className="border rounded-xl overflow-hidden mb-6">
+        <table className="w-full text-sm">
+          <thead className="bg-brand-sand/40 text-xs uppercase tracking-widest text-muted-foreground text-left">
+            <tr>
+              <th className="p-3">Özellik</th><th>Değer</th>
+              <th className="text-center">Filtre</th>
+              <th className="text-center">Detayda Göster</th>
+              <th className="text-center">Sıra</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.length === 0 && (
+              <tr><td colSpan={6} className="p-6 text-center text-muted-foreground italic">Henüz özellik eklenmedi.</td></tr>
+            )}
+            {rows.map(({ attr, val }) => (
+              <tr key={attr.slug} className="border-t">
+                <td className="p-3 font-medium">{attr.ad}</td>
+                <td>{val}</td>
+                <td className="text-center">{attr.filterable ? "✓" : "—"}</td>
+                <td className="text-center">{attr.show_in_detail ? "✓" : "—"}</td>
+                <td className="text-center">{attr.sira}</td>
+                <td className="p-3 text-right">
+                  <button onClick={() => del(attr.slug)} className="p-1.5 rounded hover:bg-red-50 text-red-600"><Trash2 className="w-4 h-4" /></button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="border rounded-xl p-4 bg-brand-sand/20">
+        <p className="text-sm font-semibold mb-3 text-brand-ink">Ürün Özelliği Ekleyin</p>
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto_auto_auto_auto] gap-3 items-end">
+          <F label="Özellik">
+            <select value={newSlug} onChange={(e) => { setNewSlug(e.target.value); setNewVal(""); }} className="input">
+              <option value="">— Seçin —</option>
+              {attrs.map((a) => <option key={a.slug} value={a.slug}>{a.ad}</option>)}
+            </select>
+          </F>
+          <F label="Değer">
+            {chosenAttr && chosenAttr.degerler.length > 0 ? (
+              <select value={newVal} onChange={(e) => setNewVal(e.target.value)} className="input">
+                <option value="">— Seçin —</option>
+                {chosenAttr.degerler.map((v) => <option key={v} value={v}>{v}</option>)}
+              </select>
+            ) : (
+              <input value={newVal} onChange={(e) => setNewVal(e.target.value)} className="input" placeholder="Değer" />
+            )}
+          </F>
+          <div className="text-xs text-center text-muted-foreground pb-2">
+            <div>Filtre</div>
+            <div className="text-brand-ink font-semibold">{chosenAttr?.filterable ? "Evet" : "—"}</div>
+          </div>
+          <div className="text-xs text-center text-muted-foreground pb-2">
+            <div>Detay</div>
+            <div className="text-brand-ink font-semibold">{chosenAttr?.show_in_detail ? "Evet" : "—"}</div>
+          </div>
+          <div className="text-xs text-center text-muted-foreground pb-2">
+            <div>Sıra</div>
+            <div className="text-brand-ink font-semibold">{chosenAttr?.sira ?? "—"}</div>
+          </div>
+          <button onClick={add} className="admin-btn-primary h-10"><Plus className="w-4 h-4" /> Ekle</button>
+        </div>
+        <p className="text-[11px] text-muted-foreground mt-3">Filtre / Detay / Sıra ayarları, "Ürün Özellikleri" sekmesinden yönetilir.</p>
+      </div>
     </div>
   );
 }

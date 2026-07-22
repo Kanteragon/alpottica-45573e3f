@@ -83,7 +83,7 @@ function Products() {
       <div className="max-w-[1600px] mx-auto px-6 lg:px-10 py-6 sticky top-20 z-30 bg-background/95 backdrop-blur border-b border-border">
         <div className="flex flex-wrap items-center gap-3 justify-between">
           <div className="flex flex-wrap gap-2">
-            <a href="/urunler" className={`px-5 py-2.5 text-xs tracking-[0.2em] rounded-full border transition ${!search.tag || search.tag === "tumu" ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink"}`}>TÜM MODELLER</a>
+            <a href="/urunler" className={`px-5 py-2.5 text-xs tracking-[0.2em] rounded-full border transition ${!search.tag ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink"}`}>TÜM MODELLER</a>
             <a href="/urunler?tag=klipsli" className={`px-5 py-2.5 text-xs tracking-[0.2em] rounded-full border transition ${search.tag === "klipsli" ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink"}`}>KLİPSLİ</a>
             <a href="/urunler?tag=outlet" className={`px-5 py-2.5 text-xs tracking-[0.2em] rounded-full border transition ${search.tag === "outlet" ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink"}`}>OUTLET</a>
           </div>
