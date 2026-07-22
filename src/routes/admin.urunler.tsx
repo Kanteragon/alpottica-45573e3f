@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatTL } from "@/lib/products";
@@ -274,6 +274,22 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
     barkod: product?.barkod ?? "",
     ozellikler: (product?.ozellikler ?? {}) as Record<string, string>,
   });
+  const [categoryIds, setCategoryIds] = useState<string[]>([]);
+  const [catsLoaded, setCatsLoaded] = useState(false);
+
+  useEffect(() => {
+    if (!product) { setCatsLoaded(true); return; }
+    let cancel = false;
+    (async () => {
+      const { data } = await supabase.from("product_categories").select("category_id").eq("product_id", product.id);
+      if (cancel) return;
+      const ids = (data ?? []).map((r) => r.category_id as string);
+      const merged = Array.from(new Set([product.kategori_id, ...ids].filter(Boolean) as string[]));
+      setCategoryIds(merged);
+      setCatsLoaded(true);
+    })();
+    return () => { cancel = true; };
+  }, [product]);
   const [busy, setBusy] = useState(false);
 
   const buildPayload = () => ({
@@ -288,21 +304,36 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
     etiketler: form.etiketler.split(",").map((s) => s.trim()).filter(Boolean),
     slug: form.slug || form.stok_kodu.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
     aktif: form.aktif,
-    kategori_id: form.kategori_id || null,
+    kategori_id: categoryIds[0] ?? (form.kategori_id || null),
     marka_id: form.marka_id || null,
     ozellikler: form.ozellikler,
     model_kodu: form.model_kodu || null,
     barkod: form.barkod || null,
   });
 
+  const syncCategories = async (productId: string) => {
+    await supabase.from("product_categories").delete().eq("product_id", productId);
+    if (categoryIds.length) {
+      await supabase.from("product_categories").insert(
+        categoryIds.map((cid) => ({ product_id: productId, category_id: cid }))
+      );
+    }
+  };
+
   const save = async (keepOpen = false) => {
     setBusy(true);
     const payload = buildPayload();
-    const { error } = isNew
-      ? await supabase.from("products").insert(payload)
-      : await supabase.from("products").update(payload).eq("id", product!.id);
+    let productId = product?.id;
+    if (isNew) {
+      const { data, error } = await supabase.from("products").insert(payload).select("id").single();
+      if (error) { setBusy(false); return toast.error(error.message); }
+      productId = data?.id;
+    } else {
+      const { error } = await supabase.from("products").update(payload).eq("id", product!.id);
+      if (error) { setBusy(false); return toast.error(error.message); }
+    }
+    if (productId) await syncCategories(productId);
     setBusy(false);
-    if (error) return toast.error(error.message);
     toast.success(isNew ? "Eklendi" : "Güncellendi");
     qc.invalidateQueries({ queryKey: ["admin-products"] });
     if (!keepOpen) onClose();
@@ -411,14 +442,34 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
             )}
 
             {tab === "category" && (
-              <div className="grid grid-cols-2 gap-4">
-                <F label="Kategori">
-                  <select value={form.kategori_id} onChange={(e) => setForm({ ...form, kategori_id: e.target.value })} className="input">
-                    <option value="">—</option>
-                    {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
-                  </select>
+              <div className="space-y-5">
+                <F label="Kategoriler (birden fazla seçilebilir)">
+                  {!catsLoaded ? (
+                    <p className="text-sm text-muted-foreground">Yükleniyor…</p>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-72 overflow-y-auto border rounded-xl p-3 bg-white">
+                      {cats.map((c) => {
+                        const checked = categoryIds.includes(c.id);
+                        return (
+                          <label key={c.id} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer text-sm ${checked ? "bg-brand-sand/50" : "hover:bg-brand-sand/20"}`}>
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={(e) => {
+                                setCategoryIds((prev) =>
+                                  e.target.checked ? [...prev, c.id] : prev.filter((id) => id !== c.id)
+                                );
+                              }}
+                            />
+                            <span>{c.name}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-2">İlk seçilen kategori ana kategori olarak kaydedilir.</p>
                 </F>
-                <F label="Marka">
+                <F label="Marka" className="max-w-sm">
                   <select value={form.marka_id} onChange={(e) => setForm({ ...form, marka_id: e.target.value })} className="input">
                     <option value="">—</option>
                     {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
