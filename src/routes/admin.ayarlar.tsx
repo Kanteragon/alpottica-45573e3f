@@ -15,7 +15,7 @@ function SettingsPage() {
   const qc = useQueryClient();
   const { data: settings } = useSiteSettings();
   const [logoUrl, setLogoUrl] = useState<string>("");
-  const [maxWidth, setMaxWidth] = useState<number>(180);
+  const [maxWidth, setMaxWidth] = useState<number>(260);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ function SettingsPage() {
       const { error } = await supabase.from("site_settings").upsert({
         id: 1,
         logo_url: logoUrl || null,
-        logo_max_width: Math.max(40, Math.min(600, Number(maxWidth) || 180)),
+        logo_max_width: Math.max(40, Math.min(600, Number(maxWidth) || 260)),
         updated_at: new Date().toISOString(),
       });
       if (error) throw error;

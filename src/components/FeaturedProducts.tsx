@@ -1,11 +1,12 @@
-import { useShowcase, useProducts } from "@/lib/queries";
+import { useShowcase } from "@/lib/queries";
 import { ProductCard } from "@/components/ProductCard";
 import { Link } from "@tanstack/react-router";
 
 export function FeaturedProducts() {
   const { data: showcase } = useShowcase();
-  const { data: all } = useProducts();
-  const picks = (showcase?.length ? showcase : all ?? []).slice(0, 8);
+  const picks = (showcase ?? []).slice(0, 12);
+
+  if (!picks.length) return null;
 
   return (
     <section className="bg-brand-sand/30 py-24">
@@ -31,3 +32,4 @@ export function FeaturedProducts() {
     </section>
   );
 }
+
