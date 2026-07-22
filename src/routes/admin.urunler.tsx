@@ -557,18 +557,22 @@ function AttrsTab({
             {rows.length === 0 && (
               <tr><td colSpan={6} className="p-6 text-center text-muted-foreground italic">Henüz özellik eklenmedi.</td></tr>
             )}
-            {rows.map(({ attr, val }) => (
-              <tr key={attr.slug} className="border-t">
-                <td className="p-3 font-medium">{attr.ad}</td>
+            {rows.map(({ key, attr, val }) => (
+              <tr key={key} className="border-t">
+                <td className="p-3 font-medium">
+                  {attr?.ad ?? key}
+                  {!attr && <span className="ml-2 text-[10px] text-amber-600 uppercase tracking-widest">Eşleşmedi</span>}
+                </td>
                 <td>{val}</td>
-                <td className="text-center">{attr.filterable ? "✓" : "—"}</td>
-                <td className="text-center">{attr.show_in_detail ? "✓" : "—"}</td>
-                <td className="text-center">{attr.sira}</td>
+                <td className="text-center">{attr?.filterable ? "✓" : "—"}</td>
+                <td className="text-center">{attr?.show_in_detail ? "✓" : "—"}</td>
+                <td className="text-center">{attr?.sira ?? "—"}</td>
                 <td className="p-3 text-right">
-                  <button onClick={() => del(attr.slug)} className="p-1.5 rounded hover:bg-red-50 text-red-600"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={() => del(key)} className="p-1.5 rounded hover:bg-red-50 text-red-600"><Trash2 className="w-4 h-4" /></button>
                 </td>
               </tr>
             ))}
+
           </tbody>
         </table>
       </div>
