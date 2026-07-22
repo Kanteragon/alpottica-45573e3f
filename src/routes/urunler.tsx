@@ -171,10 +171,32 @@ function Products() {
           </select>
           <input type="number" placeholder="Min ₺" value={search.min ?? ""} onChange={(e) => setSearchParam({ min: e.target.value || undefined })} className="w-24 border border-border rounded-full px-3 py-1.5 bg-white" />
           <input type="number" placeholder="Max ₺" value={search.max ?? ""} onChange={(e) => setSearchParam({ max: e.target.value || undefined })} className="w-24 border border-border rounded-full px-3 py-1.5 bg-white" />
-          {(search.kategori || search.marka || search.renk || search.ekartman || search.min || search.max) && (
+          {(search.kategori || search.marka || search.renk || search.ekartman || search.min || search.max || search.ozellik) && (
             <a href="/urunler" className="text-brand-cta underline">Filtreleri temizle</a>
           )}
         </div>
+
+        {filterableAttrs.length > 0 && (
+          <div className="mt-4 space-y-2">
+            {filterableAttrs.map(({ attr, values }) => (
+              <div key={attr.id} className="flex flex-wrap items-center gap-2 text-xs">
+                <span className="text-muted-foreground uppercase tracking-widest min-w-[110px]">{attr.ad}</span>
+                {values.slice(0, 20).map((v) => {
+                  const active = activeAttrFilters[attr.slug]?.toLowerCase() === v.toLowerCase();
+                  return (
+                    <button
+                      key={v}
+                      onClick={() => toggleAttrFilter(attr.slug, v)}
+                      className={`px-3 py-1.5 rounded-full border transition ${active ? "bg-brand-ink text-white border-brand-ink" : "bg-white border-border text-brand-ink hover:border-brand-ink"}`}
+                    >
+                      {v}{active && <X className="inline w-3 h-3 ml-1" />}
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       <section className="max-w-[1600px] mx-auto px-6 lg:px-10 py-12">
