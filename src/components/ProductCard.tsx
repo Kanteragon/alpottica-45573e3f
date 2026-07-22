@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { Heart, ShoppingCart } from "lucide-react";
+import { Heart, ShoppingCart, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from "react";
 import type { Product } from "@/lib/products";
 import { discountPct, formatTL } from "@/lib/products";
 import { useCart } from "@/lib/cart";
@@ -8,20 +9,32 @@ import { toast } from "sonner";
 export function ProductCard({ product }: { product: Product }) {
   const disc = discountPct(product);
   const { add } = useCart();
+  const gallery = (product.images?.length ? product.images : [product.image]).filter(Boolean);
+  const [idx, setIdx] = useState(0);
+  const [hovering, setHovering] = useState(false);
+
+  const showControls = hovering && gallery.length > 1;
+  const nav = (dir: -1 | 1) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIdx((i) => (i + dir + gallery.length) % gallery.length);
+  };
 
   return (
     <Link
       to="/urun/$slug"
       params={{ slug: product.slug }}
+      onMouseEnter={() => setHovering(true)}
+      onMouseLeave={() => { setHovering(false); setIdx(0); }}
       className="group block rounded-2xl overflow-hidden bg-white border border-border hover:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.15)] hover:-translate-y-1 transition-all duration-300"
     >
       <div className="relative aspect-square overflow-hidden bg-brand-sand/40">
-        {product.image ? (
+        {gallery[idx] ? (
           <img
-            src={product.image}
+            src={gallery[idx]}
             alt={product.name}
             loading="lazy"
-            className="absolute inset-0 w-full h-full object-contain p-6 transition-transform duration-500 group-hover:scale-105"
+            className="absolute inset-0 w-full h-full object-contain p-2 transition-all duration-300"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-xs">Görsel yok</div>
@@ -38,6 +51,22 @@ export function ProductCard({ product }: { product: Product }) {
         >
           <Heart className="w-4 h-4" />
         </button>
+
+        {showControls && (
+          <>
+            <button onClick={nav(-1)} aria-label="Önceki" className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 text-brand-ink flex items-center justify-center hover:bg-white shadow">
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button onClick={nav(1)} aria-label="Sonraki" className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 text-brand-ink flex items-center justify-center hover:bg-white shadow">
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+              {gallery.map((_, i) => (
+                <span key={i} className={`w-1.5 h-1.5 rounded-full transition ${i === idx ? "bg-brand-ink" : "bg-white/70"}`} />
+              ))}
+            </div>
+          </>
+        )}
       </div>
       <div className="p-5">
         <p className="text-[11px] tracking-[0.25em] text-muted-foreground mb-2 uppercase">Alpottica</p>

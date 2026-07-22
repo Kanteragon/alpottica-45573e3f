@@ -23,6 +23,8 @@ export type Database = {
           id: string
           ilce: string | null
           is_default: boolean
+          mahalle: string | null
+          posta_kodu: string | null
           sehir: string | null
           telefon: string
           updated_at: string
@@ -36,6 +38,8 @@ export type Database = {
           id?: string
           ilce?: string | null
           is_default?: boolean
+          mahalle?: string | null
+          posta_kodu?: string | null
           sehir?: string | null
           telefon: string
           updated_at?: string
@@ -49,6 +53,8 @@ export type Database = {
           id?: string
           ilce?: string | null
           is_default?: boolean
+          mahalle?: string | null
+          posta_kodu?: string | null
           sehir?: string | null
           telefon?: string
           updated_at?: string
@@ -119,6 +125,39 @@ export type Database = {
           name?: string
           slug?: string
           sort?: number
+        }
+        Relationships: []
+      }
+      custom_scripts: {
+        Row: {
+          ad: string
+          aktif: boolean
+          created_at: string
+          icerik: string
+          id: string
+          konum: string
+          sira: number
+          updated_at: string
+        }
+        Insert: {
+          ad: string
+          aktif?: boolean
+          created_at?: string
+          icerik?: string
+          id?: string
+          konum?: string
+          sira?: number
+          updated_at?: string
+        }
+        Update: {
+          ad?: string
+          aktif?: boolean
+          created_at?: string
+          icerik?: string
+          id?: string
+          konum?: string
+          sira?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -225,8 +264,12 @@ export type Database = {
           durum: string
           email: string
           id: string
+          ilce: string | null
+          mahalle: string | null
           notlar: string | null
           odeme_tipi: string
+          posta_kodu: string | null
+          sehir: string | null
           telefon: string
           toplam: number
           updated_at: string
@@ -239,8 +282,12 @@ export type Database = {
           durum?: string
           email: string
           id?: string
+          ilce?: string | null
+          mahalle?: string | null
           notlar?: string | null
           odeme_tipi: string
+          posta_kodu?: string | null
+          sehir?: string | null
           telefon: string
           toplam?: number
           updated_at?: string
@@ -253,8 +300,12 @@ export type Database = {
           durum?: string
           email?: string
           id?: string
+          ilce?: string | null
+          mahalle?: string | null
           notlar?: string | null
           odeme_tipi?: string
+          posta_kodu?: string | null
+          sehir?: string | null
           telefon?: string
           toplam?: number
           updated_at?: string
@@ -379,6 +430,7 @@ export type Database = {
           stok_kodu: string
           updated_at: string
           urun_adi: string
+          variant_group_id: string | null
         }
         Insert: {
           aciklama?: string | null
@@ -400,6 +452,7 @@ export type Database = {
           stok_kodu: string
           updated_at?: string
           urun_adi: string
+          variant_group_id?: string | null
         }
         Update: {
           aciklama?: string | null
@@ -421,6 +474,7 @@ export type Database = {
           stok_kodu?: string
           updated_at?: string
           urun_adi?: string
+          variant_group_id?: string | null
         }
         Relationships: [
           {

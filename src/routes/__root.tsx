@@ -14,6 +14,8 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { CartProvider } from "@/lib/cart";
 import { AuthProvider } from "@/lib/auth";
+import { ScriptInjector } from "@/components/ScriptInjector";
+import { DynamicFavicon } from "@/components/DynamicFavicon";
 
 function NotFoundComponent() {
   return (
@@ -116,6 +118,8 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <CartProvider>
+          <DynamicFavicon />
+          <ScriptInjector />
           <Outlet />
           <Toaster position="top-center" richColors />
         </CartProvider>

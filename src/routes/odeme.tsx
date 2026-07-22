@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useCart } from "@/lib/cart";
@@ -7,6 +7,7 @@ import { useAuth } from "@/lib/auth";
 import { formatTL } from "@/lib/products";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { TR_ILLER, TR_IL_LIST } from "@/lib/tr-locations";
 
 export const Route = createFileRoute("/odeme")({
   head: () => ({
@@ -26,6 +27,10 @@ function Checkout() {
     full_name: "",
     phone: "",
     email: user?.email ?? "",
+    sehir: "",
+    ilce: "",
+    mahalle: "",
+    posta_kodu: "",
     address: "",
     password: "",
     createAccount: false,
@@ -34,44 +39,46 @@ function Checkout() {
   });
   const [busy, setBusy] = useState(false);
 
+  const ilceler = useMemo(() => (form.sehir ? TR_ILLER[form.sehir] ?? [] : []), [form.sehir]);
+
   useEffect(() => {
     if (user?.email) setForm((f) => ({ ...f, email: user.email!, createAccount: false }));
   }, [user]);
 
   useEffect(() => {
-    // Prefill from profile if signed in
     (async () => {
       if (!user) return;
       const { data } = await supabase.from("profiles").select("full_name,phone,address").eq("id", user.id).maybeSingle();
-      if (data) {
-        setForm((f) => ({
-          ...f,
-          full_name: f.full_name || data.full_name || "",
-          phone: f.phone || data.phone || "",
-          address: f.address || data.address || "",
-        }));
-      }
+      const { data: addrRaw } = await supabase.from("addresses").select("*").eq("user_id", user.id).order("is_default", { ascending: false }).limit(1).maybeSingle();
+      const addr = (addrRaw ?? {}) as Record<string, string | null>;
+      setForm((f) => ({
+        ...f,
+        full_name: f.full_name || data?.full_name || addr.ad_soyad || "",
+        phone: f.phone || data?.phone || addr.telefon || "",
+        address: f.address || addr.adres || data?.address || "",
+        sehir: f.sehir || addr.sehir || "",
+        ilce: f.ilce || addr.ilce || "",
+        mahalle: f.mahalle || addr.mahalle || "",
+        posta_kodu: f.posta_kodu || addr.posta_kodu || "",
+      }));
     })();
   }, [user]);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (items.length === 0) return toast.error("Sepetiniz boş");
-
-    // Basic validation
     if (form.full_name.trim().length < 3) return toast.error("Ad Soyad zorunlu");
     if (form.phone.trim().length < 10) return toast.error("Geçerli telefon girin");
     if (!/^\S+@\S+\.\S+$/.test(form.email)) return toast.error("Geçerli e-posta girin");
+    if (!form.sehir) return toast.error("İl seçin");
+    if (!form.ilce) return toast.error("İlçe seçin");
     if (form.address.trim().length < 10) return toast.error("Adres zorunlu");
-    if (!user && form.createAccount && form.password.length < 6) {
-      return toast.error("Şifre en az 6 karakter olmalıdır");
-    }
+    if (!user && form.createAccount && form.password.length < 6) return toast.error("Şifre en az 6 karakter olmalıdır");
 
     setBusy(true);
     try {
       let userId = user?.id ?? null;
 
-      // Optional account creation for guest
       if (!user && form.createAccount && form.password) {
         const { data, error } = await supabase.auth.signUp({
           email: form.email.trim(),
@@ -82,34 +89,22 @@ function Checkout() {
           },
         });
         if (error) {
-          // If already registered, try signing in
           if (/already|registered|exists/i.test(error.message)) {
             const { data: si, error: siErr } = await supabase.auth.signInWithPassword({
-              email: form.email.trim(),
-              password: form.password,
+              email: form.email.trim(), password: form.password,
             });
             if (siErr) throw new Error("Bu e-posta zaten kayıtlı; şifre hatalı.");
             userId = si.user?.id ?? null;
-          } else {
-            throw error;
-          }
+          } else throw error;
         } else {
           userId = data.user?.id ?? null;
           if (!userId) {
-            const { data: si } = await supabase.auth.signInWithPassword({
-              email: form.email.trim(),
-              password: form.password,
-            });
+            const { data: si } = await supabase.auth.signInWithPassword({ email: form.email.trim(), password: form.password });
             userId = si.user?.id ?? null;
           }
         }
-
         if (userId) {
-          await supabase.from("profiles").update({
-            full_name: form.full_name,
-            phone: form.phone,
-            address: form.address,
-          }).eq("id", userId);
+          await supabase.from("profiles").update({ full_name: form.full_name, phone: form.phone, address: form.address }).eq("id", userId);
         }
       }
 
@@ -121,6 +116,10 @@ function Checkout() {
           telefon: form.phone,
           email: form.email,
           adres: form.address,
+          sehir: form.sehir,
+          ilce: form.ilce,
+          mahalle: form.mahalle || null,
+          posta_kodu: form.posta_kodu || null,
           odeme_tipi: form.payment,
           toplam: total,
           notlar: form.notes || null,
@@ -130,11 +129,7 @@ function Checkout() {
       if (oErr) throw oErr;
 
       const orderItems = items.map((i) => ({
-        order_id: order.id,
-        product_id: i.product_id,
-        adet: i.qty,
-        birim_fiyat: i.price,
-        urun_adi_snapshot: i.name,
+        order_id: order.id, product_id: i.product_id, adet: i.qty, birim_fiyat: i.price, urun_adi_snapshot: i.name,
       }));
       const { error: iErr } = await supabase.from("order_items").insert(orderItems);
       if (iErr) throw iErr;
@@ -153,8 +148,7 @@ function Checkout() {
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-background">
-        <Navbar />
-        <div className="h-20" />
+        <Navbar /><div className="h-20" />
         <div className="max-w-md mx-auto text-center py-32">
           <p className="text-muted-foreground mb-6">Sepetinizde ürün bulunmuyor.</p>
           <Link to="/urunler" className="inline-block px-6 py-3 rounded-full bg-brand-ink text-white">Alışverişe Başla</Link>
@@ -166,8 +160,7 @@ function Checkout() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="h-20" />
+      <Navbar /><div className="h-20" />
       <div className="max-w-[1200px] mx-auto px-6 lg:px-10 py-12">
         <h1 className="font-display text-5xl text-brand-ink mb-8">Ödeme</h1>
         <form onSubmit={submit} className="grid lg:grid-cols-[1fr_400px] gap-8">
@@ -178,14 +171,32 @@ function Checkout() {
               <Input label="Telefon" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />
             </div>
             <Input label="E-posta" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} disabled={!!user} />
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs tracking-widest text-muted-foreground uppercase mb-2">İl</label>
+                <select value={form.sehir} onChange={(e) => setForm({ ...form, sehir: e.target.value, ilce: "" })} className="w-full border border-border rounded-full px-4 py-2.5 bg-white focus:outline-none focus:border-brand-ink">
+                  <option value="">İl seçin</option>
+                  {TR_IL_LIST.map((il) => <option key={il} value={il}>{il}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs tracking-widest text-muted-foreground uppercase mb-2">İlçe</label>
+                <select value={form.ilce} onChange={(e) => setForm({ ...form, ilce: e.target.value })} disabled={!form.sehir} className="w-full border border-border rounded-full px-4 py-2.5 bg-white focus:outline-none focus:border-brand-ink disabled:bg-muted">
+                  <option value="">İlçe seçin</option>
+                  {ilceler.map((i) => <option key={i} value={i}>{i}</option>)}
+                </select>
+              </div>
+            </div>
+            <div className="grid md:grid-cols-2 gap-4">
+              <Input label="Mahalle" value={form.mahalle} onChange={(v) => setForm({ ...form, mahalle: v })} />
+              <Input label="Posta Kodu" value={form.posta_kodu} onChange={(v) => setForm({ ...form, posta_kodu: v })} />
+            </div>
+
             {!user && (
               <>
                 <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={form.createAccount}
-                    onChange={(e) => setForm({ ...form, createAccount: e.target.checked })}
-                  />
+                  <input type="checkbox" checked={form.createAccount} onChange={(e) => setForm({ ...form, createAccount: e.target.checked })} />
                   <span>Hesap oluştur (isteğe bağlı — siparişlerini takip edebilirsin)</span>
                 </label>
                 {form.createAccount && (
@@ -194,8 +205,8 @@ function Checkout() {
               </>
             )}
             <div>
-              <label className="block text-xs tracking-widest text-muted-foreground uppercase mb-2">Adres</label>
-              <textarea value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} rows={4} className="w-full border border-border rounded-2xl p-3 focus:outline-none focus:border-brand-ink" />
+              <label className="block text-xs tracking-widest text-muted-foreground uppercase mb-2">Açık Adres</label>
+              <textarea value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} rows={3} placeholder="Cadde, sokak, bina no, daire..." className="w-full border border-border rounded-2xl p-3 focus:outline-none focus:border-brand-ink" />
             </div>
             <div>
               <label className="block text-xs tracking-widest text-muted-foreground uppercase mb-2">Sipariş Notu (opsiyonel)</label>
