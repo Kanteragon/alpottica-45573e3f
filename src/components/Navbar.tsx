@@ -28,7 +28,7 @@ export function Navbar() {
   const items = menu?.length ? menu : [
     { id: "1", label: "KLİPSLİ MODELLER", url: "/urunler?tag=klipsli" },
     { id: "2", label: "OUTLET MODELLER", url: "/urunler?tag=outlet" },
-    { id: "3", label: "TÜM MODELLER", url: "/urunler?tag=tumu" },
+    { id: "3", label: "TÜM MODELLER", url: "/urunler" },
   ];
 
   return (

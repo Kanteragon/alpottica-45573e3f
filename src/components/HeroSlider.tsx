@@ -63,11 +63,11 @@ export function HeroSlider() {
   const go = (n: number) => setIdx((n + list.length) % list.length);
 
   return (
-    <section className="relative w-full h-screen min-h-[720px] overflow-hidden bg-brand-sand">
+    <section className="relative w-full h-[85vh] min-h-[500px] max-h-[900px] overflow-hidden bg-brand-sand">
       {list.map((s, i) => (
         <div key={s.id} className={`absolute inset-0 transition-opacity duration-[1200ms] ease-out ${i === idx ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
           <a href={s.buton_link || "/urunler"} className="block absolute inset-0">
-            <img src={s.gorsel} alt="" className="absolute inset-0 w-full h-full object-cover" loading={i === 0 ? "eager" : "lazy"} />
+            <img src={s.gorsel} alt="" className="absolute inset-0 w-full h-full object-contain" loading={i === 0 ? "eager" : "lazy"} />
           </a>
         </div>
       ))}
