@@ -493,7 +493,7 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
               <VariantsTab
                 productId={product?.id ?? null}
                 groupId={form.variant_group_id}
-                onGroupIdChange={(id) => setForm({ ...form, variant_group_id: id })}
+                onGroupIdChange={(id: string) => setForm({ ...form, variant_group_id: id })}
               />
             )}
 
