@@ -3,9 +3,24 @@ import slideOutlet from "@/assets/slide-outlet.jpg";
 import slideAll from "@/assets/slide-pilota.jpg";
 
 const CATS = [
-  { title: "Klipsli Modeller", tag: "YENİ SERİ", image: slideKlips, href: "/urunler?tag=klipsli" },
-  { title: "Outlet Modeller", tag: "%30'A VARAN İNDİRİM", image: slideOutlet, href: "/kategori/outlet" },
-  { title: "Tüm Modeller", tag: "HEPSİNİ KEŞFET", image: slideAll, href: "/urunler" },
+  {
+    title: "Klipsli Modeller",
+    tag: "YENİ SERİ",
+    image: slideKlips,
+    href: "https://cqcwjcbxpmbntwcetwuo.supabase.co/storage/v1/object/sign/product-images/imports/5ca0b78d24a96534_0003589_rotondo-nero-trio.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNzAxODRhYy0wODRhLTQ5NWYtOTg4MC0xYjZiYTAyODY2M2MiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LWltYWdlcy9pbXBvcnRzLzVjYTBiNzhkMjRhOTY1MzRfMDAwMzU4OV9yb3RvbmRvLW5lcm8tdHJpby5qcGVnIiwic2NvcGUiOiJkb3dubG9hZCIsImlhdCI6MTc4NDcyNjkyNCwiZXhwIjoyMTAwMDg2OTI0fQ.6YB4Fw3Zr39p3LmwNlCLFXGRBVDtbH9mRXNf9Nh9RYg",
+  },
+  {
+    title: "Outlet Modeller",
+    tag: "%30'A VARAN İNDİRİM",
+    image: slideOutlet,
+    href: "https://cqcwjcbxpmbntwcetwuo.supabase.co/storage/v1/object/sign/product-images/catalog/7799469a62a26062.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNzAxODRhYy0wODRhLTQ5NWYtOTg4MC0xYjZiYTAyODY2M2MiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LWltYWdlcy9jYXRhbG9nLzc3OTk0NjlhNjJhMjYwNjIuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQ3MjM0MzksImV4cCI6MjEwMDA4MzQzOX0.XUS389ZCsZ3zBVbNQmqthB55pc8Pm6PrnJYRv5WaIKA",
+  },
+  {
+    title: "Tüm Modeller",
+    tag: "HEPSİNİ KEŞFET",
+    image: slideAll,
+    href: "https://cqcwjcbxpmbntwcetwuo.supabase.co/storage/v1/object/sign/product-images/catalog/fff8540d0027c14f.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNzAxODRhYy0wODRhLTQ5NWYtOTg4MC0xYjZiYTAyODY2M2MiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LWltYWdlcy9jYXRhbG9nL2ZmZjg1NDBkMDAyN2MxNGYuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQ3MjM0MzgsImV4cCI6MjEwMDA4MzQzOH0.oLMdzY_FgRpaiC8-z-1fcRDg0QZF52B9OWOwahePUfY",
+  },
 ];
 
 export function CategoryShowcase() {
