@@ -23,13 +23,23 @@ function AdminProducts() {
   const qc = useQueryClient();
   const [q, setQ] = useState("");
   const [catFilter, setCatFilter] = useState<string>("");
+  const [brandFilter, setBrandFilter] = useState<string>("");
   const [stockFilter, setStockFilter] = useState<"all" | "in" | "out">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "passive">("all");
+  const [minStock, setMinStock] = useState<string>("");
+  const [maxStock, setMaxStock] = useState<string>("");
+  const [minPrice, setMinPrice] = useState<string>("");
+  const [maxPrice, setMaxPrice] = useState<string>("");
+  const [minAlis, setMinAlis] = useState<string>("");
+  const [maxAlis, setMaxAlis] = useState<string>("");
   const [editing, setEditing] = useState<P | null>(null);
   const [creating, setCreating] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [bulkOpen, setBulkOpen] = useState(false);
+  const [showAdv, setShowAdv] = useState(false);
 
   const { data: cats = [] } = useCategories();
+  const { data: brands = [] } = useBrands();
 
   const { data: products = [] } = useQuery({
     queryKey: ["admin-products"],
@@ -44,13 +54,34 @@ function AdminProducts() {
     },
   });
 
-  const filtered = useMemo(() => products.filter((p) => {
-    if (q && !(p.urun_adi.toLowerCase().includes(q.toLowerCase()) || p.stok_kodu.toLowerCase().includes(q.toLowerCase()))) return false;
-    if (catFilter && p.kategori_id !== catFilter) return false;
-    if (stockFilter === "in" && p.stok_adedi <= 0) return false;
-    if (stockFilter === "out" && p.stok_adedi > 0) return false;
-    return true;
-  }), [products, q, catFilter, stockFilter]);
+  const filtered = useMemo(() => {
+    const qq = q.toLowerCase().trim();
+    return products.filter((p) => {
+      if (qq && !(p.urun_adi.toLowerCase().includes(qq) || p.stok_kodu.toLowerCase().includes(qq) || (p.barkod ?? "").toLowerCase().includes(qq) || (p.model_kodu ?? "").toLowerCase().includes(qq))) return false;
+      if (catFilter && p.kategori_id !== catFilter) return false;
+      if (brandFilter && p.marka_id !== brandFilter) return false;
+      if (stockFilter === "in" && p.stok_adedi <= 0) return false;
+      if (stockFilter === "out" && p.stok_adedi > 0) return false;
+      if (statusFilter === "active" && !p.aktif) return false;
+      if (statusFilter === "passive" && p.aktif) return false;
+      const n = (s: string) => s === "" ? null : Number(s);
+      const nMinStock = n(minStock), nMaxStock = n(maxStock);
+      if (nMinStock != null && p.stok_adedi < nMinStock) return false;
+      if (nMaxStock != null && p.stok_adedi > nMaxStock) return false;
+      const nMinPrice = n(minPrice), nMaxPrice = n(maxPrice);
+      if (nMinPrice != null && Number(p.satis_fiyati) < nMinPrice) return false;
+      if (nMaxPrice != null && Number(p.satis_fiyati) > nMaxPrice) return false;
+      const nMinAlis = n(minAlis), nMaxAlis = n(maxAlis);
+      if (nMinAlis != null && Number(p.alis_fiyati) < nMinAlis) return false;
+      if (nMaxAlis != null && Number(p.alis_fiyati) > nMaxAlis) return false;
+      return true;
+    });
+  }, [products, q, catFilter, brandFilter, stockFilter, statusFilter, minStock, maxStock, minPrice, maxPrice, minAlis, maxAlis]);
+
+  const clearFilters = () => {
+    setQ(""); setCatFilter(""); setBrandFilter(""); setStockFilter("all"); setStatusFilter("all");
+    setMinStock(""); setMaxStock(""); setMinPrice(""); setMaxPrice(""); setMinAlis(""); setMaxAlis("");
+  };
 
   const toggle = async (id: string, aktif: boolean) => {
     await supabase.from("products").update({ aktif: !aktif }).eq("id", id);
@@ -87,21 +118,55 @@ function AdminProducts() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
+      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
         <h1 className="font-display text-4xl text-brand-ink">Ürünler ({filtered.length})</h1>
-        <div className="flex gap-3 flex-wrap">
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ara..." className="border rounded-full px-4 py-2 text-sm" />
+        <div className="flex gap-2 flex-wrap">
+          <button onClick={() => setShowAdv((v) => !v)} className="border rounded-full px-4 py-2 text-sm">
+            {showAdv ? "Basit Filtre" : "Gelişmiş Filtre"}
+          </button>
+          <button onClick={() => setCreating(true)} className="flex items-center gap-2 bg-brand-ink text-white px-4 py-2 rounded-full text-sm"><Plus className="w-4 h-4" /> Yeni Ürün</button>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl border p-4 mb-4 space-y-3">
+        <div className="grid gap-3 md:grid-cols-4">
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Arama (ad, SKU, barkod, model)..." className="border rounded-full px-4 py-2 text-sm" />
           <select value={catFilter} onChange={(e) => setCatFilter(e.target.value)} className="border rounded-full px-4 py-2 text-sm bg-white">
             <option value="">Tüm Kategoriler</option>
             {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+          <select value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)} className="border rounded-full px-4 py-2 text-sm bg-white">
+            <option value="">Tüm Markalar</option>
+            {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
           <select value={stockFilter} onChange={(e) => setStockFilter(e.target.value as typeof stockFilter)} className="border rounded-full px-4 py-2 text-sm bg-white">
             <option value="all">Tüm Stok</option>
             <option value="in">Stokta Var</option>
             <option value="out">Stok Yok</option>
           </select>
-          <button onClick={() => setCreating(true)} className="flex items-center gap-2 bg-brand-ink text-white px-4 py-2 rounded-full text-sm"><Plus className="w-4 h-4" /> Yeni Ürün</button>
         </div>
+        {showAdv && (
+          <div className="grid gap-3 md:grid-cols-4 pt-2 border-t">
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)} className="border rounded-full px-4 py-2 text-sm bg-white">
+              <option value="all">Tüm Durumlar</option>
+              <option value="active">Aktif</option>
+              <option value="passive">Pasif</option>
+            </select>
+            <div className="flex gap-2">
+              <input type="number" placeholder="Min Stok" value={minStock} onChange={(e) => setMinStock(e.target.value)} className="border rounded-full px-3 py-2 text-sm w-full" />
+              <input type="number" placeholder="Max Stok" value={maxStock} onChange={(e) => setMaxStock(e.target.value)} className="border rounded-full px-3 py-2 text-sm w-full" />
+            </div>
+            <div className="flex gap-2">
+              <input type="number" placeholder="Min Satış ₺" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="border rounded-full px-3 py-2 text-sm w-full" />
+              <input type="number" placeholder="Max Satış ₺" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="border rounded-full px-3 py-2 text-sm w-full" />
+            </div>
+            <div className="flex gap-2">
+              <input type="number" placeholder="Min Alış ₺" value={minAlis} onChange={(e) => setMinAlis(e.target.value)} className="border rounded-full px-3 py-2 text-sm w-full" />
+              <input type="number" placeholder="Max Alış ₺" value={maxAlis} onChange={(e) => setMaxAlis(e.target.value)} className="border rounded-full px-3 py-2 text-sm w-full" />
+            </div>
+            <button onClick={clearFilters} className="text-brand-cta text-sm text-left md:col-span-4 underline">Filtreleri temizle</button>
+          </div>
+        )}
       </div>
 
       {selected.size > 0 && (

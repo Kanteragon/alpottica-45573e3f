@@ -137,7 +137,7 @@ function ProductDetail() {
         </div>
 
         <div>
-          <p className="text-xs tracking-[0.4em] text-muted-foreground mb-3">ALPOTTICA · {product.sku}</p>
+          <p className="text-xs tracking-[0.4em] text-muted-foreground mb-3">ALPOTTICA ISTANBUL</p>
           <h1 className="font-display text-4xl md:text-5xl text-brand-ink leading-tight mb-6">
             {product.name.replace("Alpottica ", "")}
           </h1>
@@ -193,9 +193,7 @@ function ProductDetail() {
             </div>
           )}
 
-          <p className="text-xs text-muted-foreground mb-6">Stok: <strong className="text-brand-ink">{product.stock} adet mevcut</strong></p>
-
-          <div className="flex gap-3 mb-4">
+          <div className="hidden md:flex gap-3 mb-4">
             <button
               onClick={() => { add({ product_id: product.id, slug: product.slug, name: product.name, image: product.image, price: product.price, stock: product.stock }); toast.success("Sepete eklendi"); }}
               className="flex-1 flex items-center justify-center gap-2 bg-brand-cta text-white font-semibold tracking-wider text-sm py-4 rounded-full hover:opacity-90 transition"
@@ -205,7 +203,7 @@ function ProductDetail() {
             <button className="px-6 py-4 rounded-full border border-brand-ink text-brand-ink hover:bg-brand-ink hover:text-white transition"><Heart className="w-4 h-4" /></button>
           </div>
 
-          <a href={`https://wa.me/905466460244?text=${waMsg}`} target="_blank" rel="noreferrer" className="block text-center w-full py-4 rounded-full bg-[#25D366] text-white text-sm tracking-widest font-semibold hover:opacity-90 transition mb-8">
+          <a href={`https://wa.me/905466460244?text=${waMsg}`} target="_blank" rel="noreferrer" className="hidden md:block text-center w-full py-4 rounded-full bg-[#25D366] text-white text-sm tracking-widest font-semibold hover:opacity-90 transition mb-8">
             WHATSAPP İLE SİPARİŞ
           </a>
 
@@ -227,6 +225,20 @@ function ProductDetail() {
       )}
 
       <Footer />
+
+      {/* Mobile sticky bottom bar */}
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-border shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-3 py-3 flex gap-2 pb-[calc(env(safe-area-inset-bottom,0)+0.75rem)]">
+        <button
+          onClick={() => { add({ product_id: product.id, slug: product.slug, name: product.name, image: product.image, price: product.price, stock: product.stock }); toast.success("Sepete eklendi"); }}
+          className="flex-1 flex items-center justify-center gap-2 bg-brand-cta text-white font-semibold tracking-wider text-sm py-3.5 rounded-full"
+        >
+          <ShoppingCart className="w-4 h-4" /> SEPETE EKLE
+        </button>
+        <a href={`https://wa.me/905466460244?text=${waMsg}`} target="_blank" rel="noreferrer" className="flex items-center justify-center px-5 py-3.5 rounded-full bg-[#25D366] text-white text-xs tracking-widest font-semibold">
+          WHATSAPP
+        </a>
+      </div>
+      <div className="md:hidden h-20" />
     </div>
   );
 }

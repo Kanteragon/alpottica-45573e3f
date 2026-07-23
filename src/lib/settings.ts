@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export type SiteSettings = { logo_url: string | null; logo_max_width: number };
+export type SiteSettings = { logo_url: string | null; favicon_url: string | null; logo_max_width: number };
 
 export function useSiteSettings() {
   return useQuery({
@@ -9,11 +9,12 @@ export function useSiteSettings() {
     queryFn: async (): Promise<SiteSettings> => {
       const { data } = await supabase
         .from("site_settings")
-        .select("logo_url,logo_max_width")
+        .select("logo_url,favicon_url,logo_max_width")
         .eq("id", 1)
         .maybeSingle();
       return {
         logo_url: data?.logo_url ?? null,
+        favicon_url: (data as { favicon_url?: string | null } | null)?.favicon_url ?? null,
         logo_max_width: data?.logo_max_width ?? 260,
       };
     },

@@ -548,18 +548,21 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          favicon_url: string | null
           id: number
           logo_max_width: number
           logo_url: string | null
           updated_at: string
         }
         Insert: {
+          favicon_url?: string | null
           id?: number
           logo_max_width?: number
           logo_url?: string | null
           updated_at?: string
         }
         Update: {
+          favicon_url?: string | null
           id?: number
           logo_max_width?: number
           logo_url?: string | null
