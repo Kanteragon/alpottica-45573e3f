@@ -83,23 +83,44 @@ function Products() {
   const colors = useMemo(() => Array.from(new Set(products.map((p) => p.color).filter(Boolean))).sort(), [products]);
   const sizes = useMemo(() => Array.from(new Set(products.map((p) => p.size).filter(Boolean))).sort(), [products]);
 
-  // Dynamic filterable attribute values pulled from ALL products' ozellikler
+  // Dynamic filterable attribute values pulled from ALL products' ozellikler.
+  // Includes registered filterable attributes AND raw keys from Excel imports.
   const filterableAttrs = useMemo(() => {
-    const filterable = attrs.filter((a) => a.filterable);
-    return filterable.map((a) => {
-      const values = new Set<string>();
-      for (const p of products) {
-        const oz = p.ozellikler ?? {};
-        for (const [k, v] of Object.entries(oz)) {
-          if (norm(k) === norm(a.slug) || norm(k) === norm(a.ad)) {
-            if (v && String(v).trim()) values.add(String(v));
-          }
+    const registered = attrs.filter((a) => a.filterable);
+    const byNorm = new Map<string, { ad: string; slug: string; values: Set<string> }>();
+
+    // seed registered ones
+    for (const a of registered) {
+      byNorm.set(norm(a.slug), { ad: a.ad, slug: a.slug, values: new Set(a.degerler ?? []) });
+    }
+
+    const HIDE = new Set(["aciklama", "description", "url", "resim", "resimler"]);
+
+    // walk every product's özellikler
+    for (const p of products) {
+      const oz = p.ozellikler ?? {};
+      for (const [k, v] of Object.entries(oz)) {
+        if (!v || !String(v).trim()) continue;
+        const n = norm(k);
+        if (HIDE.has(n)) continue;
+        // find matching entry via norm(slug) OR norm(ad) of registered
+        let entry = byNorm.get(n);
+        if (!entry) {
+          const regMatch = registered.find((a) => norm(a.ad) === n);
+          if (regMatch) entry = byNorm.get(norm(regMatch.slug));
         }
+        if (!entry) {
+          // create new dynamic entry (from Excel)
+          entry = { ad: k.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()), slug: n, values: new Set() };
+          byNorm.set(n, entry);
+        }
+        entry.values.add(String(v));
       }
-      // include any predefined degerler too
-      for (const d of a.degerler ?? []) values.add(d);
-      return { attr: a, values: Array.from(values).sort() };
-    }).filter((x) => x.values.length > 0);
+    }
+
+    return Array.from(byNorm.values())
+      .filter((x) => x.values.size > 0 && x.values.size <= 40)
+      .map((x) => ({ attr: { id: x.slug, ad: x.ad, slug: x.slug, degerler: [], filterable: true, show_in_detail: true, sira: 0 }, values: Array.from(x.values).sort() }));
   }, [attrs, products]);
 
   const setSearchParam = (patch: Record<string, string | undefined>) => {
