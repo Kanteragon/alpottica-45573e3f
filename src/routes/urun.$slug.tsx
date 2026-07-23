@@ -225,6 +225,20 @@ function ProductDetail() {
       )}
 
       <Footer />
+
+      {/* Mobile sticky bottom bar */}
+      <div className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur border-t border-border shadow-[0_-4px_20px_rgba(0,0,0,0.08)] px-3 py-3 flex gap-2 pb-[calc(env(safe-area-inset-bottom,0)+0.75rem)]">
+        <button
+          onClick={() => { add({ product_id: product.id, slug: product.slug, name: product.name, image: product.image, price: product.price, stock: product.stock }); toast.success("Sepete eklendi"); }}
+          className="flex-1 flex items-center justify-center gap-2 bg-brand-cta text-white font-semibold tracking-wider text-sm py-3.5 rounded-full"
+        >
+          <ShoppingCart className="w-4 h-4" /> SEPETE EKLE
+        </button>
+        <a href={`https://wa.me/905466460244?text=${waMsg}`} target="_blank" rel="noreferrer" className="flex items-center justify-center px-5 py-3.5 rounded-full bg-[#25D366] text-white text-xs tracking-widest font-semibold">
+          WHATSAPP
+        </a>
+      </div>
+      <div className="md:hidden h-20" />
     </div>
   );
 }
