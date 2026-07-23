@@ -40,8 +40,8 @@ export function ProductCard({ product }: { product: Product }) {
           <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-xs">Görsel yok</div>
         )}
         {disc && (
-          <span className="absolute top-3 left-3 bg-brand-cta text-white text-[11px] font-semibold tracking-wider px-2.5 py-1 rounded-full">
-            %{disc} İNDİRİM
+          <span className="absolute top-2 left-2 sm:top-3 sm:left-3 bg-brand-cta text-white text-[9px] sm:text-[11px] font-semibold tracking-wider px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full">
+            %{disc}
           </span>
         )}
         <button
