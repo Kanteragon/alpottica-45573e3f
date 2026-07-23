@@ -17,7 +17,6 @@ export function DynamicFavicon() {
       link.href = url;
     };
     setLink("icon");
-    setLink("shortcut icon");
     setLink("apple-touch-icon");
   }, [url]);
 
