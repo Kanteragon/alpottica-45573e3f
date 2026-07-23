@@ -108,6 +108,7 @@ function Checkout() {
         }
       }
 
+      // 1. Siparişi oluştur
       const { data: order, error: oErr } = await supabase
         .from("orders")
         .insert({
@@ -128,11 +129,32 @@ function Checkout() {
         .single();
       if (oErr) throw oErr;
 
+      // 2. Sipariş kalemlerini ekle
       const orderItems = items.map((i) => ({
-        order_id: order.id, product_id: i.product_id, adet: i.qty, birim_fiyat: i.price, urun_adi_snapshot: i.name,
+        order_id: order.id,
+        product_id: i.product_id,
+        adet: i.qty,
+        birim_fiyat: i.price,
+        urun_adi_snapshot: i.name,
       }));
       const { error: iErr } = await supabase.from("order_items").insert(orderItems);
       if (iErr) throw iErr;
+
+      // 3. EĞER KULLANICI GİRİŞ YAPMIŞSA (VEYA YENİ HESAP AÇtiysa), ADRESİ OTOMATİK OLARAK "addresses" TABLOSUNA KAYDET
+      if (userId) {
+        // Kullanıcının daha önce kayıtlı adresi var mı kontrol et veya direkt yeni adres olarak ekle
+        await supabase.from("addresses").insert({
+          user_id: userId,
+          ad_soyad: form.full_name,
+          telefon: form.phone,
+          sehir: form.sehir,
+          ilce: form.ilce,
+          mahalle: form.mahalle || null,
+          posta_kodu: form.posta_kodu || null,
+          adres: form.address,
+          is_default: false,
+        });
+      }
 
       clear();
       toast.success("Siparişiniz alındı!");
