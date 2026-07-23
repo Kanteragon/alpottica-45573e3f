@@ -1,2 +1,0 @@
-ALTER TABLE public.addresses
-  ALTER COLUMN baslik SET DEFAULT 'Teslimat Adresi';
