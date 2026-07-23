@@ -18,7 +18,7 @@ export type Database = {
         Row: {
           ad_soyad: string
           adres: string
-          baslik: string
+          baslik: string | null
           created_at: string
           id: string
           ilce: string | null
@@ -33,7 +33,7 @@ export type Database = {
         Insert: {
           ad_soyad: string
           adres: string
-          baslik: string
+          baslik?: string | null
           created_at?: string
           id?: string
           ilce?: string | null
@@ -48,7 +48,7 @@ export type Database = {
         Update: {
           ad_soyad?: string
           adres?: string
-          baslik?: string
+          baslik?: string | null
           created_at?: string
           id?: string
           ilce?: string | null
