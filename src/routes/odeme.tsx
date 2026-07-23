@@ -108,7 +108,7 @@ function Checkout() {
         }
       }
 
-      // 1. Siparişi oluştur
+      // 1. Siparişi oluştur (Veritabanındaki trigger otomatik olarak adresi addresses tablosuna ekleyecektir)
       const { data: order, error: oErr } = await supabase
         .from("orders")
         .insert({
@@ -139,22 +139,6 @@ function Checkout() {
       }));
       const { error: iErr } = await supabase.from("order_items").insert(orderItems);
       if (iErr) throw iErr;
-
-      // 3. Adresi müşterinin hesap adreslerine otomatik kaydet (baslik alanı ile)
-      if (userId) {
-        await supabase.from("addresses").insert({
-          user_id: userId,
-          baslik: "Teslimat Adresim",
-          ad_soyad: form.full_name,
-          telefon: form.phone,
-          sehir: form.sehir,
-          ilce: form.ilce,
-          mahalle: form.mahalle || null,
-          posta_kodu: form.posta_kodu || null,
-          adres: form.address,
-          is_default: false,
-        });
-      }
 
       clear();
       toast.success("Siparişiniz alındı!");
