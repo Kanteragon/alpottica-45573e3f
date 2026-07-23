@@ -193,9 +193,7 @@ function ProductDetail() {
             </div>
           )}
 
-          <p className="text-xs text-muted-foreground mb-6">Stok: <strong className="text-brand-ink">{product.stock} adet mevcut</strong></p>
-
-          <div className="flex gap-3 mb-4">
+          <div className="hidden md:flex gap-3 mb-4">
             <button
               onClick={() => { add({ product_id: product.id, slug: product.slug, name: product.name, image: product.image, price: product.price, stock: product.stock }); toast.success("Sepete eklendi"); }}
               className="flex-1 flex items-center justify-center gap-2 bg-brand-cta text-white font-semibold tracking-wider text-sm py-4 rounded-full hover:opacity-90 transition"
@@ -205,7 +203,7 @@ function ProductDetail() {
             <button className="px-6 py-4 rounded-full border border-brand-ink text-brand-ink hover:bg-brand-ink hover:text-white transition"><Heart className="w-4 h-4" /></button>
           </div>
 
-          <a href={`https://wa.me/905466460244?text=${waMsg}`} target="_blank" rel="noreferrer" className="block text-center w-full py-4 rounded-full bg-[#25D366] text-white text-sm tracking-widest font-semibold hover:opacity-90 transition mb-8">
+          <a href={`https://wa.me/905466460244?text=${waMsg}`} target="_blank" rel="noreferrer" className="hidden md:block text-center w-full py-4 rounded-full bg-[#25D366] text-white text-sm tracking-widest font-semibold hover:opacity-90 transition mb-8">
             WHATSAPP İLE SİPARİŞ
           </a>
 
