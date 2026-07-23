@@ -15,53 +15,64 @@ function matches(konum: string, path: string): boolean {
   return false;
 }
 
-function parseAndInject(id: string, raw: string): HTMLElement[] {
-  const nodes: HTMLElement[] = [];
-  // Extract <script> and <style> blocks; treat rest as HTML fragment appended to body
-  const tmp = document.createElement("div");
-  tmp.innerHTML = raw;
-
-  const scripts = tmp.querySelectorAll("script");
-  scripts.forEach((s) => {
-    const el = document.createElement("script");
-    for (const attr of Array.from(s.attributes)) el.setAttribute(attr.name, attr.value);
-    el.textContent = s.textContent;
-    el.dataset.injectedBy = id;
-    document.body.appendChild(el);
-    nodes.push(el);
-    s.remove();
-  });
-
-  const styles = tmp.querySelectorAll("style");
-  styles.forEach((s) => {
-    const el = document.createElement("style");
-    el.textContent = s.textContent;
-    el.dataset.injectedBy = id;
-    document.head.appendChild(el);
-    nodes.push(el);
-    s.remove();
-  });
-
-  // Remaining content: if not empty, append as script (JS) OR as HTML container
-  const rest = tmp.innerHTML.trim();
-  if (rest) {
-    // Heuristic: if it contains typical JS keywords and no HTML tags → JS
-    const looksLikeJs = /^(?:function|var |let |const |window\.|document\.|\(|\/\/)/m.test(rest) && !/</.test(rest);
-    if (looksLikeJs) {
-      const el = document.createElement("script");
-      el.textContent = rest;
-      el.dataset.injectedBy = id;
-      document.body.appendChild(el);
-      nodes.push(el);
-    } else {
-      const el = document.createElement("div");
-      el.innerHTML = rest;
-      el.dataset.injectedBy = id;
-      document.body.appendChild(el);
-      nodes.push(el);
-    }
+// Execute a script node by cloning into a fresh <script> element so the browser runs it.
+function execScript(source: HTMLScriptElement, tag: string): HTMLScriptElement {
+  const s = document.createElement("script");
+  for (const attr of Array.from(source.attributes)) {
+    try { s.setAttribute(attr.name, attr.value); } catch { /* ignore invalid */ }
   }
-  return nodes;
+  if (!source.src && source.textContent) {
+    s.text = source.textContent;
+  }
+  s.dataset.injectedBy = tag;
+  document.body.appendChild(s);
+  return s;
+}
+
+function injectRaw(id: string, raw: string): HTMLElement[] {
+  const created: HTMLElement[] = [];
+  const trimmed = raw.trim();
+  if (!trimmed) return created;
+
+  // If the content has any HTML-like tags, parse as HTML and re-execute scripts.
+  if (/<\s*(script|style|link|meta|div|span|iframe|img|a|p|h[1-6])\b/i.test(trimmed)) {
+    const tmpl = document.createElement("template");
+    tmpl.innerHTML = trimmed;
+    const frag = tmpl.content;
+
+    // Extract & execute scripts (in original order)
+    frag.querySelectorAll("script").forEach((s) => {
+      created.push(execScript(s as HTMLScriptElement, id));
+      s.remove();
+    });
+
+    // Move styles into <head>
+    frag.querySelectorAll("style").forEach((st) => {
+      const el = document.createElement("style");
+      el.textContent = st.textContent;
+      el.dataset.injectedBy = id;
+      document.head.appendChild(el);
+      created.push(el);
+      st.remove();
+    });
+
+    // Remaining markup → append container to body
+    if (frag.childNodes.length) {
+      const wrap = document.createElement("div");
+      wrap.dataset.injectedBy = id;
+      wrap.appendChild(frag);
+      document.body.appendChild(wrap);
+      created.push(wrap);
+    }
+  } else {
+    // No HTML tags → treat as raw JavaScript
+    const s = document.createElement("script");
+    s.text = trimmed;
+    s.dataset.injectedBy = id;
+    document.body.appendChild(s);
+    created.push(s);
+  }
+  return created;
 }
 
 export function ScriptInjector() {
@@ -79,9 +90,7 @@ export function ScriptInjector() {
     if (typeof document === "undefined") return;
     const active = scripts.filter((s) => matches(s.konum, path));
     const created: HTMLElement[] = [];
-    for (const s of active) {
-      created.push(...parseAndInject(s.id, s.icerik));
-    }
+    for (const s of active) created.push(...injectRaw(s.id, s.icerik));
     return () => {
       created.forEach((n) => n.remove());
     };

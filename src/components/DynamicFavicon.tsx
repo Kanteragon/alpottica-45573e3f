@@ -3,7 +3,7 @@ import { useSiteSettings } from "@/lib/settings";
 
 export function DynamicFavicon() {
   const { data } = useSiteSettings();
-  const url = data?.logo_url;
+  const url = data?.favicon_url || data?.logo_url;
 
   useEffect(() => {
     if (typeof document === "undefined" || !url) return;
@@ -17,6 +17,7 @@ export function DynamicFavicon() {
       link.href = url;
     };
     setLink("icon");
+    setLink("shortcut icon");
     setLink("apple-touch-icon");
   }, [url]);
 
