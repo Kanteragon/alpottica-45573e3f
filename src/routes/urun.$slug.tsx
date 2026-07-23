@@ -137,7 +137,7 @@ function ProductDetail() {
         </div>
 
         <div>
-          <p className="text-xs tracking-[0.4em] text-muted-foreground mb-3">ALPOTTICA · {product.sku}</p>
+          <p className="text-xs tracking-[0.4em] text-muted-foreground mb-3">ALPOTTICA ISTANBUL</p>
           <h1 className="font-display text-4xl md:text-5xl text-brand-ink leading-tight mb-6">
             {product.name.replace("Alpottica ", "")}
           </h1>
