@@ -140,11 +140,11 @@ function Checkout() {
       const { error: iErr } = await supabase.from("order_items").insert(orderItems);
       if (iErr) throw iErr;
 
-      // 3. EĞER KULLANICI GİRİŞ YAPMIŞSA (VEYA YENİ HESAP AÇtiysa), ADRESİ OTOMATİK OLARAK "addresses" TABLOSUNA KAYDET
+      // 3. Adresi müşterinin hesap adreslerine otomatik kaydet (baslik alanı ile)
       if (userId) {
-        // Kullanıcının daha önce kayıtlı adresi var mı kontrol et veya direkt yeni adres olarak ekle
         await supabase.from("addresses").insert({
           user_id: userId,
+          baslik: "Teslimat Adresim",
           ad_soyad: form.full_name,
           telefon: form.phone,
           sehir: form.sehir,
