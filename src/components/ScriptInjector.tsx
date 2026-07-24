@@ -112,6 +112,8 @@ export function ScriptInjector() {
 
   useEffect(() => {
     if (typeof document === "undefined") return;
+    // Do not inject any custom scripts inside the admin panel.
+    if (path.startsWith("/admin")) return;
     const active = scripts.filter((s) => matches(s.konum, path));
     const created: HTMLElement[] = [];
     for (const s of active) created.push(...injectRaw(s.id, s.icerik));
