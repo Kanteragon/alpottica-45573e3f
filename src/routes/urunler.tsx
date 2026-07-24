@@ -168,15 +168,21 @@ function Products() {
               <a href="/urunler" className={`px-4 py-2 text-[11px] tracking-[0.2em] rounded-full border shrink-0 transition ${!search.tag ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink bg-white"}`}>TÜM</a>
               <a href="/urunler?tag=klipsli" className={`px-4 py-2 text-[11px] tracking-[0.2em] rounded-full border shrink-0 transition ${search.tag === "klipsli" ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink bg-white"}`}>KLİPSLİ</a>
               <a href="/urunler?tag=outlet" className={`px-4 py-2 text-[11px] tracking-[0.2em] rounded-full border shrink-0 transition ${search.tag === "outlet" ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink bg-white"}`}>OUTLET</a>
-              {cats?.slice(0, 6).map((c) => (
-                <a
-                  key={c.id}
-                  href={`/urunler?kategori=${c.id}`}
-                  className={`px-4 py-2 text-[11px] tracking-[0.2em] rounded-full border shrink-0 transition uppercase ${search.kategori === c.id ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink bg-white"}`}
-                >
-                  {c.name}
-                </a>
-              ))}
+              {cats
+                ?.filter((c) => {
+                  const n = c.name.toLowerCase();
+                  return !n.includes("klips") && !n.includes("outlet");
+                })
+                .slice(0, 2)
+                .map((c) => (
+                  <a
+                    key={c.id}
+                    href={`/urunler?kategori=${c.id}`}
+                    className={`px-4 py-2 text-[11px] tracking-[0.2em] rounded-full border shrink-0 transition uppercase ${search.kategori === c.id ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink bg-white"}`}
+                  >
+                    {c.name}
+                  </a>
+                ))}
             </div>
           </div>
 
