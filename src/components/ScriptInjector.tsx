@@ -15,6 +15,30 @@ function matches(konum: string, path: string): boolean {
   return false;
 }
 
+// Wrap raw JS so that listeners for DOMContentLoaded/load fire immediately
+// when the document is already loaded (scripts are injected after hydration).
+function wrapDeferred(code: string): string {
+  return `;(function(){
+  var __d = document.addEventListener.bind(document);
+  var __w = window.addEventListener.bind(window);
+  document.addEventListener = function(ev, fn, opts){
+    if(ev==='DOMContentLoaded' && document.readyState!=='loading'){ try{ setTimeout(fn,0); }catch(e){ console.error(e); } return; }
+    return __d(ev, fn, opts);
+  };
+  window.addEventListener = function(ev, fn, opts){
+    if(ev==='load' && document.readyState==='complete'){ try{ setTimeout(fn,0); }catch(e){ console.error(e); } return; }
+    return __w(ev, fn, opts);
+  };
+  try {
+${code}
+  } catch(e){ console.error('[injected script]', e); }
+  finally {
+    document.addEventListener = __d;
+    window.addEventListener = __w;
+  }
+})();`;
+}
+
 // Execute a script node by cloning into a fresh <script> element so the browser runs it.
 function execScript(source: HTMLScriptElement, tag: string): HTMLScriptElement {
   const s = document.createElement("script");
@@ -22,7 +46,7 @@ function execScript(source: HTMLScriptElement, tag: string): HTMLScriptElement {
     try { s.setAttribute(attr.name, attr.value); } catch { /* ignore invalid */ }
   }
   if (!source.src && source.textContent) {
-    s.text = source.textContent;
+    s.text = wrapDeferred(source.textContent);
   }
   s.dataset.injectedBy = tag;
   document.body.appendChild(s);
@@ -67,7 +91,7 @@ function injectRaw(id: string, raw: string): HTMLElement[] {
   } else {
     // No HTML tags → treat as raw JavaScript
     const s = document.createElement("script");
-    s.text = trimmed;
+    s.text = wrapDeferred(trimmed);
     s.dataset.injectedBy = id;
     document.body.appendChild(s);
     created.push(s);
