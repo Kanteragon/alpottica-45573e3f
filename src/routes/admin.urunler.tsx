@@ -232,28 +232,65 @@ function AdminProducts() {
 }
 
 function BulkUpdate({ ids, onClose }: { ids: string[]; onClose: () => void }) {
-  const [mode, setMode] = useState<"price" | "stock" | "discount">("price");
+  const [mode, setMode] = useState<"price" | "stock" | "discount" | "category" | "variant">("price");
   const [val, setVal] = useState<string>("");
   const [busy, setBusy] = useState(false);
+  const { data: cats = [] } = useCategories();
+  const [catIds, setCatIds] = useState<Set<string>>(new Set());
+  const [setPrimary, setSetPrimary] = useState(true);
+
+  const toggleCat = (id: string) => {
+    const next = new Set(catIds);
+    next.has(id) ? next.delete(id) : next.add(id);
+    setCatIds(next);
+  };
+
+  const applyCategories = async () => {
+    if (catIds.size === 0) return toast.error("En az bir kategori seçin");
+    const rows = ids.flatMap((pid) => Array.from(catIds).map((cid) => ({ product_id: pid, category_id: cid })));
+    const { error } = await supabase.from("product_categories").upsert(rows, { onConflict: "product_id,category_id", ignoreDuplicates: true });
+    if (error) throw error;
+    if (setPrimary) {
+      const primary = Array.from(catIds)[0];
+      const { error: e2 } = await supabase.from("products").update({ kategori_id: primary }).in("id", ids);
+      if (e2) throw e2;
+    }
+    toast.success(`${ids.length} ürün ${catIds.size} kategoriye eklendi`);
+  };
+
+  const applyVariantGroup = async () => {
+    if (ids.length < 2) return toast.error("En az 2 ürün seçin");
+    const { data } = await supabase.from("products").select("id, variant_group_id").in("id", ids);
+    const existing = (data ?? []).find((r) => r.variant_group_id)?.variant_group_id as string | undefined;
+    const gid = existing ?? (globalThis.crypto?.randomUUID?.() ?? `vg-${Date.now()}`);
+    const { error } = await supabase.from("products").update({ variant_group_id: gid }).in("id", ids);
+    if (error) throw error;
+    toast.success(`${ids.length} ürün varyasyon olarak bağlandı`);
+  };
 
   const apply = async () => {
-    const num = Number(val);
-    if (Number.isNaN(num)) return toast.error("Geçerli sayı girin");
     setBusy(true);
     try {
-      if (mode === "stock") {
-        await supabase.from("products").update({ stok_adedi: num }).in("id", ids);
-      } else if (mode === "price") {
-        await supabase.from("products").update({ satis_fiyati: num }).in("id", ids);
+      if (mode === "category") {
+        await applyCategories();
+      } else if (mode === "variant") {
+        await applyVariantGroup();
       } else {
-        // discount %: satis = liste * (1 - pct/100)
-        const { data } = await supabase.from("products").select("id, liste_fiyati").in("id", ids);
-        for (const row of data ?? []) {
-          const yeni = Math.round(Number(row.liste_fiyati) * (1 - num / 100));
-          await supabase.from("products").update({ satis_fiyati: yeni }).eq("id", row.id);
+        const num = Number(val);
+        if (Number.isNaN(num) || val === "") return toast.error("Geçerli sayı girin");
+        if (mode === "stock") {
+          await supabase.from("products").update({ stok_adedi: num }).in("id", ids);
+        } else if (mode === "price") {
+          await supabase.from("products").update({ satis_fiyati: num }).in("id", ids);
+        } else {
+          const { data } = await supabase.from("products").select("id, liste_fiyati").in("id", ids);
+          for (const row of data ?? []) {
+            const yeni = Math.round(Number(row.liste_fiyati) * (1 - num / 100));
+            await supabase.from("products").update({ satis_fiyati: yeni }).eq("id", row.id);
+          }
         }
+        toast.success(`${ids.length} ürün güncellendi`);
       }
-      toast.success(`${ids.length} ürün güncellendi`);
       onClose();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Hata");
@@ -262,23 +299,49 @@ function BulkUpdate({ ids, onClose }: { ids: string[]; onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-md w-full">
+      <div className="bg-white rounded-2xl max-w-md w-full max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between p-5 border-b">
           <h2 className="font-display text-2xl">Toplu Güncelle ({ids.length})</h2>
           <button onClick={onClose}><X className="w-5 h-5" /></button>
         </div>
-        <div className="p-5 space-y-4">
-          <div className="flex gap-2">
-            <button onClick={() => setMode("price")} className={`flex-1 px-3 py-2 rounded-full text-sm border ${mode === "price" ? "bg-brand-ink text-white border-brand-ink" : ""}`}>Fiyat</button>
-            <button onClick={() => setMode("stock")} className={`flex-1 px-3 py-2 rounded-full text-sm border ${mode === "stock" ? "bg-brand-ink text-white border-brand-ink" : ""}`}>Stok</button>
-            <button onClick={() => setMode("discount")} className={`flex-1 px-3 py-2 rounded-full text-sm border ${mode === "discount" ? "bg-brand-ink text-white border-brand-ink" : ""}`}>İndirim %</button>
+        <div className="p-5 space-y-4 overflow-y-auto">
+          <div className="flex gap-2 flex-wrap">
+            {([
+              ["price", "Fiyat"], ["stock", "Stok"], ["discount", "İndirim %"],
+              ["category", "Kategoriye Ekle"], ["variant", "Varyasyon Bağla"],
+            ] as const).map(([k, label]) => (
+              <button key={k} onClick={() => setMode(k)} className={`px-3 py-2 rounded-full text-sm border ${mode === k ? "bg-brand-ink text-white border-brand-ink" : ""}`}>{label}</button>
+            ))}
           </div>
-          <label className="block">
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">
-              {mode === "price" ? "Yeni Satış Fiyatı (TL)" : mode === "stock" ? "Yeni Stok Adedi" : "İndirim Oranı (%)"}
-            </span>
-            <input type="number" value={val} onChange={(e) => setVal(e.target.value)} className="w-full border rounded-xl px-3 py-2 mt-1" />
-          </label>
+
+          {mode === "category" ? (
+            <div className="space-y-3">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">Kategoriler</p>
+              <div className="border rounded-xl divide-y max-h-60 overflow-y-auto">
+                {cats.map((c) => (
+                  <label key={c.id} className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer hover:bg-brand-sand/20">
+                    <input type="checkbox" checked={catIds.has(c.id)} onChange={() => toggleCat(c.id)} />
+                    {c.name}
+                  </label>
+                ))}
+              </div>
+              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                <input type="checkbox" checked={setPrimary} onChange={(e) => setSetPrimary(e.target.checked)} />
+                Seçilen ilk kategoriyi ana kategori yap
+              </label>
+            </div>
+          ) : mode === "variant" ? (
+            <p className="text-sm text-muted-foreground">
+              Seçili {ids.length} ürün aynı varyasyon grubuna bağlanır (farklı renk / model). Ürün sayfasında birbirlerine geçiş seçenekleri olarak görünürler.
+            </p>
+          ) : (
+            <label className="block">
+              <span className="text-xs uppercase tracking-widest text-muted-foreground">
+                {mode === "price" ? "Yeni Satış Fiyatı (TL)" : mode === "stock" ? "Yeni Stok Adedi" : "İndirim Oranı (%)"}
+              </span>
+              <input type="number" value={val} onChange={(e) => setVal(e.target.value)} className="w-full border rounded-xl px-3 py-2 mt-1" />
+            </label>
+          )}
         </div>
         <div className="p-5 border-t flex justify-end gap-3">
           <button onClick={onClose} className="px-5 py-2 rounded-full border">İptal</button>
@@ -290,6 +353,7 @@ function BulkUpdate({ ids, onClose }: { ids: string[]; onClose: () => void }) {
     </div>
   );
 }
+
 
 type TabKey =
   | "info" | "stock" | "price" | "discount" | "showcase" | "seo" | "images"
