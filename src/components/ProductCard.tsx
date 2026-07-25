@@ -68,15 +68,15 @@ export function ProductCard({ product }: { product: Product }) {
           </>
         )}
       </div>
-      <div className="p-3 sm:p-5">
-        <p className="text-[10px] sm:text-[11px] tracking-[0.2em] text-muted-foreground mb-1 sm:mb-2 uppercase">Alpottica</p>
-        <h3 className="text-sm sm:text-lg md:text-xl font-semibold text-brand-ink line-clamp-2 min-h-[2.5rem] sm:min-h-[3.5rem] leading-snug">
+      <div className="p-2.5 sm:p-5">
+        <p className="hidden sm:block text-[11px] tracking-[0.2em] text-muted-foreground mb-2 uppercase">Alpottica</p>
+        <h3 className="text-[13px] sm:text-lg md:text-xl font-semibold text-brand-ink line-clamp-2 min-h-[2.2rem] sm:min-h-[3.5rem] leading-tight sm:leading-snug">
           {product.name.replace("Alpottica ", "")}
         </h3>
-        <div className="mt-2 sm:mt-3 flex items-baseline flex-wrap gap-x-2">
-          <span className="text-base sm:text-xl font-bold text-brand-ink">{formatTL(product.price)}</span>
+        <div className="mt-1 sm:mt-3 flex items-baseline flex-wrap gap-x-2">
+          <span className="text-[15px] sm:text-xl font-bold text-brand-ink">{formatTL(product.price)}</span>
           {disc && (
-            <span className="text-xs sm:text-base text-muted-foreground line-through">{formatTL(product.listPrice)}</span>
+            <span className="text-[11px] sm:text-base text-muted-foreground line-through">{formatTL(product.listPrice)}</span>
           )}
         </div>
         <button
@@ -92,10 +92,11 @@ export function ProductCard({ product }: { product: Product }) {
             });
             toast.success("Sepete eklendi");
           }}
-          className="mt-2 sm:mt-3 w-full flex items-center justify-center gap-1.5 text-[10px] sm:text-xs tracking-widest font-semibold text-brand-ink border border-brand-ink/20 rounded-full py-2 sm:py-2.5 hover:bg-brand-ink hover:text-white transition"
+          className="mt-1.5 sm:mt-3 w-full flex items-center justify-center gap-1.5 text-[11px] sm:text-xs tracking-widest font-semibold text-brand-ink border border-brand-ink/20 rounded-full py-1.5 sm:py-2.5 hover:bg-brand-ink hover:text-white transition"
         >
           <ShoppingCart className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> SEPETE EKLE
         </button>
+
       </div>
     </Link>
   );
