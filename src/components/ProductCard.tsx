@@ -28,14 +28,15 @@ export function ProductCard({ product }: { product: Product }) {
       onMouseLeave={() => { setHovering(false); setIdx(0); }}
       className="group block rounded-2xl overflow-hidden bg-white border border-border hover:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.15)] hover:-translate-y-1 transition-all duration-300"
     >
-      <div className="relative aspect-square overflow-hidden bg-brand-sand/40">
+      <div className="relative aspect-[4/5] sm:aspect-square overflow-hidden bg-brand-sand/40">
         {gallery[idx] ? (
           <img
             src={gallery[idx]}
             alt={product.name}
             loading="lazy"
-            className="absolute inset-0 w-full h-full object-contain p-2 transition-all duration-300"
+            className="absolute inset-0 w-full h-full object-contain p-1 sm:p-2 transition-all duration-300"
           />
+
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-xs">Görsel yok</div>
         )}
