@@ -18,7 +18,23 @@ export type ProductFilter = {
 
 export async function fetchProducts(filter: ProductFilter = {}): Promise<Product[]> {
   let q = supabase.from("products").select(PRODUCT_COLS).order("created_at", { ascending: false });
-  if (filter.tag && filter.tag !== "tumu") q = q.contains("etiketler", [filter.tag]);
+  if (filter.tag && filter.tag !== "tumu") {
+    // Match by tag OR by a category whose slug/name matches the tag (Excel categories)
+    const { data: cats } = await supabase
+      .from("categories")
+      .select("id,name,slug")
+      .or(`slug.ilike.%${filter.tag}%,name.ilike.%${filter.tag}%`);
+    const catIds = (cats ?? []).map((c) => c.id as string);
+    let ids: string[] = [];
+    if (catIds.length) {
+      const { data: pcs } = await supabase.from("product_categories").select("product_id").in("category_id", catIds);
+      ids = Array.from(new Set((pcs ?? []).map((r) => r.product_id as string)));
+    }
+    const parts = [`etiketler.cs.{${filter.tag}}`];
+    if (catIds.length) parts.push(`kategori_id.in.(${catIds.join(",")})`);
+    if (ids.length) parts.push(`id.in.(${ids.join(",")})`);
+    q = q.or(parts.join(","));
+  }
   if (filter.kategori_id) {
     const { data: pcs } = await supabase.from("product_categories").select("product_id").eq("category_id", filter.kategori_id);
     const ids = Array.from(new Set((pcs ?? []).map((r) => r.product_id as string)));
@@ -28,6 +44,7 @@ export async function fetchProducts(filter: ProductFilter = {}): Promise<Product
       q = q.eq("kategori_id", filter.kategori_id);
     }
   }
+
   if (filter.marka_id) q = q.eq("marka_id", filter.marka_id);
   if (filter.minPrice != null) q = q.gte("satis_fiyati", filter.minPrice);
   if (filter.maxPrice != null) q = q.lte("satis_fiyati", filter.maxPrice);
