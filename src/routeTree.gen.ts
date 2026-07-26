@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UyelikSozlesmesiRouteImport } from './routes/uyelik-sozlesmesi'
 import { Route as UrunlerRouteImport } from './routes/urunler'
 import { Route as SepetRouteImport } from './routes/sepet'
+import { Route as OdemeRouteImport } from './routes/odeme'
 import { Route as KullanimKosullariRouteImport } from './routes/kullanim-kosullari'
 import { Route as IletisimRouteImport } from './routes/iletisim'
 import { Route as HesabimRouteImport } from './routes/hesabim'
@@ -48,6 +49,11 @@ const UrunlerRoute = UrunlerRouteImport.update({
 const SepetRoute = SepetRouteImport.update({
   id: '/sepet',
   path: '/sepet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OdemeRoute = OdemeRouteImport.update({
+  id: '/odeme',
+  path: '/odeme',
   getParentRoute: () => rootRouteImport,
 } as any)
 const KullanimKosullariRoute = KullanimKosullariRouteImport.update({
@@ -170,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/hesabim': typeof HesabimRoute
   '/iletisim': typeof IletisimRoute
   '/kullanim-kosullari': typeof KullanimKosullariRoute
+  '/odeme': typeof OdemeRoute
   '/sepet': typeof SepetRoute
   '/urunler': typeof UrunlerRoute
   '/uyelik-sozlesmesi': typeof UyelikSozlesmesiRoute
@@ -196,6 +203,7 @@ export interface FileRoutesByTo {
   '/hesabim': typeof HesabimRoute
   '/iletisim': typeof IletisimRoute
   '/kullanim-kosullari': typeof KullanimKosullariRoute
+  '/odeme': typeof OdemeRoute
   '/sepet': typeof SepetRoute
   '/urunler': typeof UrunlerRoute
   '/uyelik-sozlesmesi': typeof UyelikSozlesmesiRoute
@@ -224,6 +232,7 @@ export interface FileRoutesById {
   '/hesabim': typeof HesabimRoute
   '/iletisim': typeof IletisimRoute
   '/kullanim-kosullari': typeof KullanimKosullariRoute
+  '/odeme': typeof OdemeRoute
   '/sepet': typeof SepetRoute
   '/urunler': typeof UrunlerRoute
   '/uyelik-sozlesmesi': typeof UyelikSozlesmesiRoute
@@ -253,6 +262,7 @@ export interface FileRouteTypes {
     | '/hesabim'
     | '/iletisim'
     | '/kullanim-kosullari'
+    | '/odeme'
     | '/sepet'
     | '/urunler'
     | '/uyelik-sozlesmesi'
@@ -279,6 +289,7 @@ export interface FileRouteTypes {
     | '/hesabim'
     | '/iletisim'
     | '/kullanim-kosullari'
+    | '/odeme'
     | '/sepet'
     | '/urunler'
     | '/uyelik-sozlesmesi'
@@ -306,6 +317,7 @@ export interface FileRouteTypes {
     | '/hesabim'
     | '/iletisim'
     | '/kullanim-kosullari'
+    | '/odeme'
     | '/sepet'
     | '/urunler'
     | '/uyelik-sozlesmesi'
@@ -334,6 +346,7 @@ export interface RootRouteChildren {
   HesabimRoute: typeof HesabimRoute
   IletisimRoute: typeof IletisimRoute
   KullanimKosullariRoute: typeof KullanimKosullariRoute
+  OdemeRoute: typeof OdemeRoute
   SepetRoute: typeof SepetRoute
   UrunlerRoute: typeof UrunlerRoute
   UyelikSozlesmesiRoute: typeof UyelikSozlesmesiRoute
@@ -361,6 +374,13 @@ declare module '@tanstack/react-router' {
       path: '/sepet'
       fullPath: '/sepet'
       preLoaderRoute: typeof SepetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/odeme': {
+      id: '/odeme'
+      path: '/odeme'
+      fullPath: '/odeme'
+      preLoaderRoute: typeof OdemeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/kullanim-kosullari': {
@@ -563,6 +583,7 @@ const rootRouteChildren: RootRouteChildren = {
   HesabimRoute: HesabimRoute,
   IletisimRoute: IletisimRoute,
   KullanimKosullariRoute: KullanimKosullariRoute,
+  OdemeRoute: OdemeRoute,
   SepetRoute: SepetRoute,
   UrunlerRoute: UrunlerRoute,
   UyelikSozlesmesiRoute: UyelikSozlesmesiRoute,
