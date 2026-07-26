@@ -39,19 +39,50 @@ function ProductDetail() {
   }, [product?.name]);
 
   // Variant siblings (same variant_group_id)
-  const variantGroupId = (product as unknown as { ozellikler?: unknown; kategori_id?: string } | null | undefined) && (product as unknown as { variant_group_id?: string | null })?.variant_group_id;
+  const variantGroupId = product?.variant_group_id ?? null;
   const { data: variants = [] } = useQuery({
-    queryKey: ["variants", (product as unknown as { id?: string })?.id, variantGroupId],
+    queryKey: ["variants", variantGroupId],
     queryFn: async () => {
-      if (!product) return [];
-      // Fetch by variant_group_id via raw supabase
-      const gid = (product as unknown as { variant_group_id?: string | null }).variant_group_id;
-      if (!gid) return [];
+      if (!variantGroupId) return [];
       const { data } = await supabase
         .from("products")
-        .select("id,slug,stok_kodu,urun_adi,aciklama,satis_fiyati,liste_fiyati,stok_adedi,resimler,ozellikler,etiketler,kategori_id,marka_id")
-        .eq("variant_group_id", gid)
+        .select("id,slug,stok_kodu,urun_adi,aciklama,satis_fiyati,liste_fiyati,stok_adedi,resimler,ozellikler,etiketler,kategori_id,marka_id,variant_group_id")
+        .eq("variant_group_id", variantGroupId)
         .eq("aktif", true);
+      return (data ?? []).map((r) => mapDbProduct(r as unknown as DbProduct));
+    },
+    enabled: !!variantGroupId,
+  });
+
+  // Related: random products from the same category
+  const { data: relatedRaw = [] } = useQuery({
+    queryKey: ["related", product?.id, product?.kategori_id],
+    queryFn: async () => {
+      if (!product) return [];
+      let ids: string[] = [];
+      const { data: pcs } = await supabase
+        .from("product_categories")
+        .select("category_id")
+        .eq("product_id", product.id);
+      const catIds = Array.from(
+        new Set([...(pcs ?? []).map((r) => r.category_id as string), product.kategori_id].filter(Boolean) as string[])
+      );
+      if (catIds.length) {
+        const { data: sibs } = await supabase
+          .from("product_categories")
+          .select("product_id")
+          .in("category_id", catIds)
+          .limit(500);
+        ids = Array.from(new Set((sibs ?? []).map((r) => r.product_id as string)));
+      }
+      const cols = "id,slug,stok_kodu,urun_adi,aciklama,satis_fiyati,liste_fiyati,stok_adedi,resimler,ozellikler,etiketler,kategori_id,marka_id,variant_group_id";
+      let q = supabase.from("products").select(cols).eq("aktif", true).gt("stok_adedi", 0).neq("id", product.id).limit(60);
+      if (catIds.length && ids.length) {
+        q = q.or(`kategori_id.in.(${catIds.join(",")}),id.in.(${ids.join(",")})`);
+      } else if (product.kategori_id) {
+        q = q.eq("kategori_id", product.kategori_id);
+      }
+      const { data } = await q;
       return (data ?? []).map((r) => mapDbProduct(r as unknown as DbProduct));
     },
     enabled: !!product,
@@ -63,7 +94,8 @@ function ProductDetail() {
   const disc = discountPct(product);
   const gallery = product.images.length ? product.images : [product.image].filter(Boolean);
   const currentImage = gallery[idx] || "";
-  const related = allProducts.filter((p) => p.id !== product.id && p.stock > 0).slice(0, 4);
+  const relatedPool = relatedRaw.length ? relatedRaw : allProducts.filter((p) => p.id !== product.id && p.stock > 0);
+  const related = [...relatedPool].sort(() => Math.random() - 0.5).slice(0, 4);
 
   const rawOz = (product as unknown as { ozellikler?: Record<string, string> }).ozellikler ?? {};
   const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
