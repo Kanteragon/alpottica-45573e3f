@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth";
 import {
   LayoutDashboard, Package, ShoppingBag, Images, Menu as MenuIcon, Star, Users,
   Upload, Tag, LogOut, Store, Sliders, Settings, Code2, ChevronDown, ChevronRight,
-  FileText, FolderTree,
+  FileText, FolderTree, X, User as UserIcon,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
