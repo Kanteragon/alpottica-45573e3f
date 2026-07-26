@@ -165,24 +165,17 @@ function Products() {
           {/* Horizontal scroll category chips */}
           <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar">
             <div className="flex gap-2 w-max">
-              <a href="/urunler" className={`px-4 py-2 text-[11px] tracking-[0.2em] rounded-full border shrink-0 transition ${!search.tag ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink bg-white"}`}>TÜM</a>
-              <a href="/urunler?tag=klipsli" className={`px-4 py-2 text-[11px] tracking-[0.2em] rounded-full border shrink-0 transition ${search.tag === "klipsli" ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink bg-white"}`}>KLİPSLİ</a>
-              <a href="/urunler?tag=outlet" className={`px-4 py-2 text-[11px] tracking-[0.2em] rounded-full border shrink-0 transition ${search.tag === "outlet" ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink bg-white"}`}>OUTLET</a>
-              {cats
-                ?.filter((c) => {
-                  const n = c.name.toLowerCase();
-                  return !n.includes("klips") && !n.includes("outlet");
-                })
-                .slice(0, 2)
-                .map((c) => (
-                  <a
-                    key={c.id}
-                    href={`/urunler?kategori=${c.id}`}
-                    className={`px-4 py-2 text-[11px] tracking-[0.2em] rounded-full border shrink-0 transition uppercase ${search.kategori === c.id ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink bg-white"}`}
-                  >
-                    {c.name}
-                  </a>
-                ))}
+              <a href="/urunler" className={`px-4 py-2 text-[11px] tracking-[0.2em] rounded-full border shrink-0 transition ${!search.tag && !search.kategori ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink bg-white"}`}>TÜM</a>
+              {cats?.slice(0, 4).map((c) => (
+                <a
+                  key={c.id}
+                  href={`/urunler?kategori=${c.id}`}
+                  className={`px-4 py-2 text-[11px] tracking-[0.2em] rounded-full border shrink-0 transition uppercase ${search.kategori === c.id ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink bg-white"}`}
+                >
+                  {c.name}
+                </a>
+              ))}
+
             </div>
           </div>
 
