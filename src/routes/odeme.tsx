@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/auth";
 import { formatTL } from "@/lib/products";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { TR_ILLER, TR_ILLER_LIST as TR_IL_LIST } from "@/lib/tr-locations"; // Projendeki import yoluna göre düzenlenebilir
+import { TR_ILLER } from "@/lib/tr-locations";
 
 export const Route = createFileRoute("/odeme")({
   head: () => ({
@@ -39,6 +39,7 @@ function Checkout() {
   const [busy, setBusy] = useState(false);
   const [successOrder, setSuccessOrder] = useState<{ id: string; trackingCode: string } | null>(null);
 
+  const trIlListesi = useMemo(() => Object.keys(TR_ILLER), []);
   const ilceler = useMemo(() => (form.sehir ? (TR_ILLER[form.sehir] ?? []) : []), [form.sehir]);
 
   useEffect(() => {
@@ -125,11 +126,11 @@ function Checkout() {
         }
       }
 
-      // 1. Siparişi oluştur (Misafir veya üye fark etmeksizin kaydedilir)
+      // 1. Siparişi oluştur
       const { data: order, error: oErr } = await supabase
         .from("orders")
         .insert({
-          user_id: userId, // Giriş yapılmadıysa null kalabilir
+          user_id: userId,
           ad_soyad: form.full_name,
           telefon: form.phone,
           email: form.email,
@@ -157,7 +158,7 @@ function Checkout() {
       const { error: iErr } = await supabase.from("order_items").insert(orderItems);
       if (iErr) throw iErr;
 
-      // 3. Eğer kullanıcı giriş yapmışsa veya hesap açtıysa adresi addresses tablosuna da güvenli şekilde ekle
+      // 3. Kullanıcı giriş yapmışsa adresi kaydet
       if (userId) {
         await supabase
           .from("addresses")
@@ -179,7 +180,6 @@ function Checkout() {
       clear();
       toast.success("Siparişiniz başarıyla alındı!");
 
-      // Benzersiz takip kodu üret (Sipariş ID'sinin ilk 8 büyük harfi)
       const trackingCode = order.id.replace(/-/g, "").substring(0, 8).toUpperCase();
       setSuccessOrder({ id: order.id, trackingCode });
     } catch (err) {
@@ -299,7 +299,7 @@ function Checkout() {
                   className="w-full border border-border rounded-full px-4 py-2.5 bg-white focus:outline-none focus:border-brand-ink"
                 >
                   <option value="">İl seçin</option>
-                  {TR_IL_LIST.map((il) => (
+                  {trIlListesi.map((il) => (
                     <option key={il} value={il}>
                       {il}
                     </option>
