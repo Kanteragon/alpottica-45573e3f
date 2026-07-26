@@ -11,7 +11,7 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const { count } = useCart();
-  const { user, isAdmin } = useAuth();
+  const { user } = useAuth();
   const { data: menu } = useMenu();
   const { data: settings } = useSiteSettings();
   const path = useRouterState({ select: (s) => s.location.pathname });
@@ -94,7 +94,7 @@ export function Navbar() {
           <div className={`flex items-center gap-3 sm:gap-5 transition-colors ${solid ? "text-brand-ink" : "text-white"}`}>
             <SearchBox solid={solid} />
             {user ? (
-              <Link to={isAdmin ? "/admin" : "/hesabim"} aria-label="Hesabım" className="hover:opacity-70 hidden sm:block">
+              <Link to="/hesabim" aria-label="Hesabım" className="hover:opacity-70 hidden sm:block">
                 <User className="w-5 h-5" />
               </Link>
             ) : (
@@ -136,7 +136,7 @@ export function Navbar() {
             ))}
             <div className="grid grid-cols-3 divide-x divide-border">
               {user ? (
-                <Link to={isAdmin ? "/admin" : "/hesabim"} className="flex flex-col items-center gap-1 py-4 text-xs text-brand-ink">
+                <Link to="/hesabim" className="flex flex-col items-center gap-1 py-4 text-xs text-brand-ink">
                   <User className="w-5 h-5" />Hesabım
                 </Link>
               ) : (

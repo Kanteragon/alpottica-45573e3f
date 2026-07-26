@@ -15,6 +15,7 @@ export type Product = {
   aciklama?: string | null;
   kategori_id?: string | null;
   marka_id?: string | null;
+  variant_group_id?: string | null;
   ozellikler?: Record<string, string>;
 };
 
@@ -32,6 +33,7 @@ export type DbProduct = {
   etiketler: string[] | null;
   kategori_id?: string | null;
   marka_id?: string | null;
+  variant_group_id?: string | null;
 };
 
 export function mapDbProduct(r: DbProduct): Product {
@@ -54,6 +56,7 @@ export function mapDbProduct(r: DbProduct): Product {
     aciklama: r.aciklama,
     kategori_id: r.kategori_id ?? null,
     marka_id: r.marka_id ?? null,
+    variant_group_id: r.variant_group_id ?? null,
     ozellikler: oz,
   };
 }

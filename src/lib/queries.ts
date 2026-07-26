@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { mapDbProduct, type Product, type DbProduct } from "@/lib/products";
 
 const PRODUCT_COLS =
-  "id,slug,stok_kodu,urun_adi,aciklama,satis_fiyati,liste_fiyati,stok_adedi,resimler,ozellikler,etiketler,kategori_id,marka_id";
+  "id,slug,stok_kodu,urun_adi,aciklama,satis_fiyati,liste_fiyati,stok_adedi,resimler,ozellikler,etiketler,kategori_id,marka_id,variant_group_id";
 
 export type ProductFilter = {
   tag?: string;
