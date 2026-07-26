@@ -33,6 +33,7 @@ export type DbProduct = {
   etiketler: string[] | null;
   kategori_id?: string | null;
   marka_id?: string | null;
+  variant_group_id?: string | null;
 };
 
 export function mapDbProduct(r: DbProduct): Product {
