@@ -27,8 +27,6 @@ function Checkout() {
     email: user?.email ?? "",
     sehir: "",
     ilce: "",
-    mahalle: "",
-    posta_kodu: "",
     address: "",
     password: "",
     createAccount: false,
@@ -69,8 +67,6 @@ function Checkout() {
         address: f.address || addr.adres || data?.address || "",
         sehir: f.sehir || addr.sehir || "",
         ilce: f.ilce || addr.ilce || "",
-        mahalle: f.mahalle || addr.mahalle || "",
-        posta_kodu: f.posta_kodu || addr.posta_kodu || "",
       }));
     })();
   }, [user]);
@@ -80,17 +76,20 @@ function Checkout() {
     if (items.length === 0) return toast.error("Sepetiniz boş");
     if (form.full_name.trim().length < 3) return toast.error("Ad Soyad zorunlu");
     if (form.phone.trim().length < 10) return toast.error("Geçerli telefon girin");
-    if (!/^\S+@\S+\.\S+$/.test(form.email)) return toast.error("Geçerli e-posta girin");
     if (!form.sehir) return toast.error("İl seçin");
     if (!form.ilce) return toast.error("İlçe seçin");
-    if (form.address.trim().length < 10) return toast.error("Adres zorunlu");
-    if (!user && form.createAccount && form.password.length < 6) return toast.error("Şifre en az 6 karakter olmalıdır");
+    if (form.address.trim().length < 10) return toast.error("Açık adres zorunlu");
+
+    if (!user && form.createAccount) {
+      if (!/^\S+@\S+\.\S+$/.test(form.email)) return toast.error("Geçerli e-posta girin");
+      if (form.password.length < 6) return toast.error("Şifre en az 6 karakter olmalıdır");
+    }
 
     setBusy(true);
     try {
       let userId = user?.id ?? null;
 
-      if (!user && form.createAccount && form.password) {
+      if (!user && form.createAccount && form.email && form.password) {
         const { data, error } = await supabase.auth.signUp({
           email: form.email.trim(),
           password: form.password,
@@ -133,12 +132,12 @@ function Checkout() {
           user_id: userId,
           ad_soyad: form.full_name,
           telefon: form.phone,
-          email: form.email,
+          email: form.createAccount && form.email ? form.email : null,
           adres: form.address,
           sehir: form.sehir,
           ilce: form.ilce,
-          mahalle: form.mahalle || null,
-          posta_kodu: form.posta_kodu || null,
+          mahalle: null,
+          posta_kodu: null,
           odeme_tipi: form.payment,
           toplam: total,
           notlar: form.notes || null,
@@ -169,8 +168,6 @@ function Checkout() {
             adres: form.address,
             sehir: form.sehir,
             ilce: form.ilce,
-            mahalle: form.mahalle || null,
-            posta_kodu: form.posta_kodu || null,
             baslik: "Teslimat Adresi",
           })
           .select()
@@ -266,13 +263,8 @@ function Checkout() {
         <h1 className="font-display text-5xl text-brand-ink mb-8">Ödeme</h1>
         <form onSubmit={submit} className="grid lg:grid-cols-[1fr_400px] gap-8">
           <div className="bg-white rounded-2xl border p-6 space-y-4">
-            <h2 className="font-display text-2xl mb-2">Teslimat ve İletişim Bilgileri</h2>
-            {!user && (
-              <div className="bg-blue-50 text-blue-800 text-xs p-3 rounded-xl border border-blue-200 mb-2">
-                Üye olmadan hızlıca sipariş verebilirsiniz. İsterseniz aşağıdan hesap oluşturarak siparişlerinizi takip
-                edebilirsiniz.
-              </div>
-            )}
+            <h2 className="font-display text-2xl mb-2">Teslimat Bilgileri</h2>
+
             <div className="grid md:grid-cols-2 gap-4">
               <Input label="Ad Soyad" value={form.full_name} onChange={(v) => setForm({ ...form, full_name: v })} />
               <Input
@@ -282,13 +274,6 @@ function Checkout() {
                 placeholder="05XX XXX XX XX"
               />
             </div>
-            <Input
-              label="E-posta"
-              type="email"
-              value={form.email}
-              onChange={(v) => setForm({ ...form, email: v })}
-              disabled={!!user}
-            />
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
@@ -296,7 +281,7 @@ function Checkout() {
                 <select
                   value={form.sehir}
                   onChange={(e) => setForm({ ...form, sehir: e.target.value, ilce: "" })}
-                  className="w-full border border-border rounded-full px-4 py-2.5 bg-white focus:outline-none focus:border-brand-ink"
+                  className="w-full border border-border rounded-full px-4 py-2.5 bg-white focus:outline-none focus:border-brand-ink text-sm"
                 >
                   <option value="">İl seçin</option>
                   {trIlListesi.map((il) => (
@@ -312,7 +297,7 @@ function Checkout() {
                   value={form.ilce}
                   onChange={(e) => setForm({ ...form, ilce: e.target.value })}
                   disabled={!form.sehir}
-                  className="w-full border border-border rounded-full px-4 py-2.5 bg-white focus:outline-none focus:border-brand-ink disabled:bg-muted"
+                  className="w-full border border-border rounded-full px-4 py-2.5 bg-white focus:outline-none focus:border-brand-ink disabled:bg-muted text-sm"
                 >
                   <option value="">İlçe seçin</option>
                   {ilceler.map((i) => (
@@ -323,32 +308,6 @@ function Checkout() {
                 </select>
               </div>
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              <Input label="Mahalle" value={form.mahalle} onChange={(v) => setForm({ ...form, mahalle: v })} />
-              <Input label="Posta Kodu" value={form.posta_kodu} onChange={(v) => setForm({ ...form, posta_kodu: v })} />
-            </div>
-
-            {!user && (
-              <div className="pt-2 border-t mt-4 space-y-3">
-                <label className="flex items-center gap-2 text-sm cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={form.createAccount}
-                    onChange={(e) => setForm({ ...form, createAccount: e.target.checked })}
-                    className="rounded border-border"
-                  />
-                  <span>Bu bilgilerle benim için yeni bir hesap oluştur (isteğe bağlı)</span>
-                </label>
-                {form.createAccount && (
-                  <Input
-                    label="Şifre Belirle (en az 6 karakter)"
-                    type="password"
-                    value={form.password}
-                    onChange={(v) => setForm({ ...form, password: v })}
-                  />
-                )}
-              </div>
-            )}
 
             <div>
               <label className="block text-xs tracking-widest text-muted-foreground uppercase mb-2">Açık Adres</label>
@@ -360,6 +319,7 @@ function Checkout() {
                 className="w-full border border-border rounded-2xl p-3 focus:outline-none focus:border-brand-ink text-sm"
               />
             </div>
+
             <div>
               <label className="block text-xs tracking-widest text-muted-foreground uppercase mb-2">
                 Sipariş Notu (opsiyonel)
@@ -371,6 +331,38 @@ function Checkout() {
                 className="w-full border border-border rounded-2xl p-3 focus:outline-none focus:border-brand-ink text-sm"
               />
             </div>
+
+            {/* Hesap Oluşturma Bölümü (En Altta) */}
+            {!user && (
+              <div className="pt-4 border-t mt-6 space-y-3 bg-muted/30 p-4 rounded-2xl border">
+                <label className="flex items-center gap-2 text-sm cursor-pointer font-medium text-brand-ink">
+                  <input
+                    type="checkbox"
+                    checked={form.createAccount}
+                    onChange={(e) => setForm({ ...form, createAccount: e.target.checked })}
+                    className="rounded border-border w-4 h-4"
+                  />
+                  <span>Bu sipariş için hesap oluşturmak istiyorum</span>
+                </label>
+                {form.createAccount && (
+                  <div className="space-y-3 pt-2">
+                    <Input
+                      label="E-posta Adresi"
+                      type="email"
+                      value={form.email}
+                      onChange={(v) => setForm({ ...form, email: v })}
+                      placeholder="ornek@mail.com"
+                    />
+                    <Input
+                      label="Şifre Belirle (en az 6 karakter)"
+                      type="password"
+                      value={form.password}
+                      onChange={(v) => setForm({ ...form, password: v })}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
 
             <h2 className="font-display text-2xl mt-6 mb-2">Ödeme Yöntemi</h2>
             <div className="grid grid-cols-2 gap-3">
@@ -448,7 +440,7 @@ function Input({
         disabled={disabled}
         placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full border border-border rounded-full px-4 py-2.5 focus:outline-none focus:border-brand-ink disabled:bg-muted text-sm"
+        className="w-full border border-border rounded-full px-4 py-2.5 focus:outline-none focus:border-brand-ink disabled:bg-muted text-sm bg-white"
       />
     </div>
   );
