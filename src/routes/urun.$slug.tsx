@@ -83,7 +83,7 @@ function ProductDetail() {
         q = q.eq("kategori_id", product.kategori_id);
       }
       const { data } = await q;
-      return (data ?? []).map((r) => mapDbProduct(r as unknown as DbProduct));
+      return (data ?? []).map((r) => mapDbProduct(r as unknown as DbProduct)).sort(() => Math.random() - 0.5);
     },
     enabled: !!product,
   });
@@ -95,7 +95,7 @@ function ProductDetail() {
   const gallery = product.images.length ? product.images : [product.image].filter(Boolean);
   const currentImage = gallery[idx] || "";
   const relatedPool = relatedRaw.length ? relatedRaw : allProducts.filter((p) => p.id !== product.id && p.stock > 0);
-  const related = [...relatedPool].sort(() => Math.random() - 0.5).slice(0, 4);
+  const related = relatedPool.slice(0, 4);
 
   const rawOz = (product as unknown as { ozellikler?: Record<string, string> }).ozellikler ?? {};
   const norm = (s: string) => s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
