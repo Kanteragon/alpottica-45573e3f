@@ -154,6 +154,24 @@ function Checkout() {
     }
   };
 
+  if (placedCode) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar /><div className="h-20" />
+        <div className="max-w-lg mx-auto text-center py-24 px-6">
+          <h1 className="font-display text-4xl text-brand-ink mb-4">Siparişiniz alındı!</h1>
+          <p className="text-muted-foreground mb-6">Sipariş kodunuz:</p>
+          <div className="text-3xl font-mono font-bold tracking-widest bg-brand-sand/40 border rounded-2xl py-5 mb-6">
+            {placedCode}
+          </div>
+          <p className="text-brand-ink mb-8">Bu kodu kaydedin, kargonuz en kısa sürede yola çıkacak.</p>
+          <Link to="/urunler" className="inline-block px-6 py-3 rounded-full bg-brand-ink text-white">Alışverişe Devam Et</Link>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
+
   if (items.length === 0) {
     return (
       <div className="min-h-screen bg-background">
