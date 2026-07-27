@@ -144,7 +144,8 @@ function Checkout() {
 
       clear();
       toast.success("Siparişiniz alındı!");
-      nav({ to: userId ? "/hesabim" : "/" });
+      if (userId) nav({ to: "/hesabim" });
+      else setPlacedCode(String(order.id).slice(0, 8).toUpperCase());
     } catch (err) {
       console.error(err);
       toast.error(err instanceof Error ? err.message : "Sipariş oluşturulamadı");
