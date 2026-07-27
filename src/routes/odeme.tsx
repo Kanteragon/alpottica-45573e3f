@@ -197,7 +197,9 @@ function Checkout() {
               <Input label="Ad Soyad" value={form.full_name} onChange={(v) => setForm({ ...form, full_name: v })} />
               <Input label="Telefon" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />
             </div>
-            <Input label="E-posta" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} disabled={!!user} />
+            {user && (
+              <Input label="E-posta" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} disabled />
+            )}
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
