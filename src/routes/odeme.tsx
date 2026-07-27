@@ -38,6 +38,8 @@ function Checkout() {
     notes: "",
   });
   const [busy, setBusy] = useState(false);
+  const [placedCode, setPlacedCode] = useState<string | null>(null);
+
 
   const ilceler = useMemo(() => (form.sehir ? TR_ILLER[form.sehir] ?? [] : []), [form.sehir]);
 
