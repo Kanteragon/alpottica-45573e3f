@@ -1,0 +1,1 @@
+DELETE FROM public.orders WHERE ad_soyad = 'Test Misafir' AND telefon = '05000000000';
