@@ -71,7 +71,7 @@ function Checkout() {
     if (items.length === 0) return toast.error("Sepetiniz boş");
     if (form.full_name.trim().length < 3) return toast.error("Ad Soyad zorunlu");
     if (form.phone.trim().length < 10) return toast.error("Geçerli telefon girin");
-    if (!/^\S+@\S+\.\S+$/.test(form.email)) return toast.error("Geçerli e-posta girin");
+    if ((user || form.createAccount) && !/^\S+@\S+\.\S+$/.test(form.email)) return toast.error("Geçerli e-posta girin");
     if (!form.sehir) return toast.error("İl seçin");
     if (!form.ilce) return toast.error("İlçe seçin");
     if (form.address.trim().length < 10) return toast.error("Adres zorunlu");
