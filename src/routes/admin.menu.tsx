@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Trash2, Plus } from "lucide-react";
+import { Trash2, Plus, ExternalLink } from "lucide-react";
 
 export const Route = createFileRoute("/admin/menu")({ component: MenuAdmin });
 
@@ -35,26 +35,98 @@ function MenuAdmin() {
   };
 
   return (
-    <div>
-      <h1 className="font-display text-4xl text-brand-ink mb-8">Menü</h1>
-      <div className="bg-white rounded-2xl border p-6 mb-6 flex flex-wrap gap-3">
-        <input placeholder="Etiket" value={form.label} onChange={(e) => setForm({ ...form, label: e.target.value })} className="border rounded-full px-4 py-2 flex-1 min-w-[200px]" />
-        <input placeholder="URL" value={form.url} onChange={(e) => setForm({ ...form, url: e.target.value })} className="border rounded-full px-4 py-2 flex-1 min-w-[200px]" />
-        <input type="number" placeholder="Sıra" value={form.sira} onChange={(e) => setForm({ ...form, sira: Number(e.target.value) })} className="border rounded-full px-4 py-2 w-24" />
-        <button onClick={add} className="bg-brand-ink text-white rounded-full px-5 py-2 flex items-center gap-2"><Plus className="w-4 h-4" /> Ekle</button>
-      </div>
-
-      <div className="bg-white rounded-2xl border divide-y">
-        {items.map((m) => (
-          <div key={m.id} className="p-4 flex items-center gap-3">
-            <input defaultValue={m.label} onBlur={(e) => e.target.value !== m.label && upd(m.id, { label: e.target.value })} className="border rounded-full px-4 py-1.5 flex-1" />
-            <input defaultValue={m.url} onBlur={(e) => e.target.value !== m.url && upd(m.id, { url: e.target.value })} className="border rounded-full px-4 py-1.5 flex-1" />
-            <input type="number" defaultValue={m.sira} onBlur={(e) => Number(e.target.value) !== m.sira && upd(m.id, { sira: Number(e.target.value) })} className="border rounded-full px-3 py-1.5 w-20" />
-            <button onClick={() => upd(m.id, { aktif: !m.aktif })} className={`px-3 py-1 rounded-full text-xs ${m.aktif ? "bg-green-100 text-green-700" : "bg-gray-100"}`}>{m.aktif ? "Aktif" : "Pasif"}</button>
-            <button onClick={() => del(m.id)} className="p-2 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
+    <div className="flex min-h-screen bg-background">
+      {/* 1. Sol Menü (Ekrana sabitlendi, sayfa uzasa bile yerinden oynamaz) */}
+      <aside className="w-64 bg-brand-ink text-white p-6 sticky top-0 h-screen overflow-y-auto flex flex-col justify-between shrink-0">
+        <div>
+          <div className="mb-8">
+            <h2 className="font-display text-xl tracking-wider">ALPOTTICA</h2>
+            <p className="text-xs text-white/60">ADMİN PANEL</p>
           </div>
-        ))}
-      </div>
+          {/* Diğer menü linklerin buraya gelebilir */}
+        </div>
+
+        {/* En alttaki sabit butonlar (Siteyi Görüntüle yeni sekmede açılır) */}
+        <div className="space-y-3 pt-6 border-t border-white/10">
+          <a
+            href="/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-sm text-white/80 hover:text-white transition"
+          >
+            <ExternalLink className="w-4 h-4" />
+            <span>Siteyi Görüntüle</span>
+          </a>
+        </div>
+      </aside>
+
+      {/* 2. Sağ Taraf (Ana İçerik Alanı) */}
+      <main className="flex-1 p-8 lg:p-12 overflow-y-auto">
+        <h1 className="font-display text-4xl text-brand-ink mb-8">Menü Yönetimi</h1>
+
+        <div className="bg-white rounded-2xl border p-6 mb-6 flex flex-wrap gap-3 shadow-sm">
+          <input
+            placeholder="Etiket (örn: Anasayfa)"
+            value={form.label}
+            onChange={(e) => setForm({ ...form, label: e.target.value })}
+            className="border rounded-full px-4 py-2 flex-1 min-w-[200px] focus:outline-none focus:border-brand-ink"
+          />
+          <input
+            placeholder="URL (örn: /urunler)"
+            value={form.url}
+            onChange={(e) => setForm({ ...form, url: e.target.value })}
+            className="border rounded-full px-4 py-2 flex-1 min-w-[200px] focus:outline-none focus:border-brand-ink"
+          />
+          <input
+            type="number"
+            placeholder="Sıra"
+            value={form.sira}
+            onChange={(e) => setForm({ ...form, sira: Number(e.target.value) })}
+            className="border rounded-full px-4 py-2 w-24 focus:outline-none focus:border-brand-ink"
+          />
+          <button
+            onClick={add}
+            className="bg-brand-ink text-white rounded-full px-5 py-2 flex items-center gap-2 hover:opacity-90 transition"
+          >
+            <Plus className="w-4 h-4" /> Ekle
+          </button>
+        </div>
+
+        <div className="bg-white rounded-2xl border divide-y shadow-sm">
+          {items.map((m) => (
+            <div key={m.id} className="p-4 flex items-center gap-3">
+              <input
+                defaultValue={m.label}
+                onBlur={(e) => e.target.value !== m.label && upd(m.id, { label: e.target.value })}
+                className="border rounded-full px-4 py-1.5 flex-1 focus:outline-none focus:border-brand-ink"
+              />
+              <input
+                defaultValue={m.url}
+                onBlur={(e) => e.target.value !== m.url && upd(m.id, { url: e.target.value })}
+                className="border rounded-full px-4 py-1.5 flex-1 focus:outline-none focus:border-brand-ink"
+              />
+              <input
+                type="number"
+                defaultValue={m.sira}
+                onBlur={(e) => Number(e.target.value) !== m.sira && upd(m.id, { sira: Number(e.target.value) })}
+                className="border rounded-full px-3 py-1.5 w-20 focus:outline-none focus:border-brand-ink"
+              />
+              <button
+                onClick={() => upd(m.id, { aktif: !m.aktif })}
+                className={`px-3 py-1 rounded-full text-xs font-medium ${m.aktif ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}
+              >
+                {m.aktif ? "Aktif" : "Pasif"}
+              </button>
+              <button onClick={() => del(m.id)} className="p-2 text-red-600 hover:bg-red-50 rounded-full transition">
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+          {items.length === 0 && (
+            <div className="p-8 text-center text-muted-foreground">Henüz menü öğesi eklenmemiş.</div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }
