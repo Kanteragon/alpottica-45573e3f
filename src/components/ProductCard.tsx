@@ -9,11 +9,19 @@ import { toast } from "sonner";
 export function ProductCard({ product }: { product: Product }) {
   const disc = discountPct(product);
   const { add } = useCart();
-  const gallery = (product.images?.length ? product.images : [product.image]).filter(Boolean);
+  
+  // Galeriyi oluşturuyoruz
+  const rawGallery = (product.images?.length ? product.images : [product.image]).filter(Boolean);
+  
+  // EĞER görsel bir .gif uzantısı içeriyorsa veya tek görselse, galeri uzunluğunu 1 kabul edip okları ve çokluluğu iptal ediyoruz
+  const hasGif = rawGallery.some(img => img && img.toLowerCase().endsWith('.gif'));
+  const gallery = hasGif ? [rawGallery[0]] : rawGallery;
+
   const [idx, setIdx] = useState(0);
   const [hovering, setHovering] = useState(false);
 
-  const showControls = hovering && gallery.length > 1;
+  const showControls = hovering && gallery.length > 1 && !hasGif;
+  
   const nav = (dir: -1 | 1) => (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -36,7 +44,6 @@ export function ProductCard({ product }: { product: Product }) {
             loading="lazy"
             className="absolute inset-0 w-full h-full object-contain p-1 sm:p-2 transition-all duration-300"
           />
-
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-xs">Görsel yok</div>
         )}
@@ -97,7 +104,6 @@ export function ProductCard({ product }: { product: Product }) {
         >
           <ShoppingCart className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> SEPETE EKLE
         </button>
-
       </div>
     </Link>
   );
