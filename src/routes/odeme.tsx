@@ -229,7 +229,10 @@ function Checkout() {
                   <span>Hesap oluştur (isteğe bağlı — siparişlerini takip edebilirsin)</span>
                 </label>
                 {form.createAccount && (
-                  <Input label="Şifre (en az 6 karakter)" type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} />
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <Input label="E-posta" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
+                    <Input label="Şifre (en az 6 karakter)" type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} />
+                  </div>
                 )}
               </>
             )}
