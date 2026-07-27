@@ -38,6 +38,8 @@ function Checkout() {
     notes: "",
   });
   const [busy, setBusy] = useState(false);
+  const [placedCode, setPlacedCode] = useState<string | null>(null);
+
 
   const ilceler = useMemo(() => (form.sehir ? TR_ILLER[form.sehir] ?? [] : []), [form.sehir]);
 
@@ -69,7 +71,7 @@ function Checkout() {
     if (items.length === 0) return toast.error("Sepetiniz boş");
     if (form.full_name.trim().length < 3) return toast.error("Ad Soyad zorunlu");
     if (form.phone.trim().length < 10) return toast.error("Geçerli telefon girin");
-    if (!/^\S+@\S+\.\S+$/.test(form.email)) return toast.error("Geçerli e-posta girin");
+    if ((user || form.createAccount) && !/^\S+@\S+\.\S+$/.test(form.email)) return toast.error("Geçerli e-posta girin");
     if (!form.sehir) return toast.error("İl seçin");
     if (!form.ilce) return toast.error("İlçe seçin");
     if (form.address.trim().length < 10) return toast.error("Adres zorunlu");
@@ -115,7 +117,7 @@ function Checkout() {
           user_id: userId,
           ad_soyad: form.full_name,
           telefon: form.phone,
-          email: form.email,
+          email: form.email.trim(),
           adres: form.address,
           sehir: form.sehir,
           ilce: form.ilce,
@@ -142,7 +144,8 @@ function Checkout() {
 
       clear();
       toast.success("Siparişiniz alındı!");
-      nav({ to: userId ? "/hesabim" : "/" });
+      if (userId) nav({ to: "/hesabim" });
+      else setPlacedCode(String(order.id).slice(0, 8).toUpperCase());
     } catch (err) {
       console.error(err);
       toast.error(err instanceof Error ? err.message : "Sipariş oluşturulamadı");
@@ -150,6 +153,24 @@ function Checkout() {
       setBusy(false);
     }
   };
+
+  if (placedCode) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar /><div className="h-20" />
+        <div className="max-w-lg mx-auto text-center py-24 px-6">
+          <h1 className="font-display text-4xl text-brand-ink mb-4">Siparişiniz alındı!</h1>
+          <p className="text-muted-foreground mb-6">Sipariş kodunuz:</p>
+          <div className="text-3xl font-mono font-bold tracking-widest bg-brand-sand/40 border rounded-2xl py-5 mb-6">
+            {placedCode}
+          </div>
+          <p className="text-brand-ink mb-8">Bu kodu kaydedin, kargonuz en kısa sürede yola çıkacak.</p>
+          <Link to="/urunler" className="inline-block px-6 py-3 rounded-full bg-brand-ink text-white">Alışverişe Devam Et</Link>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
@@ -176,7 +197,9 @@ function Checkout() {
               <Input label="Ad Soyad" value={form.full_name} onChange={(v) => setForm({ ...form, full_name: v })} />
               <Input label="Telefon" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />
             </div>
-            <Input label="E-posta" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} disabled={!!user} />
+            {user && (
+              <Input label="E-posta" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} disabled />
+            )}
 
             <div className="grid md:grid-cols-2 gap-4">
               <div>
@@ -206,7 +229,10 @@ function Checkout() {
                   <span>Hesap oluştur (isteğe bağlı — siparişlerini takip edebilirsin)</span>
                 </label>
                 {form.createAccount && (
-                  <Input label="Şifre (en az 6 karakter)" type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} />
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <Input label="E-posta" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
+                    <Input label="Şifre (en az 6 karakter)" type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} />
+                  </div>
                 )}
               </>
             )}
