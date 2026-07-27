@@ -262,7 +262,7 @@ export type Database = {
           adres: string
           created_at: string
           durum: string
-          email: string
+          email: string | null
           id: string
           ilce: string | null
           mahalle: string | null
@@ -280,7 +280,7 @@ export type Database = {
           adres: string
           created_at?: string
           durum?: string
-          email: string
+          email?: string | null
           id?: string
           ilce?: string | null
           mahalle?: string | null
@@ -298,7 +298,7 @@ export type Database = {
           adres?: string
           created_at?: string
           durum?: string
-          email?: string
+          email?: string | null
           id?: string
           ilce?: string | null
           mahalle?: string | null
@@ -652,6 +652,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      place_order: { Args: { items: Json; order_data: Json }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "user"
