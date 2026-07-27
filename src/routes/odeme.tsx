@@ -210,10 +210,6 @@ function Checkout() {
                 </select>
               </div>
             </div>
-            <div className="grid md:grid-cols-2 gap-4">
-              <Input label="Mahalle" value={form.mahalle} onChange={(v) => setForm({ ...form, mahalle: v })} />
-              <Input label="Posta Kodu" value={form.posta_kodu} onChange={(v) => setForm({ ...form, posta_kodu: v })} />
-            </div>
 
             {!user && (
               <>
