@@ -117,7 +117,7 @@ function Checkout() {
           user_id: userId,
           ad_soyad: form.full_name,
           telefon: form.phone,
-          email: form.email,
+          email: form.email.trim(),
           adres: form.address,
           sehir: form.sehir,
           ilce: form.ilce,
