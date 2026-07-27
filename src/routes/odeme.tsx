@@ -110,42 +110,35 @@ function Checkout() {
         }
       }
 
-      // 1. Siparişi oluştur (Veritabanındaki trigger otomatik olarak adresi addresses tablosuna ekleyecektir)
-      const { data: order, error: oErr } = await supabase
-        .from("orders")
-        .insert({
-          user_id: userId,
+      // 1. Siparişi ve kalemlerini tek adımda oluştur (misafir siparişleri dahil)
+      const { data: newOrderId, error: oErr } = await supabase.rpc("place_order", {
+        order_data: {
           ad_soyad: form.full_name,
           telefon: form.phone,
           email: form.email.trim(),
           adres: form.address,
           sehir: form.sehir,
           ilce: form.ilce,
-          mahalle: form.mahalle || null,
-          posta_kodu: form.posta_kodu || null,
+          mahalle: form.mahalle || "",
+          posta_kodu: form.posta_kodu || "",
           odeme_tipi: form.payment,
           toplam: total,
-          notlar: form.notes || null,
-        })
-        .select("id")
-        .single();
+          notlar: form.notes || "",
+        },
+        items: items.map((i) => ({
+          product_id: i.product_id,
+          adet: i.qty,
+          birim_fiyat: i.price,
+          urun_adi_snapshot: i.name,
+        })),
+      });
       if (oErr) throw oErr;
-
-      // 2. Sipariş kalemlerini ekle
-      const orderItems = items.map((i) => ({
-        order_id: order.id,
-        product_id: i.product_id,
-        adet: i.qty,
-        birim_fiyat: i.price,
-        urun_adi_snapshot: i.name,
-      }));
-      const { error: iErr } = await supabase.from("order_items").insert(orderItems);
-      if (iErr) throw iErr;
 
       clear();
       toast.success("Siparişiniz alındı!");
       if (userId) nav({ to: "/hesabim" });
-      else setPlacedCode(String(order.id).slice(0, 8).toUpperCase());
+      else setPlacedCode(String(newOrderId).slice(0, 8).toUpperCase());
+
     } catch (err) {
       console.error(err);
       toast.error(err instanceof Error ? err.message : "Sipariş oluşturulamadı");
