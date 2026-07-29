@@ -104,6 +104,54 @@ export type Database = {
         }
         Relationships: []
       }
+      campaigns: {
+        Row: {
+          ad: string
+          aktif: boolean
+          baslangic: string | null
+          bitis: string | null
+          created_at: string
+          esik: number
+          id: string
+          indirim_oran: number
+          indirim_tutar: number
+          tip: string
+          updated_at: string
+          urun_a: string | null
+          urun_b: string | null
+        }
+        Insert: {
+          ad: string
+          aktif?: boolean
+          baslangic?: string | null
+          bitis?: string | null
+          created_at?: string
+          esik?: number
+          id?: string
+          indirim_oran?: number
+          indirim_tutar?: number
+          tip?: string
+          updated_at?: string
+          urun_a?: string | null
+          urun_b?: string | null
+        }
+        Update: {
+          ad?: string
+          aktif?: boolean
+          baslangic?: string | null
+          bitis?: string | null
+          created_at?: string
+          esik?: number
+          id?: string
+          indirim_oran?: number
+          indirim_tutar?: number
+          tip?: string
+          updated_at?: string
+          urun_a?: string | null
+          urun_b?: string | null
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -265,6 +313,9 @@ export type Database = {
           email: string | null
           id: string
           ilce: string | null
+          indirim: number
+          kargo_firma: string | null
+          kargo_ucret: number
           mahalle: string | null
           notlar: string | null
           odeme_tipi: string
@@ -283,6 +334,9 @@ export type Database = {
           email?: string | null
           id?: string
           ilce?: string | null
+          indirim?: number
+          kargo_firma?: string | null
+          kargo_ucret?: number
           mahalle?: string | null
           notlar?: string | null
           odeme_tipi: string
@@ -301,6 +355,9 @@ export type Database = {
           email?: string | null
           id?: string
           ilce?: string | null
+          indirim?: number
+          kargo_firma?: string | null
+          kargo_ucret?: number
           mahalle?: string | null
           notlar?: string | null
           odeme_tipi?: string
@@ -516,6 +573,33 @@ export type Database = {
           full_name?: string | null
           id?: string
           phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      shipping_settings: {
+        Row: {
+          aktif: boolean
+          created_at: string
+          firma: string
+          id: number
+          ucret: number
+          updated_at: string
+        }
+        Insert: {
+          aktif?: boolean
+          created_at?: string
+          firma?: string
+          id?: number
+          ucret?: number
+          updated_at?: string
+        }
+        Update: {
+          aktif?: boolean
+          created_at?: string
+          firma?: string
+          id?: number
+          ucret?: number
           updated_at?: string
         }
         Relationships: []
