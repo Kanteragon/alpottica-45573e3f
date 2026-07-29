@@ -175,7 +175,7 @@ function Products() {
 
   const applyDraft = () => {
     navigate({
-      search: (prev) => ({
+      search: (prev: Record<string, unknown>) => ({
         ...prev,
         kategori: draft.kategori || undefined,
         marka: draft.marka || undefined,
@@ -285,7 +285,7 @@ function Products() {
                 onClick={() => {
                   const next = { ...activeAttrFilters, [slug]: vals.filter((x) => x !== v) };
                   if (!next[slug].length) delete next[slug];
-                  navigate({ search: (prev) => ({ ...prev, ozellik: encodeAttrs(next) }) });
+                  navigate({ search: (prev: Record<string, unknown>) => ({ ...prev, ozellik: encodeAttrs(next) }) });
                 }}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-brand-ink text-white text-xs"
               >
