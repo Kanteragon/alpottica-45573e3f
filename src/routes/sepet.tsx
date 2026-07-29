@@ -3,6 +3,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useCart } from "@/lib/cart";
 import { formatTL } from "@/lib/products";
+import { useTotals } from "@/lib/pricing";
 import { Trash2, Minus, Plus } from "lucide-react";
 
 export const Route = createFileRoute("/sepet")({
@@ -16,7 +17,9 @@ export const Route = createFileRoute("/sepet")({
 });
 
 function CartPage() {
-  const { items, setQty, remove, total } = useCart();
+  const { items, setQty, remove } = useCart();
+  const t = useTotals(items);
+
 
   return (
     <div className="min-h-screen bg-background">
