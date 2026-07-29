@@ -34,6 +34,7 @@ import { Route as AdminMarkalarRouteImport } from './routes/admin.markalar'
 import { Route as AdminKullanicilarRouteImport } from './routes/admin.kullanicilar'
 import { Route as AdminKategorilerRouteImport } from './routes/admin.kategoriler'
 import { Route as AdminKargoRouteImport } from './routes/admin.kargo'
+import { Route as AdminKampanyalarRouteImport } from './routes/admin.kampanyalar'
 import { Route as AdminAyarlarRouteImport } from './routes/admin.ayarlar'
 import { Route as AdminAktarimRouteImport } from './routes/admin.aktarim'
 
@@ -162,6 +163,11 @@ const AdminKargoRoute = AdminKargoRouteImport.update({
   path: '/kargo',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminKampanyalarRoute = AdminKampanyalarRouteImport.update({
+  id: '/kampanyalar',
+  path: '/kampanyalar',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAyarlarRoute = AdminAyarlarRouteImport.update({
   id: '/ayarlar',
   path: '/ayarlar',
@@ -188,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/uyelik-sozlesmesi': typeof UyelikSozlesmesiRoute
   '/admin/aktarim': typeof AdminAktarimRoute
   '/admin/ayarlar': typeof AdminAyarlarRoute
+  '/admin/kampanyalar': typeof AdminKampanyalarRoute
   '/admin/kargo': typeof AdminKargoRoute
   '/admin/kategoriler': typeof AdminKategorilerRoute
   '/admin/kullanicilar': typeof AdminKullanicilarRoute
@@ -216,6 +223,7 @@ export interface FileRoutesByTo {
   '/uyelik-sozlesmesi': typeof UyelikSozlesmesiRoute
   '/admin/aktarim': typeof AdminAktarimRoute
   '/admin/ayarlar': typeof AdminAyarlarRoute
+  '/admin/kampanyalar': typeof AdminKampanyalarRoute
   '/admin/kargo': typeof AdminKargoRoute
   '/admin/kategoriler': typeof AdminKategorilerRoute
   '/admin/kullanicilar': typeof AdminKullanicilarRoute
@@ -246,6 +254,7 @@ export interface FileRoutesById {
   '/uyelik-sozlesmesi': typeof UyelikSozlesmesiRoute
   '/admin/aktarim': typeof AdminAktarimRoute
   '/admin/ayarlar': typeof AdminAyarlarRoute
+  '/admin/kampanyalar': typeof AdminKampanyalarRoute
   '/admin/kargo': typeof AdminKargoRoute
   '/admin/kategoriler': typeof AdminKategorilerRoute
   '/admin/kullanicilar': typeof AdminKullanicilarRoute
@@ -277,6 +286,7 @@ export interface FileRouteTypes {
     | '/uyelik-sozlesmesi'
     | '/admin/aktarim'
     | '/admin/ayarlar'
+    | '/admin/kampanyalar'
     | '/admin/kargo'
     | '/admin/kategoriler'
     | '/admin/kullanicilar'
@@ -305,6 +315,7 @@ export interface FileRouteTypes {
     | '/uyelik-sozlesmesi'
     | '/admin/aktarim'
     | '/admin/ayarlar'
+    | '/admin/kampanyalar'
     | '/admin/kargo'
     | '/admin/kategoriler'
     | '/admin/kullanicilar'
@@ -334,6 +345,7 @@ export interface FileRouteTypes {
     | '/uyelik-sozlesmesi'
     | '/admin/aktarim'
     | '/admin/ayarlar'
+    | '/admin/kampanyalar'
     | '/admin/kargo'
     | '/admin/kategoriler'
     | '/admin/kullanicilar'
@@ -542,6 +554,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminKargoRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/kampanyalar': {
+      id: '/admin/kampanyalar'
+      path: '/kampanyalar'
+      fullPath: '/admin/kampanyalar'
+      preLoaderRoute: typeof AdminKampanyalarRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/ayarlar': {
       id: '/admin/ayarlar'
       path: '/ayarlar'
@@ -562,6 +581,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminAktarimRoute: typeof AdminAktarimRoute
   AdminAyarlarRoute: typeof AdminAyarlarRoute
+  AdminKampanyalarRoute: typeof AdminKampanyalarRoute
   AdminKargoRoute: typeof AdminKargoRoute
   AdminKategorilerRoute: typeof AdminKategorilerRoute
   AdminKullanicilarRoute: typeof AdminKullanicilarRoute
@@ -579,6 +599,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAktarimRoute: AdminAktarimRoute,
   AdminAyarlarRoute: AdminAyarlarRoute,
+  AdminKampanyalarRoute: AdminKampanyalarRoute,
   AdminKargoRoute: AdminKargoRoute,
   AdminKategorilerRoute: AdminKategorilerRoute,
   AdminKullanicilarRoute: AdminKullanicilarRoute,
