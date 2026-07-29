@@ -5,6 +5,8 @@ import { Footer } from "@/components/Footer";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 import { formatTL } from "@/lib/products";
+import { useTotals } from "@/lib/pricing";
+
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { TR_ILLER, TR_IL_LIST } from "@/lib/tr-locations";
@@ -21,7 +23,9 @@ export const Route = createFileRoute("/odeme")({
 
 function Checkout() {
   const nav = useNavigate();
-  const { items, total, clear } = useCart();
+  const { items, clear } = useCart();
+  const t = useTotals(items);
+
   const { user } = useAuth();
   const [form, setForm] = useState({
     full_name: "",
@@ -122,8 +126,12 @@ function Checkout() {
           mahalle: form.mahalle || "",
           posta_kodu: form.posta_kodu || "",
           odeme_tipi: form.payment,
-          toplam: total,
+          toplam: t.total,
           notlar: form.notes || "",
+          kargo_firma: t.shippingCost > 0 ? t.shippingLabel : "",
+          kargo_ucret: t.shippingCost,
+          indirim: t.discount,
+
         },
         items: items.map((i) => ({
           product_id: i.product_id,
@@ -255,7 +263,19 @@ function Checkout() {
                 </div>
               ))}
             </div>
-            <div className="flex justify-between font-semibold text-lg border-t pt-4"><span>Toplam</span><span>{formatTL(total)}</span></div>
+            <div className="flex justify-between text-sm border-t pt-3"><span>Ara toplam</span><span>{formatTL(t.subtotal)}</span></div>
+            {t.discount > 0 && (
+              <div className="flex justify-between text-sm text-brand-cta mt-1"><span>İndirim</span><span>-{formatTL(t.discount)}</span></div>
+            )}
+            <div className="flex justify-between text-sm mt-1">
+              <span>Kargo{t.shippingLabel ? ` (${t.shippingLabel})` : ""}</span>
+              <span className={t.shippingCost === 0 ? "text-brand-cta" : ""}>{t.shippingCost === 0 ? "ÜCRETSİZ" : formatTL(t.shippingCost)}</span>
+            </div>
+            {t.appliedCampaigns.length > 0 && (
+              <p className="text-xs text-brand-cta mt-2">Uygulanan kampanya: {t.appliedCampaigns.join(", ")}</p>
+            )}
+            <div className="flex justify-between font-semibold text-lg border-t pt-4 mt-3"><span>Toplam</span><span>{formatTL(t.total)}</span></div>
+
             <button type="submit" disabled={busy} className="mt-6 w-full bg-brand-cta text-white py-4 rounded-full font-semibold tracking-wider hover:opacity-90 disabled:opacity-60">
               {busy ? "GÖNDERİLİYOR..." : "SİPARİŞİ TAMAMLA"}
             </button>
