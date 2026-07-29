@@ -59,14 +59,24 @@ function CartPage() {
 
             <aside className="bg-white rounded-2xl border border-border p-6 h-fit sticky top-24">
               <h2 className="font-display text-2xl text-brand-ink mb-4">Özet</h2>
-              <div className="flex justify-between mb-2 text-sm"><span>Ara toplam</span><span>{formatTL(total)}</span></div>
-              <div className="flex justify-between mb-4 text-sm"><span>Kargo</span><span className="text-brand-cta">ÜCRETSİZ</span></div>
-              <div className="flex justify-between font-semibold text-lg border-t pt-4"><span>Toplam</span><span>{formatTL(total)}</span></div>
+              <div className="flex justify-between mb-2 text-sm"><span>Ara toplam</span><span>{formatTL(t.subtotal)}</span></div>
+              {t.discount > 0 && (
+                <div className="flex justify-between mb-2 text-sm text-brand-cta"><span>İndirim</span><span>-{formatTL(t.discount)}</span></div>
+              )}
+              <div className="flex justify-between mb-2 text-sm">
+                <span>Kargo{t.shippingLabel ? ` (${t.shippingLabel})` : ""}</span>
+                <span className={t.shippingCost === 0 ? "text-brand-cta" : ""}>{t.shippingCost === 0 ? "ÜCRETSİZ" : formatTL(t.shippingCost)}</span>
+              </div>
+              {t.appliedCampaigns.length > 0 && (
+                <p className="text-xs text-brand-cta mb-3">Uygulanan kampanya: {t.appliedCampaigns.join(", ")}</p>
+              )}
+              <div className="flex justify-between font-semibold text-lg border-t pt-4"><span>Toplam</span><span>{formatTL(t.total)}</span></div>
               <Link to="/odeme" className="mt-6 block w-full text-center bg-brand-cta text-white py-3.5 rounded-full font-semibold tracking-wider hover:opacity-90">
                 ÖDEMEYE GEÇ
               </Link>
               <Link to="/urunler" className="mt-3 block text-center text-sm text-muted-foreground hover:text-brand-ink">Alışverişe devam et</Link>
             </aside>
+
           </div>
         )}
       </div>
