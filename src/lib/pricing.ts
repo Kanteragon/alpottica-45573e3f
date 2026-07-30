@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { CartItem } from "@/lib/cart";
@@ -16,7 +17,22 @@ export type Campaign = {
   baslangic: string | null;
   bitis: string | null;
   aktif: boolean;
+  kod: string | null;
+  min_adet: number;
+  max_indirim: number;
 };
+
+export const CAMPAIGN_TYPES: { value: string; label: string }[] = [
+  { value: "ucretsiz_kargo", label: "Ücretsiz Kargo (sepet tutarı eşiği)" },
+  { value: "sepet_indirim", label: "Sepet İndirimi (eşik üzerinde otomatik)" },
+  { value: "ikinci_urun", label: "2. Ürüne İndirim (X adet alana)" },
+  { value: "kombine_indirim", label: "Kombine İndirim (iki ürün birlikte)" },
+  { value: "kupon", label: "İndirim Kodu (kupon)" },
+];
+
+export function campaignTypeLabel(tip: string) {
+  return CAMPAIGN_TYPES.find((t) => t.value === tip)?.label ?? tip;
+}
 
 export function useShipping() {
   return useQuery({
@@ -52,6 +68,9 @@ export function useCampaigns() {
         esik: Number(c.esik ?? 0),
         indirim_tutar: Number(c.indirim_tutar ?? 0),
         indirim_oran: Number(c.indirim_oran ?? 0),
+        min_adet: Number((c as { min_adet?: number }).min_adet ?? 2),
+        max_indirim: Number((c as { max_indirim?: number }).max_indirim ?? 0),
+        kod: ((c as { kod?: string | null }).kod ?? null),
       })) as Campaign[];
     },
   });
@@ -72,16 +91,27 @@ export type PriceBreakdown = {
   discount: number;
   appliedCampaigns: string[];
   total: number;
+  couponError: string | null;
 };
+
+function capped(amount: number, c: Campaign) {
+  return c.max_indirim > 0 ? Math.min(amount, c.max_indirim) : amount;
+}
 
 export function computeTotals(
   items: CartItem[],
   shipping: Shipping | undefined,
   campaigns: Campaign[] | undefined,
+  couponCode?: string,
 ): PriceBreakdown {
   const subtotal = items.reduce((n, i) => n + i.price * i.qty, 0);
   const baseShipping = shipping?.aktif ? Number(shipping.ucret) || 0 : 0;
   const ids = new Set(items.map((i) => i.product_id));
+
+  const units = items.flatMap((i) => Array.from({ length: Math.max(0, i.qty) }, () => i.price)).sort((a, b) => a - b);
+  const totalQty = units.length;
+  const code = (couponCode ?? "").trim().toLowerCase();
+  let couponError: string | null = code ? "Geçersiz indirim kodu" : null;
 
   let discount = 0;
   let freeShipping = subtotal > 0 && baseShipping === 0;
@@ -94,6 +124,34 @@ export function computeTotals(
         freeShipping = true;
         applied.push(c.ad);
       }
+    } else if (c.tip === "sepet_indirim") {
+      if (subtotal >= c.esik) {
+        const amount = capped(c.indirim_tutar > 0 ? c.indirim_tutar : (subtotal * c.indirim_oran) / 100, c);
+        if (amount > 0) { discount += amount; applied.push(c.ad); }
+      }
+    } else if (c.tip === "ikinci_urun") {
+      const need = Math.max(2, c.min_adet || 2);
+      if (totalQty >= need) {
+        const sets = Math.floor(totalQty / need);
+        // her sette en ucuz ürün indirimli
+        let amount = 0;
+        for (let s = 0; s < sets; s++) {
+          const unit = units[s] ?? 0;
+          amount += c.indirim_tutar > 0 ? Math.min(c.indirim_tutar, unit) : (unit * c.indirim_oran) / 100;
+        }
+        amount = capped(amount, c);
+        if (amount > 0) { discount += amount; applied.push(c.ad); }
+      }
+    } else if (c.tip === "kupon") {
+      if (!c.kod || !code || c.kod.trim().toLowerCase() !== code) continue;
+      if (subtotal < c.esik) {
+        couponError = `Bu kod en az ${c.esik} ₺ sepet tutarında geçerli`;
+        continue;
+      }
+      const amount = capped(c.indirim_tutar > 0 ? c.indirim_tutar : (subtotal * c.indirim_oran) / 100, c);
+      couponError = null;
+      if (amount > 0) { discount += amount; applied.push(c.ad); }
+      else { freeShipping = true; applied.push(c.ad); }
     } else if (c.tip === "kombine_indirim") {
       if (c.urun_a && c.urun_b && ids.has(c.urun_a) && ids.has(c.urun_b)) {
         const amount = c.indirim_tutar > 0 ? c.indirim_tutar : (subtotal * c.indirim_oran) / 100;
@@ -116,11 +174,27 @@ export function computeTotals(
     discount,
     appliedCampaigns: applied,
     total: Math.max(0, subtotal - discount + shippingCost),
+    couponError,
   };
+}
+
+const COUPON_KEY = "alpottica_kupon";
+
+export function useCoupon() {
+  const [code, setCode] = useState("");
+  useEffect(() => {
+    try { setCode(localStorage.getItem(COUPON_KEY) ?? ""); } catch { /* ignore */ }
+  }, []);
+  const apply = (v: string) => {
+    setCode(v);
+    try { localStorage.setItem(COUPON_KEY, v); } catch { /* ignore */ }
+  };
+  return { code, apply, clear: () => apply("") };
 }
 
 export function useTotals(items: CartItem[]): PriceBreakdown {
   const { data: shipping } = useShipping();
   const { data: campaigns } = useCampaigns();
-  return computeTotals(items, shipping, campaigns);
+  const { code } = useCoupon();
+  return computeTotals(items, shipping, campaigns, code);
 }
