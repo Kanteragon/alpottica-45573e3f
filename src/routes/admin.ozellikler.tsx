@@ -126,27 +126,36 @@ function Attrs() {
   );
 }
 
+type ValRow = { orig: string | null; value: string };
+
 function AttrForm({ attr, nextSira, onClose }: { attr: Attr | null; nextSira: number; onClose: () => void }) {
   const isNew = !attr;
   const [f, setF] = useState({
     ad: attr?.ad ?? "",
     slug: attr?.slug ?? "",
-    degerler: (attr?.degerler ?? []).join(", "),
     filterable: attr?.filterable ?? true,
     show_in_detail: attr?.show_in_detail ?? true,
     sira: attr?.sira ?? nextSira,
   });
+  const [vals, setVals] = useState<ValRow[]>(
+    (attr?.degerler ?? []).map((d) => ({ orig: d, value: d })),
+  );
   const [busy, setBusy] = useState(false);
+
+  const setVal = (i: number, value: string) =>
+    setVals((rows) => rows.map((r, idx) => (idx === i ? { ...r, value } : r)));
+  const removeVal = (i: number) => setVals((rows) => rows.filter((_, idx) => idx !== i));
+  const addVal = () => setVals((rows) => [...rows, { orig: null, value: "" }]);
 
   const save = async () => {
     if (!f.ad) return toast.error("Ad zorunlu");
     setBusy(true);
     const newSlug = f.slug || slugify(f.ad);
-    const newDegerler = f.degerler.split(",").map((s) => s.trim()).filter(Boolean);
+    const newDegerler = vals.map((v) => v.value.trim()).filter(Boolean);
     const payload = {
       ad: f.ad,
       slug: newSlug,
-      degerler: newDegerler,
+      degerler: Array.from(new Set(newDegerler)),
       filterable: f.filterable,
       show_in_detail: f.show_in_detail,
       sira: Number(f.sira),
@@ -156,13 +165,12 @@ function AttrForm({ attr, nextSira, onClose }: { attr: Attr | null; nextSira: nu
       : await supabase.from("product_attributes").update(payload).eq("id", attr!.id);
     if (error) { setBusy(false); return toast.error(error.message); }
 
-    // Propagate rename/value changes to all products
+    // Propagate renames to products: exact old value -> new value, row by row
     if (!isNew && attr) {
-      const oldDegerler = attr.degerler ?? [];
       const valueMap: Record<string, string> = {};
-      for (let i = 0; i < oldDegerler.length; i++) {
-        const nv = newDegerler[i];
-        if (nv && nv !== oldDegerler[i]) valueMap[oldDegerler[i]] = nv;
+      for (const r of vals) {
+        const nv = r.value.trim();
+        if (r.orig && nv && nv !== r.orig) valueMap[r.orig] = nv;
       }
       const oldKeys = Array.from(new Set([attr.slug, attr.ad, newSlug, f.ad].filter(Boolean)));
       const { data: cnt, error: rpcErr } = await supabase.rpc("apply_attribute_rename", {
@@ -178,6 +186,7 @@ function AttrForm({ attr, nextSira, onClose }: { attr: Attr | null; nextSira: nu
     toast.success("Kaydedildi");
     onClose();
   };
+
 
 
   return (
