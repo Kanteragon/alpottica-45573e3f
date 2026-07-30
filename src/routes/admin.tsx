@@ -4,7 +4,7 @@ import { useAuth } from "@/lib/auth";
 import {
   LayoutDashboard, Package, ShoppingBag, Images, Menu as MenuIcon, Star, Users,
   Upload, Tag, LogOut, Store, Sliders, Settings, Code2, ChevronDown, ChevronRight,
-  FileText, FolderTree, X, User as UserIcon, Truck, Megaphone,
+  FileText, FolderTree, X, User as UserIcon, Truck, Megaphone, Layers,
 } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
@@ -29,6 +29,7 @@ const NAV: Entry[] = [
     key: "katalog", label: "Katalog", icon: FolderTree, items: [
       { to: "/admin/urunler", label: "Ürünler", icon: Package },
       { to: "/admin/ozellikler", label: "Ürün Özellikleri", icon: Sliders },
+      { to: "/admin/toplu-guncelleme", label: "Toplu Güncelleme", icon: Layers },
       { to: "/admin/kategoriler", label: "Ürün Kategorileri", icon: Tag },
       { to: "/admin/markalar", label: "Marka Yönetimi", icon: Store },
     ],
