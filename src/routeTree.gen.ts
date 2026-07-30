@@ -25,6 +25,7 @@ import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as UrunSlugRouteImport } from './routes/urun.$slug'
 import { Route as AdminVitrinRouteImport } from './routes/admin.vitrin'
 import { Route as AdminUrunlerRouteImport } from './routes/admin.urunler'
+import { Route as AdminTopluGuncellemeRouteImport } from './routes/admin.toplu-guncelleme'
 import { Route as AdminSliderlarRouteImport } from './routes/admin.sliderlar'
 import { Route as AdminSiparislerRouteImport } from './routes/admin.siparisler'
 import { Route as AdminScriptlerRouteImport } from './routes/admin.scriptler'
@@ -118,6 +119,11 @@ const AdminUrunlerRoute = AdminUrunlerRouteImport.update({
   path: '/urunler',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminTopluGuncellemeRoute = AdminTopluGuncellemeRouteImport.update({
+  id: '/toplu-guncelleme',
+  path: '/toplu-guncelleme',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSliderlarRoute = AdminSliderlarRouteImport.update({
   id: '/sliderlar',
   path: '/sliderlar',
@@ -204,6 +210,7 @@ export interface FileRoutesByFullPath {
   '/admin/scriptler': typeof AdminScriptlerRoute
   '/admin/siparisler': typeof AdminSiparislerRoute
   '/admin/sliderlar': typeof AdminSliderlarRoute
+  '/admin/toplu-guncelleme': typeof AdminTopluGuncellemeRoute
   '/admin/urunler': typeof AdminUrunlerRoute
   '/admin/vitrin': typeof AdminVitrinRoute
   '/urun/$slug': typeof UrunSlugRoute
@@ -233,6 +240,7 @@ export interface FileRoutesByTo {
   '/admin/scriptler': typeof AdminScriptlerRoute
   '/admin/siparisler': typeof AdminSiparislerRoute
   '/admin/sliderlar': typeof AdminSliderlarRoute
+  '/admin/toplu-guncelleme': typeof AdminTopluGuncellemeRoute
   '/admin/urunler': typeof AdminUrunlerRoute
   '/admin/vitrin': typeof AdminVitrinRoute
   '/urun/$slug': typeof UrunSlugRoute
@@ -264,6 +272,7 @@ export interface FileRoutesById {
   '/admin/scriptler': typeof AdminScriptlerRoute
   '/admin/siparisler': typeof AdminSiparislerRoute
   '/admin/sliderlar': typeof AdminSliderlarRoute
+  '/admin/toplu-guncelleme': typeof AdminTopluGuncellemeRoute
   '/admin/urunler': typeof AdminUrunlerRoute
   '/admin/vitrin': typeof AdminVitrinRoute
   '/urun/$slug': typeof UrunSlugRoute
@@ -296,6 +305,7 @@ export interface FileRouteTypes {
     | '/admin/scriptler'
     | '/admin/siparisler'
     | '/admin/sliderlar'
+    | '/admin/toplu-guncelleme'
     | '/admin/urunler'
     | '/admin/vitrin'
     | '/urun/$slug'
@@ -325,6 +335,7 @@ export interface FileRouteTypes {
     | '/admin/scriptler'
     | '/admin/siparisler'
     | '/admin/sliderlar'
+    | '/admin/toplu-guncelleme'
     | '/admin/urunler'
     | '/admin/vitrin'
     | '/urun/$slug'
@@ -355,6 +366,7 @@ export interface FileRouteTypes {
     | '/admin/scriptler'
     | '/admin/siparisler'
     | '/admin/sliderlar'
+    | '/admin/toplu-guncelleme'
     | '/admin/urunler'
     | '/admin/vitrin'
     | '/urun/$slug'
@@ -491,6 +503,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUrunlerRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/toplu-guncelleme': {
+      id: '/admin/toplu-guncelleme'
+      path: '/toplu-guncelleme'
+      fullPath: '/admin/toplu-guncelleme'
+      preLoaderRoute: typeof AdminTopluGuncellemeRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/sliderlar': {
       id: '/admin/sliderlar'
       path: '/sliderlar'
@@ -591,6 +610,7 @@ interface AdminRouteChildren {
   AdminScriptlerRoute: typeof AdminScriptlerRoute
   AdminSiparislerRoute: typeof AdminSiparislerRoute
   AdminSliderlarRoute: typeof AdminSliderlarRoute
+  AdminTopluGuncellemeRoute: typeof AdminTopluGuncellemeRoute
   AdminUrunlerRoute: typeof AdminUrunlerRoute
   AdminVitrinRoute: typeof AdminVitrinRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -609,6 +629,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminScriptlerRoute: AdminScriptlerRoute,
   AdminSiparislerRoute: AdminSiparislerRoute,
   AdminSliderlarRoute: AdminSliderlarRoute,
+  AdminTopluGuncellemeRoute: AdminTopluGuncellemeRoute,
   AdminUrunlerRoute: AdminUrunlerRoute,
   AdminVitrinRoute: AdminVitrinRoute,
   AdminIndexRoute: AdminIndexRoute,

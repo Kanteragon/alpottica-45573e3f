@@ -126,27 +126,36 @@ function Attrs() {
   );
 }
 
+type ValRow = { orig: string | null; value: string };
+
 function AttrForm({ attr, nextSira, onClose }: { attr: Attr | null; nextSira: number; onClose: () => void }) {
   const isNew = !attr;
   const [f, setF] = useState({
     ad: attr?.ad ?? "",
     slug: attr?.slug ?? "",
-    degerler: (attr?.degerler ?? []).join(", "),
     filterable: attr?.filterable ?? true,
     show_in_detail: attr?.show_in_detail ?? true,
     sira: attr?.sira ?? nextSira,
   });
+  const [vals, setVals] = useState<ValRow[]>(
+    (attr?.degerler ?? []).map((d) => ({ orig: d, value: d })),
+  );
   const [busy, setBusy] = useState(false);
+
+  const setVal = (i: number, value: string) =>
+    setVals((rows) => rows.map((r, idx) => (idx === i ? { ...r, value } : r)));
+  const removeVal = (i: number) => setVals((rows) => rows.filter((_, idx) => idx !== i));
+  const addVal = () => setVals((rows) => [...rows, { orig: null, value: "" }]);
 
   const save = async () => {
     if (!f.ad) return toast.error("Ad zorunlu");
     setBusy(true);
     const newSlug = f.slug || slugify(f.ad);
-    const newDegerler = f.degerler.split(",").map((s) => s.trim()).filter(Boolean);
+    const newDegerler = vals.map((v) => v.value.trim()).filter(Boolean);
     const payload = {
       ad: f.ad,
       slug: newSlug,
-      degerler: newDegerler,
+      degerler: Array.from(new Set(newDegerler)),
       filterable: f.filterable,
       show_in_detail: f.show_in_detail,
       sira: Number(f.sira),
@@ -156,13 +165,12 @@ function AttrForm({ attr, nextSira, onClose }: { attr: Attr | null; nextSira: nu
       : await supabase.from("product_attributes").update(payload).eq("id", attr!.id);
     if (error) { setBusy(false); return toast.error(error.message); }
 
-    // Propagate rename/value changes to all products
+    // Propagate renames to products: exact old value -> new value, row by row
     if (!isNew && attr) {
-      const oldDegerler = attr.degerler ?? [];
       const valueMap: Record<string, string> = {};
-      for (let i = 0; i < oldDegerler.length; i++) {
-        const nv = newDegerler[i];
-        if (nv && nv !== oldDegerler[i]) valueMap[oldDegerler[i]] = nv;
+      for (const r of vals) {
+        const nv = r.value.trim();
+        if (r.orig && nv && nv !== r.orig) valueMap[r.orig] = nv;
       }
       const oldKeys = Array.from(new Set([attr.slug, attr.ad, newSlug, f.ad].filter(Boolean)));
       const { data: cnt, error: rpcErr } = await supabase.rpc("apply_attribute_rename", {
@@ -178,6 +186,7 @@ function AttrForm({ attr, nextSira, onClose }: { attr: Attr | null; nextSira: nu
     toast.success("Kaydedildi");
     onClose();
   };
+
 
 
   return (
@@ -196,10 +205,32 @@ function AttrForm({ attr, nextSira, onClose }: { attr: Attr | null; nextSira: nu
             <span className="block text-xs uppercase tracking-widest mb-1">Slug (boş bırak = otomatik)</span>
             <input value={f.slug} onChange={(e) => setF({ ...f, slug: e.target.value })} className="w-full border rounded-xl px-3 py-2 font-mono text-sm" />
           </label>
-          <label className="block">
-            <span className="block text-xs uppercase tracking-widest mb-1">Değerler (virgülle)</span>
-            <textarea rows={3} value={f.degerler} onChange={(e) => setF({ ...f, degerler: e.target.value })} className="w-full border rounded-xl px-3 py-2" />
-          </label>
+          <div>
+            <span className="block text-xs uppercase tracking-widest mb-2">Değerler</span>
+            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+              {vals.map((v, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input
+                    value={v.value}
+                    onChange={(e) => setVal(i, e.target.value)}
+                    placeholder="Değer"
+                    className="flex-1 border rounded-xl px-3 py-2 text-sm"
+                  />
+                  <button type="button" onClick={() => removeVal(i)} className="p-2 rounded-lg hover:bg-red-50 text-red-600">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+              {vals.length === 0 && <p className="text-xs text-muted-foreground">Henüz değer yok.</p>}
+            </div>
+            <button type="button" onClick={addVal} className="mt-2 flex items-center gap-1 text-sm px-3 py-1.5 rounded-full border">
+              <Plus className="w-3 h-3" /> Değer Ekle
+            </button>
+            <p className="text-[11px] text-muted-foreground mt-2">
+              Bir değeri düzenlediğinde yalnızca o değer tüm ürünlerde güncellenir. Silinen/eklenen değerler ürün verisini değiştirmez.
+            </p>
+          </div>
+
           <div className="grid grid-cols-3 gap-3">
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={f.filterable} onChange={(e) => setF({ ...f, filterable: e.target.checked })} /> Filtre
