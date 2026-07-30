@@ -115,6 +115,10 @@ export type Database = {
           id: string
           indirim_oran: number
           indirim_tutar: number
+          kategori_id: string | null
+          kod: string | null
+          max_indirim: number
+          min_adet: number
           tip: string
           updated_at: string
           urun_a: string | null
@@ -130,6 +134,10 @@ export type Database = {
           id?: string
           indirim_oran?: number
           indirim_tutar?: number
+          kategori_id?: string | null
+          kod?: string | null
+          max_indirim?: number
+          min_adet?: number
           tip?: string
           updated_at?: string
           urun_a?: string | null
@@ -145,12 +153,24 @@ export type Database = {
           id?: string
           indirim_oran?: number
           indirim_tutar?: number
+          kategori_id?: string | null
+          kod?: string | null
+          max_indirim?: number
+          min_adet?: number
           tip?: string
           updated_at?: string
           urun_a?: string | null
           urun_b?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "campaigns_kategori_id_fkey"
+            columns: ["kategori_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       categories: {
         Row: {
