@@ -1,9 +1,10 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { useCart } from "@/lib/cart";
 import { formatTL } from "@/lib/products";
-import { useTotals } from "@/lib/pricing";
+import { useTotals, useCoupon } from "@/lib/pricing";
 import { Trash2, Minus, Plus } from "lucide-react";
 
 export const Route = createFileRoute("/sepet")({
@@ -19,6 +20,9 @@ export const Route = createFileRoute("/sepet")({
 function CartPage() {
   const { items, setQty, remove } = useCart();
   const t = useTotals(items);
+  const { code, apply, clear } = useCoupon();
+  const [draft, setDraft] = useState(code);
+  useEffect(() => setDraft(code), [code]);
 
 
   return (
@@ -73,7 +77,26 @@ function CartPage() {
               {t.appliedCampaigns.length > 0 && (
                 <p className="text-xs text-brand-cta mb-3">Uygulanan kampanya: {t.appliedCampaigns.join(", ")}</p>
               )}
-              <div className="flex justify-between font-semibold text-lg border-t pt-4"><span>Toplam</span><span>{formatTL(t.total)}</span></div>
+              <div className="mt-4 border-t pt-4">
+                <span className="block text-xs uppercase tracking-widest mb-2">İndirim Kodu</span>
+                <div className="flex gap-2">
+                  <input
+                    value={draft}
+                    onChange={(e) => setDraft(e.target.value.toUpperCase())}
+                    placeholder="KOD"
+                    className="flex-1 border rounded-full px-4 py-2 text-sm font-mono uppercase"
+                  />
+                  {code ? (
+                    <button onClick={() => { clear(); setDraft(""); }} className="px-4 py-2 rounded-full border text-sm">Kaldır</button>
+                  ) : (
+                    <button onClick={() => apply(draft.trim())} className="px-4 py-2 rounded-full bg-brand-ink text-white text-sm">Uygula</button>
+                  )}
+                </div>
+                {code && t.couponError && <p className="text-xs text-red-600 mt-2">{t.couponError}</p>}
+                {code && !t.couponError && <p className="text-xs text-brand-cta mt-2">Kod uygulandı.</p>}
+              </div>
+
+              <div className="flex justify-between font-semibold text-lg border-t pt-4 mt-4"><span>Toplam</span><span>{formatTL(t.total)}</span></div>
               <Link to="/odeme" className="mt-6 block w-full text-center bg-brand-cta text-white py-3.5 rounded-full font-semibold tracking-wider hover:opacity-90">
                 ÖDEMEYE GEÇ
               </Link>
