@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatTL } from "@/lib/products";
-import type { Campaign } from "@/lib/pricing";
+import { CAMPAIGN_TYPES, campaignTypeLabel, type Campaign } from "@/lib/pricing";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, X, Megaphone } from "lucide-react";
 
@@ -69,12 +69,8 @@ function CampaignsPage() {
             {rows.map((c) => (
               <tr key={c.id} className="border-b last:border-0">
                 <td className="p-3 font-medium">{c.ad}</td>
-                <td>{c.tip === "ucretsiz_kargo" ? "Ücretsiz Kargo" : "Kombine İndirim"}</td>
-                <td className="text-muted-foreground">
-                  {c.tip === "ucretsiz_kargo"
-                    ? `Sepet ${formatTL(Number(c.esik))} üzerindeyse kargo ücretsiz`
-                    : `2 ürün birlikte alınırsa ${Number(c.indirim_tutar) > 0 ? formatTL(Number(c.indirim_tutar)) : `%${c.indirim_oran}`} indirim`}
-                </td>
+                <td>{campaignTypeLabel(c.tip)}</td>
+                <td className="text-muted-foreground">{ruleText(c)}</td>
                 <td className="text-center">
                   <button onClick={() => toggle(c)} className={`px-2 py-1 rounded-full text-xs ${c.aktif ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>
                     {c.aktif ? "Evet" : "Hayır"}
@@ -98,6 +94,25 @@ function CampaignsPage() {
       )}
     </div>
   );
+}
+
+function amountText(c: Campaign) {
+  return Number(c.indirim_tutar) > 0 ? formatTL(Number(c.indirim_tutar)) : `%${c.indirim_oran}`;
+}
+
+function ruleText(c: Campaign) {
+  switch (c.tip) {
+    case "ucretsiz_kargo":
+      return `Sepet ${formatTL(Number(c.esik))} üzerindeyse kargo ücretsiz`;
+    case "sepet_indirim":
+      return `Sepet ${formatTL(Number(c.esik))} üzerindeyse ${amountText(c)} indirim`;
+    case "ikinci_urun":
+      return `${Number(c.min_adet) || 2} ürün alana en ucuz ürüne ${amountText(c)} indirim`;
+    case "kupon":
+      return `"${c.kod ?? ""}" kodu ile ${amountText(c)} indirim${Number(c.esik) > 0 ? ` (min ${formatTL(Number(c.esik))})` : ""}`;
+    default:
+      return `2 ürün birlikte alınırsa ${amountText(c)} indirim`;
+  }
 }
 
 function ProductSelect({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
@@ -133,6 +148,9 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
     urun_b: row?.urun_b ?? "",
     indirim_tutar: String(row?.indirim_tutar ?? 0),
     indirim_oran: String(row?.indirim_oran ?? 0),
+    kod: row?.kod ?? "",
+    min_adet: String(row?.min_adet ?? 2),
+    max_indirim: String(row?.max_indirim ?? 0),
     aktif: row?.aktif ?? true,
   });
   const [busy, setBusy] = useState(false);
@@ -140,6 +158,7 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
   const save = async () => {
     if (!f.ad.trim()) return toast.error("Kampanya adı zorunlu");
     if (f.tip === "kombine_indirim" && (!f.urun_a || !f.urun_b)) return toast.error("İki ürün de seçilmeli");
+    if (f.tip === "kupon" && !f.kod.trim()) return toast.error("İndirim kodu zorunlu");
     setBusy(true);
     const payload = {
       ad: f.ad.trim(),
@@ -149,6 +168,9 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
       urun_b: f.tip === "kombine_indirim" ? f.urun_b : null,
       indirim_tutar: Number(f.indirim_tutar) || 0,
       indirim_oran: Number(f.indirim_oran) || 0,
+      kod: f.tip === "kupon" ? f.kod.trim() : null,
+      min_adet: Number(f.min_adet) || 2,
+      max_indirim: Number(f.max_indirim) || 0,
       aktif: f.aktif,
     };
     const { error } = isNew
@@ -175,20 +197,53 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
           <label className="block">
             <span className="block text-xs uppercase tracking-widest mb-1">Kampanya Tipi</span>
             <select value={f.tip} onChange={(e) => setF({ ...f, tip: e.target.value })} className="w-full border rounded-xl px-3 py-2">
-              <option value="ucretsiz_kargo">Ücretsiz Kargo (sepet tutarı eşiği)</option>
-              <option value="kombine_indirim">Kombine İndirim (iki ürün birlikte)</option>
+              {CAMPAIGN_TYPES.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
           </label>
 
-          {f.tip === "ucretsiz_kargo" ? (
+          {f.tip === "ucretsiz_kargo" && (
             <label className="block">
               <span className="block text-xs uppercase tracking-widest mb-1">Ücretsiz Kargo Eşiği (₺)</span>
               <input type="number" min="0" value={f.esik} onChange={(e) => setF({ ...f, esik: e.target.value })} className="w-full border rounded-xl px-3 py-2" />
             </label>
-          ) : (
+          )}
+
+          {f.tip === "sepet_indirim" && (
+            <label className="block">
+              <span className="block text-xs uppercase tracking-widest mb-1">Minimum Sepet Tutarı (₺)</span>
+              <input type="number" min="0" value={f.esik} onChange={(e) => setF({ ...f, esik: e.target.value })} className="w-full border rounded-xl px-3 py-2" />
+            </label>
+          )}
+
+          {f.tip === "ikinci_urun" && (
+            <label className="block">
+              <span className="block text-xs uppercase tracking-widest mb-1">Kaç ürün alınırsa (indirim en ucuz ürüne uygulanır)</span>
+              <input type="number" min="2" value={f.min_adet} onChange={(e) => setF({ ...f, min_adet: e.target.value })} className="w-full border rounded-xl px-3 py-2" />
+            </label>
+          )}
+
+          {f.tip === "kupon" && (
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block">
+                <span className="block text-xs uppercase tracking-widest mb-1">İndirim Kodu</span>
+                <input value={f.kod} onChange={(e) => setF({ ...f, kod: e.target.value.toUpperCase() })} placeholder="YAZ25" className="w-full border rounded-xl px-3 py-2 font-mono uppercase" />
+              </label>
+              <label className="block">
+                <span className="block text-xs uppercase tracking-widest mb-1">Min. Sepet Tutarı (₺)</span>
+                <input type="number" min="0" value={f.esik} onChange={(e) => setF({ ...f, esik: e.target.value })} className="w-full border rounded-xl px-3 py-2" />
+              </label>
+            </div>
+          )}
+
+          {f.tip === "kombine_indirim" && (
             <>
               <ProductSelect label="Ürün A" value={f.urun_a} onChange={(v) => setF({ ...f, urun_a: v })} />
               <ProductSelect label="Ürün B" value={f.urun_b} onChange={(v) => setF({ ...f, urun_b: v })} />
+            </>
+          )}
+
+          {f.tip !== "ucretsiz_kargo" && (
+            <>
               <div className="grid grid-cols-2 gap-3">
                 <label className="block">
                   <span className="block text-xs uppercase tracking-widest mb-1">İndirim Tutarı (₺)</span>
@@ -199,6 +254,10 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
                   <input type="number" min="0" max="100" value={f.indirim_oran} onChange={(e) => setF({ ...f, indirim_oran: e.target.value })} className="w-full border rounded-xl px-3 py-2" />
                 </label>
               </div>
+              <label className="block">
+                <span className="block text-xs uppercase tracking-widest mb-1">Maksimum İndirim (₺, 0 = sınırsız)</span>
+                <input type="number" min="0" value={f.max_indirim} onChange={(e) => setF({ ...f, max_indirim: e.target.value })} className="w-full border rounded-xl px-3 py-2" />
+              </label>
               <p className="text-xs text-muted-foreground">Tutar girilirse oran yok sayılır.</p>
             </>
           )}
