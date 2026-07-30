@@ -205,10 +205,32 @@ function AttrForm({ attr, nextSira, onClose }: { attr: Attr | null; nextSira: nu
             <span className="block text-xs uppercase tracking-widest mb-1">Slug (boş bırak = otomatik)</span>
             <input value={f.slug} onChange={(e) => setF({ ...f, slug: e.target.value })} className="w-full border rounded-xl px-3 py-2 font-mono text-sm" />
           </label>
-          <label className="block">
-            <span className="block text-xs uppercase tracking-widest mb-1">Değerler (virgülle)</span>
-            <textarea rows={3} value={f.degerler} onChange={(e) => setF({ ...f, degerler: e.target.value })} className="w-full border rounded-xl px-3 py-2" />
-          </label>
+          <div>
+            <span className="block text-xs uppercase tracking-widest mb-2">Değerler</span>
+            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+              {vals.map((v, i) => (
+                <div key={i} className="flex items-center gap-2">
+                  <input
+                    value={v.value}
+                    onChange={(e) => setVal(i, e.target.value)}
+                    placeholder="Değer"
+                    className="flex-1 border rounded-xl px-3 py-2 text-sm"
+                  />
+                  <button type="button" onClick={() => removeVal(i)} className="p-2 rounded-lg hover:bg-red-50 text-red-600">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+              {vals.length === 0 && <p className="text-xs text-muted-foreground">Henüz değer yok.</p>}
+            </div>
+            <button type="button" onClick={addVal} className="mt-2 flex items-center gap-1 text-sm px-3 py-1.5 rounded-full border">
+              <Plus className="w-3 h-3" /> Değer Ekle
+            </button>
+            <p className="text-[11px] text-muted-foreground mt-2">
+              Bir değeri düzenlediğinde yalnızca o değer tüm ürünlerde güncellenir. Silinen/eklenen değerler ürün verisini değiştirmez.
+            </p>
+          </div>
+
           <div className="grid grid-cols-3 gap-3">
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={f.filterable} onChange={(e) => setF({ ...f, filterable: e.target.checked })} /> Filtre
