@@ -109,6 +109,12 @@ function Products() {
       labelBy.set(norm(a.ad), a.ad);
     }
     const HIDE = new Set(["aciklama", "description", "url", "resim", "resimler", "stok", "stok_kodu", "barkod"]);
+    // Attributes explicitly marked as non-filterable in settings must never appear
+    for (const a of attrs) {
+      if (a.filterable) continue;
+      HIDE.add(norm(a.slug));
+      HIDE.add(norm(a.ad));
+    }
     const byNorm = new Map<string, { ad: string; slug: string; values: Set<string> }>();
     for (const p of inStock) {
       const oz = p.ozellikler ?? {};
