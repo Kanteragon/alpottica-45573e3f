@@ -20,7 +20,17 @@ export type Campaign = {
   kod: string | null;
   min_adet: number;
   max_indirim: number;
+  hedef_tip: string;
+  hedef_kategori_ids: string[];
+  hedef_urun_ids: string[];
+  grup_a_kategori_ids: string[];
+  grup_a_urun_ids: string[];
+  grup_b_kategori_ids: string[];
+  grup_b_urun_ids: string[];
 };
+
+/** product_id -> kategori id listesi */
+export type CategoryMap = Record<string, string[]>;
 
 export const CAMPAIGN_TYPES: { value: string; label: string }[] = [
   { value: "ucretsiz_kargo", label: "Ücretsiz Kargo (sepet tutarı eşiği)" },
