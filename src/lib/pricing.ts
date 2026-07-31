@@ -230,9 +230,32 @@ export function useCoupon() {
   return { code, apply, clear: () => apply("") };
 }
 
+export function useCartCategoryMap(items: CartItem[]) {
+  const ids = items.map((i) => i.product_id).sort();
+  return useQuery({
+    queryKey: ["cart-cats", ids.join(",")],
+    enabled: ids.length > 0,
+    queryFn: async (): Promise<CategoryMap> => {
+      const map: CategoryMap = {};
+      const [pc, pr] = await Promise.all([
+        supabase.from("product_categories").select("product_id,category_id").in("product_id", ids),
+        supabase.from("products").select("id,kategori_id").in("id", ids),
+      ]);
+      for (const r of pc.data ?? []) {
+        (map[r.product_id] ??= []).push(r.category_id);
+      }
+      for (const r of pr.data ?? []) {
+        if (r.kategori_id) (map[r.id] ??= []).push(r.kategori_id);
+      }
+      return map;
+    },
+  });
+}
+
 export function useTotals(items: CartItem[]): PriceBreakdown {
   const { data: shipping } = useShipping();
   const { data: campaigns } = useCampaigns();
+  const { data: catMap } = useCartCategoryMap(items);
   const { code } = useCoupon();
-  return computeTotals(items, shipping, campaigns, code);
+  return computeTotals(items, shipping, campaigns, code, catMap ?? {});
 }
