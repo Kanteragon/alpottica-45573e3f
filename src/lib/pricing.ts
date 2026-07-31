@@ -151,24 +151,27 @@ export function computeTotals(
 
   for (const c of campaigns ?? []) {
     if (!c.aktif || !inWindow(c) || subtotal <= 0) continue;
+    const scoped = items.filter((i) => inScope(i, c, catMap));
+    const scopedSubtotal = scoped.reduce((n, i) => n + i.price * i.qty, 0);
     if (c.tip === "ucretsiz_kargo") {
       if (subtotal >= c.esik) {
         freeShipping = true;
         applied.push(c.ad);
       }
     } else if (c.tip === "sepet_indirim") {
-      if (subtotal >= c.esik) {
-        const amount = capped(c.indirim_tutar > 0 ? c.indirim_tutar : (subtotal * c.indirim_oran) / 100, c);
+      if (subtotal >= c.esik && scopedSubtotal > 0) {
+        const amount = capped(c.indirim_tutar > 0 ? c.indirim_tutar : (scopedSubtotal * c.indirim_oran) / 100, c);
         if (amount > 0) { discount += amount; applied.push(c.ad); }
       }
     } else if (c.tip === "ikinci_urun") {
       const need = Math.max(2, c.min_adet || 2);
-      if (totalQty >= need) {
-        const sets = Math.floor(totalQty / need);
+      const scopedUnits = unitsOf(scoped);
+      if (scopedUnits.length >= need) {
+        const sets = Math.floor(scopedUnits.length / need);
         // her sette en ucuz ürün indirimli
         let amount = 0;
         for (let s = 0; s < sets; s++) {
-          const unit = units[s] ?? 0;
+          const unit = scopedUnits[s] ?? 0;
           amount += c.indirim_tutar > 0 ? Math.min(c.indirim_tutar, unit) : (unit * c.indirim_oran) / 100;
         }
         amount = capped(amount, c);
@@ -180,20 +183,30 @@ export function computeTotals(
         couponError = `Bu kod en az ${c.esik} ₺ sepet tutarında geçerli`;
         continue;
       }
-      const amount = capped(c.indirim_tutar > 0 ? c.indirim_tutar : (subtotal * c.indirim_oran) / 100, c);
+      const base = c.hedef_tip && c.hedef_tip !== "tumu" ? scopedSubtotal : subtotal;
+      if (base <= 0) { couponError = "Bu kod sepetinizdeki ürünler için geçerli değil"; continue; }
+      const amount = capped(c.indirim_tutar > 0 ? c.indirim_tutar : (base * c.indirim_oran) / 100, c);
       couponError = null;
       if (amount > 0) { discount += amount; applied.push(c.ad); }
       else { freeShipping = true; applied.push(c.ad); }
     } else if (c.tip === "kombine_indirim") {
-      if (c.urun_a && c.urun_b && ids.has(c.urun_a) && ids.has(c.urun_b)) {
-        const amount = c.indirim_tutar > 0 ? c.indirim_tutar : (subtotal * c.indirim_oran) / 100;
-        if (amount > 0) {
-          discount += amount;
-          applied.push(c.ad);
-        }
+      const aList = [...(c.grup_a_urun_ids ?? []), ...(c.urun_a ? [c.urun_a] : [])];
+      const bList = [...(c.grup_b_urun_ids ?? []), ...(c.urun_b ? [c.urun_b] : [])];
+      const aItems = items.filter((i) => matches(i.product_id, catMap, c.grup_a_kategori_ids, aList));
+      const bItems = items.filter((i) => matches(i.product_id, catMap, c.grup_b_kategori_ids, bList));
+      const hasA = aItems.length > 0;
+      const hasB = bItems.length > 0;
+      const distinct = aItems.some((a) => bItems.some((b) => b.product_id !== a.product_id)) || aItems.some((a) => a.qty > 1);
+      if (hasA && hasB && distinct) {
+        const base = [...new Set([...aItems, ...bItems])].reduce((n, i) => n + i.price * i.qty, 0);
+        const amount = capped(c.indirim_tutar > 0 ? c.indirim_tutar : (base * c.indirim_oran) / 100, c);
+        if (amount > 0) { discount += amount; applied.push(c.ad); }
       }
     }
   }
+  void ids;
+  void units;
+  void totalQty;
 
   discount = Math.min(discount, subtotal);
   const shippingCost = freeShipping ? 0 : baseShipping;
