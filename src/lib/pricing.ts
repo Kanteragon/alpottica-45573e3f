@@ -136,12 +136,8 @@ export function computeTotals(
 ): PriceBreakdown {
   const subtotal = items.reduce((n, i) => n + i.price * i.qty, 0);
   const baseShipping = shipping?.aktif ? Number(shipping.ucret) || 0 : 0;
-  const ids = new Set(items.map((i) => i.product_id));
-
   const unitsOf = (list: CartItem[]) =>
     list.flatMap((i) => Array.from({ length: Math.max(0, i.qty) }, () => i.price)).sort((a, b) => a - b);
-  const units = unitsOf(items);
-  const totalQty = units.length;
   const code = (couponCode ?? "").trim().toLowerCase();
   let couponError: string | null = code ? "Geçersiz indirim kodu" : null;
 
@@ -204,9 +200,6 @@ export function computeTotals(
       }
     }
   }
-  void ids;
-  void units;
-  void totalQty;
 
   discount = Math.min(discount, subtotal);
   const shippingCost = freeShipping ? 0 : baseShipping;
