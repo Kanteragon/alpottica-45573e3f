@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatTL } from "@/lib/products";
-import { Package, ShoppingBag, Users, TrendingUp } from "lucide-react";
+import { Package, ShoppingBag, Users, TrendingUp, Eye, UserPlus, ShoppingCart } from "lucide-react";
 
 export const Route = createFileRoute("/admin/")({
   component: Dashboard,
