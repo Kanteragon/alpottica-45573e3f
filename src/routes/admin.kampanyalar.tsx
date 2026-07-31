@@ -100,18 +100,24 @@ function amountText(c: Campaign) {
   return Number(c.indirim_tutar) > 0 ? formatTL(Number(c.indirim_tutar)) : `%${c.indirim_oran}`;
 }
 
+function scopeText(c: Campaign) {
+  if (c.hedef_tip === "kategori" && (c.hedef_kategori_ids?.length ?? 0) > 0) return ` (${c.hedef_kategori_ids.length} kategori)`;
+  if (c.hedef_tip === "urun" && (c.hedef_urun_ids?.length ?? 0) > 0) return ` (${c.hedef_urun_ids.length} ürün)`;
+  return "";
+}
+
 function ruleText(c: Campaign) {
   switch (c.tip) {
     case "ucretsiz_kargo":
       return `Sepet ${formatTL(Number(c.esik))} üzerindeyse kargo ücretsiz`;
     case "sepet_indirim":
-      return `Sepet ${formatTL(Number(c.esik))} üzerindeyse ${amountText(c)} indirim`;
+      return `Sepet ${formatTL(Number(c.esik))} üzerindeyse ${amountText(c)} indirim${scopeText(c)}`;
     case "ikinci_urun":
-      return `${Number(c.min_adet) || 2} ürün alana en ucuz ürüne ${amountText(c)} indirim`;
+      return `${Number(c.min_adet) || 2} ürün alana en ucuz ürüne ${amountText(c)} indirim${scopeText(c)}`;
     case "kupon":
       return `"${c.kod ?? ""}" kodu ile ${amountText(c)} indirim${Number(c.esik) > 0 ? ` (min ${formatTL(Number(c.esik))})` : ""}`;
     default:
-      return `2 ürün birlikte alınırsa ${amountText(c)} indirim`;
+      return `A + B grubu birlikte alınırsa ${amountText(c)} indirim`;
   }
 }
 
