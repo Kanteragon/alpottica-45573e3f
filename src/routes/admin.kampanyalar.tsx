@@ -115,29 +115,6 @@ function ruleText(c: Campaign) {
   }
 }
 
-function ProductSelect({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
-  const [q, setQ] = useState("");
-  const { data: opts = [] } = useQuery({
-    queryKey: ["campaign-products", q],
-    queryFn: async () => {
-      let query = supabase.from("products").select("id,urun_adi").order("urun_adi").limit(30);
-      if (q) query = query.ilike("urun_adi", `%${q}%`);
-      const { data } = await query;
-      return (data ?? []) as { id: string; urun_adi: string }[];
-    },
-  });
-  return (
-    <div>
-      <span className="block text-xs uppercase tracking-widest mb-1">{label}</span>
-      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ürün ara..." className="w-full border rounded-xl px-3 py-2 mb-2 text-sm" />
-      <select value={value} onChange={(e) => onChange(e.target.value)} className="w-full border rounded-xl px-3 py-2">
-        <option value="">Seçin</option>
-        {opts.map((o) => <option key={o.id} value={o.id}>{o.urun_adi}</option>)}
-      </select>
-    </div>
-  );
-}
-
 
 function useCategories() {
   return useQuery({
