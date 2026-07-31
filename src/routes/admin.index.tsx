@@ -88,6 +88,19 @@ function Dashboard() {
         ))}
       </div>
 
+      <h2 className="font-display text-2xl text-brand-ink mb-4">Bugün</h2>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+        {todayCards.map((c) => (
+          <div key={c.label} className="bg-white rounded-2xl p-6 border">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${c.color}`}><c.icon className="w-6 h-6" /></div>
+            <p className="text-2xl font-bold text-brand-ink">{c.value ?? "-"}</p>
+            <p className="text-sm text-muted-foreground mt-1">{c.label}</p>
+            <p className="text-xs text-muted-foreground/70 mt-0.5">{c.sub}</p>
+          </div>
+        ))}
+      </div>
+
+
       <div className="bg-white rounded-2xl border p-6">
         <h2 className="font-display text-2xl text-brand-ink mb-4">Son Siparişler</h2>
         {!recent || recent.length === 0 ? (
