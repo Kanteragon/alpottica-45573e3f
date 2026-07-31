@@ -138,6 +138,100 @@ function ProductSelect({ label, value, onChange }: { label: string; value: strin
   );
 }
 
+
+function useCategories() {
+  return useQuery({
+    queryKey: ["cats-all"],
+    queryFn: async () => {
+      const { data } = await supabase.from("categories").select("id,name").order("sort");
+      return (data ?? []) as { id: string; name: string }[];
+    },
+  });
+}
+
+function CategoryMulti({ label, value, onChange }: { label: string; value: string[]; onChange: (v: string[]) => void }) {
+  const { data: cats = [] } = useCategories();
+  const toggle = (id: string) =>
+    onChange(value.includes(id) ? value.filter((v) => v !== id) : [...value, id]);
+  return (
+    <div>
+      <span className="block text-xs uppercase tracking-widest mb-1">{label}</span>
+      <div className="border rounded-xl p-2 max-h-40 overflow-y-auto space-y-1">
+        {cats.map((c) => (
+          <label key={c.id} className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={value.includes(c.id)} onChange={() => toggle(c.id)} />
+            {c.name}
+          </label>
+        ))}
+        {cats.length === 0 && <p className="text-xs text-muted-foreground">Kategori yok</p>}
+      </div>
+    </div>
+  );
+}
+
+function ProductMulti({ label, value, onChange }: { label: string; value: string[]; onChange: (v: string[]) => void }) {
+  const [q, setQ] = useState("");
+  const { data: opts = [] } = useQuery({
+    queryKey: ["campaign-products-multi", q],
+    queryFn: async () => {
+      let query = supabase.from("products").select("id,urun_adi").order("urun_adi").limit(30);
+      if (q) query = query.ilike("urun_adi", `%${q}%`);
+      const { data } = await query;
+      return (data ?? []) as { id: string; urun_adi: string }[];
+    },
+  });
+  const { data: selected = [] } = useQuery({
+    queryKey: ["campaign-products-selected", value.join(",")],
+    enabled: value.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase.from("products").select("id,urun_adi").in("id", value);
+      return (data ?? []) as { id: string; urun_adi: string }[];
+    },
+  });
+  const add = (id: string) => { if (id && !value.includes(id)) onChange([...value, id]); };
+  return (
+    <div>
+      <span className="block text-xs uppercase tracking-widest mb-1">{label}</span>
+      <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ürün ara..." className="w-full border rounded-xl px-3 py-2 mb-2 text-sm" />
+      <select value="" onChange={(e) => add(e.target.value)} className="w-full border rounded-xl px-3 py-2">
+        <option value="">Ürün ekle...</option>
+        {opts.map((o) => <option key={o.id} value={o.id}>{o.urun_adi}</option>)}
+      </select>
+      <div className="flex flex-wrap gap-1 mt-2">
+        {selected.map((s) => (
+          <button key={s.id} type="button" onClick={() => onChange(value.filter((v) => v !== s.id))} className="text-xs bg-brand-sand px-2 py-1 rounded-full flex items-center gap-1">
+            {s.urun_adi} <X className="w-3 h-3" />
+          </button>
+        ))}
+      </div>
+      {value.length === 0 && <p className="text-xs text-muted-foreground mt-1">Henüz ürün seçilmedi</p>}
+    </div>
+  );
+}
+
+function ScopePicker({
+  label, tip, onTip, cats, onCats, prods, onProds,
+}: {
+  label: string; tip: string; onTip: (v: string) => void;
+  cats: string[]; onCats: (v: string[]) => void;
+  prods: string[]; onProds: (v: string[]) => void;
+}) {
+  return (
+    <div className="border rounded-2xl p-3 space-y-3 bg-brand-sand/20">
+      <div>
+        <span className="block text-xs uppercase tracking-widest mb-1">{label}</span>
+        <select value={tip} onChange={(e) => onTip(e.target.value)} className="w-full border rounded-xl px-3 py-2 bg-white">
+          <option value="tumu">Tüm ürünler</option>
+          <option value="kategori">Seçili kategoriler</option>
+          <option value="urun">Elle seçilen ürünler</option>
+        </select>
+      </div>
+      {tip === "kategori" && <CategoryMulti label="Kategoriler" value={cats} onChange={onCats} />}
+      {tip === "urun" && <ProductMulti label="Ürünler" value={prods} onChange={onProds} />}
+    </div>
+  );
+}
+
 function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => void }) {
   const isNew = !row;
   const [f, setF] = useState({
@@ -153,19 +247,39 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
     max_indirim: String(row?.max_indirim ?? 0),
     aktif: row?.aktif ?? true,
   });
+  const [hedefTip, setHedefTip] = useState(row?.hedef_tip ?? "tumu");
+  const [hedefCats, setHedefCats] = useState<string[]>(row?.hedef_kategori_ids ?? []);
+  const [hedefProds, setHedefProds] = useState<string[]>(row?.hedef_urun_ids ?? []);
+  const [aTip, setATip] = useState((row?.grup_a_kategori_ids?.length ?? 0) > 0 ? "kategori" : "urun");
+  const [aCats, setACats] = useState<string[]>(row?.grup_a_kategori_ids ?? []);
+  const [aProds, setAProds] = useState<string[]>(row?.grup_a_urun_ids ?? (row?.urun_a ? [row.urun_a] : []));
+  const [bTip, setBTip] = useState((row?.grup_b_kategori_ids?.length ?? 0) > 0 ? "kategori" : "urun");
+  const [bCats, setBCats] = useState<string[]>(row?.grup_b_kategori_ids ?? []);
+  const [bProds, setBProds] = useState<string[]>(row?.grup_b_urun_ids ?? (row?.urun_b ? [row.urun_b] : []));
   const [busy, setBusy] = useState(false);
 
   const save = async () => {
     if (!f.ad.trim()) return toast.error("Kampanya adı zorunlu");
-    if (f.tip === "kombine_indirim" && (!f.urun_a || !f.urun_b)) return toast.error("İki ürün de seçilmeli");
+    if (f.tip === "kombine_indirim") {
+      const aOk = aTip === "kategori" ? aCats.length > 0 : aProds.length > 0;
+      const bOk = bTip === "kategori" ? bCats.length > 0 : bProds.length > 0;
+      if (!aOk || !bOk) return toast.error("A ve B grupları için seçim yapın");
+    }
     if (f.tip === "kupon" && !f.kod.trim()) return toast.error("İndirim kodu zorunlu");
     setBusy(true);
     const payload = {
       ad: f.ad.trim(),
       tip: f.tip,
       esik: Number(f.esik) || 0,
-      urun_a: f.tip === "kombine_indirim" ? f.urun_a : null,
-      urun_b: f.tip === "kombine_indirim" ? f.urun_b : null,
+      urun_a: null,
+      urun_b: null,
+      hedef_tip: f.tip === "kombine_indirim" ? "tumu" : hedefTip,
+      hedef_kategori_ids: hedefTip === "kategori" ? hedefCats : [],
+      hedef_urun_ids: hedefTip === "urun" ? hedefProds : [],
+      grup_a_kategori_ids: f.tip === "kombine_indirim" && aTip === "kategori" ? aCats : [],
+      grup_a_urun_ids: f.tip === "kombine_indirim" && aTip === "urun" ? aProds : [],
+      grup_b_kategori_ids: f.tip === "kombine_indirim" && bTip === "kategori" ? bCats : [],
+      grup_b_urun_ids: f.tip === "kombine_indirim" && bTip === "urun" ? bProds : [],
       indirim_tutar: Number(f.indirim_tutar) || 0,
       indirim_oran: Number(f.indirim_oran) || 0,
       kod: f.tip === "kupon" ? f.kod.trim() : null,
@@ -235,12 +349,19 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
             </div>
           )}
 
-          {f.tip === "kombine_indirim" && (
+          {f.tip === "kombine_indirim" ? (
             <>
-              <ProductSelect label="Ürün A" value={f.urun_a} onChange={(v) => setF({ ...f, urun_a: v })} />
-              <ProductSelect label="Ürün B" value={f.urun_b} onChange={(v) => setF({ ...f, urun_b: v })} />
+              <ScopePicker label="A Grubu (kategori veya ürünler)" tip={aTip} onTip={setATip} cats={aCats} onCats={setACats} prods={aProds} onProds={setAProds} />
+              <ScopePicker label="B Grubu (kategori veya ürünler)" tip={bTip} onTip={setBTip} cats={bCats} onCats={setBCats} prods={bProds} onProds={setBProds} />
             </>
-          )}
+          ) : f.tip !== "ucretsiz_kargo" ? (
+            <ScopePicker
+              label="İndirim uygulanacak ürünler"
+              tip={hedefTip} onTip={setHedefTip}
+              cats={hedefCats} onCats={setHedefCats}
+              prods={hedefProds} onProds={setHedefProds}
+            />
+          ) : null}
 
           {f.tip !== "ucretsiz_kargo" && (
             <>
