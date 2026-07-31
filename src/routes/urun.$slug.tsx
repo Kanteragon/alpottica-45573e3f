@@ -242,7 +242,7 @@ function ProductDetail() {
           <div className="grid grid-cols-3 gap-4 text-center pt-6 border-t border-border">
             <div><ShieldCheck className="w-5 h-5 mx-auto text-brand-ink mb-2" /><p className="text-[11px] text-muted-foreground tracking-wider">ORİJİNAL ÜRÜN</p></div>
             <div><Truck className="w-5 h-5 mx-auto text-brand-ink mb-2" /><p className="text-[11px] text-muted-foreground tracking-wider">ÜCRETSİZ KARGO</p></div>
-            <div><RefreshCcw className="w-5 h-5 mx-auto text-brand-ink mb-2" /><p className="text-[11px] text-muted-foreground tracking-wider">14 GÜN İADE</p></div>
+            <div><RefreshCcw className="w-5 h-5 mx-auto text-brand-ink mb-2" /><p className="text-[11px] text-muted-foreground tracking-wider">ŞEFFAF KARGO & KAPIDA ÖDEME</p></div>
           </div>
         </div>
       </section>
