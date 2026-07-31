@@ -10,6 +10,7 @@ import { toast } from "sonner";
 export function ProductCard({ product }: { product: Product }) {
   const disc = discountPct(product);
   const { add } = useCart();
+  const { isFavorite, toggle: toggleFav } = useFavorites();
   
   // Galeriyi oluşturuyoruz
   const rawGallery = (product.images?.length ? product.images : [product.image]).filter(Boolean);
