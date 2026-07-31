@@ -232,7 +232,13 @@ function ProductDetail() {
             >
               <ShoppingCart className="w-4 h-4" /> +SEPETE EKLE
             </button>
-            <button className="px-6 py-4 rounded-full border border-brand-ink text-brand-ink hover:bg-brand-ink hover:text-white transition"><Heart className="w-4 h-4" /></button>
+            <button
+              onClick={() => toggleFav(product.id)}
+              aria-label="Favori"
+              className={`px-6 py-4 rounded-full border border-brand-ink transition ${isFav(product.id) ? "bg-brand-ink text-white" : "text-brand-ink hover:bg-brand-ink hover:text-white"}`}
+            >
+              <Heart className={`w-4 h-4 ${isFav(product.id) ? "fill-current" : ""}`} />
+            </button>
           </div>
 
           <a href={`https://wa.me/905466460244?text=${waMsg}`} target="_blank" rel="noreferrer" className="hidden md:block text-center w-full py-4 rounded-full bg-[#25D366] text-white text-sm tracking-widest font-semibold hover:opacity-90 transition mb-8">
