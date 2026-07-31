@@ -16,6 +16,7 @@ import { CartProvider } from "@/lib/cart";
 import { AuthProvider } from "@/lib/auth";
 import { ScriptInjector } from "@/components/ScriptInjector";
 import { DynamicFavicon } from "@/components/DynamicFavicon";
+import { VisitTracker } from "@/lib/analytics";
 
 function NotFoundComponent() {
   return (
@@ -119,6 +120,7 @@ function RootComponent() {
       <AuthProvider>
         <CartProvider>
           <DynamicFavicon />
+          <VisitTracker />
           <ScriptInjector />
           <Outlet />
           <Toaster position="top-center" richColors />
