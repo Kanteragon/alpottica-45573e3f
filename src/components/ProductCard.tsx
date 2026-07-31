@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Product } from "@/lib/products";
 import { discountPct, formatTL } from "@/lib/products";
 import { useCart } from "@/lib/cart";
+import { useFavorites } from "@/lib/favorites";
 import { toast } from "sonner";
 
 export function ProductCard({ product }: { product: Product }) {

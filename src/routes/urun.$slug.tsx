@@ -8,6 +8,7 @@ import { useProduct, useProducts, useAttributes } from "@/lib/queries";
 import { ProductCard } from "@/components/ProductCard";
 import { ShoppingCart, Heart, ShieldCheck, Truck, RefreshCcw, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "@/lib/cart";
+import { useFavorites } from "@/lib/favorites";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
