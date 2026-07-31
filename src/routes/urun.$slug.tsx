@@ -27,6 +27,7 @@ function ProductDetail() {
   const { data: allProducts = [] } = useProducts();
   const { data: attrs = [] } = useAttributes();
   const { add } = useCart();
+  const { isFavorite: isFav, toggle: toggleFav } = useFavorites();
   const [idx, setIdx] = useState(0);
 
   // Dynamic <title> per product
