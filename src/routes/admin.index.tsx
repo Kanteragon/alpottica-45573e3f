@@ -29,6 +29,30 @@ function Dashboard() {
     },
   });
 
+  const { data: today } = useQuery({
+    queryKey: ["admin-today"],
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      const iso = start.toISOString();
+      const [visits, carts, signups, orders] = await Promise.all([
+        supabase.from("site_events").select("session_id").eq("tip", "visit").gte("created_at", iso),
+        supabase.from("site_events").select("id", { count: "exact", head: true }).eq("tip", "add_to_cart").gte("created_at", iso),
+        supabase.from("profiles").select("id", { count: "exact", head: true }).gte("created_at", iso),
+        supabase.from("orders").select("id", { count: "exact", head: true }).gte("created_at", iso),
+      ]);
+      const uniq = new Set((visits.data ?? []).map((v) => v.session_id ?? ""));
+      return {
+        visitors: uniq.size,
+        pageviews: visits.data?.length ?? 0,
+        carts: carts.count ?? 0,
+        signups: signups.count ?? 0,
+        orders: orders.count ?? 0,
+      };
+    },
+  });
+
   const { data: recent } = useQuery({
     queryKey: ["admin-recent-orders"],
     queryFn: async () => {
@@ -42,6 +66,13 @@ function Dashboard() {
     { label: "Sipariş", value: stats?.orders, icon: ShoppingBag, color: "bg-green-100 text-green-700" },
     { label: "Müşteri", value: stats?.users, icon: Users, color: "bg-purple-100 text-purple-700" },
     { label: "Ciro", value: stats ? formatTL(stats.revenue) : "-", icon: TrendingUp, color: "bg-orange-100 text-orange-700" },
+  ];
+
+  const todayCards = [
+    { label: "Bugün Ziyaretçi", value: today?.visitors, sub: `${today?.pageviews ?? 0} sayfa görüntüleme`, icon: Eye, color: "bg-sky-100 text-sky-700" },
+    { label: "Bugün Yeni Hesap", value: today?.signups, sub: "kayıt olan kullanıcı", icon: UserPlus, color: "bg-emerald-100 text-emerald-700" },
+    { label: "Bugün Sepete Ekleme", value: today?.carts, sub: "ürün sepete eklendi", icon: ShoppingCart, color: "bg-amber-100 text-amber-700" },
+    { label: "Bugün Sipariş", value: today?.orders, sub: "yeni sipariş", icon: ShoppingBag, color: "bg-rose-100 text-rose-700" },
   ];
 
   return (
