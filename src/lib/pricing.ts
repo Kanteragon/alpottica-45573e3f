@@ -108,17 +108,39 @@ function capped(amount: number, c: Campaign) {
   return c.max_indirim > 0 ? Math.min(amount, c.max_indirim) : amount;
 }
 
+function matches(
+  productId: string,
+  catMap: CategoryMap,
+  kategoriIds: string[] | undefined,
+  urunIds: string[] | undefined,
+) {
+  const cats = catMap[productId] ?? [];
+  if ((kategoriIds ?? []).some((k) => cats.includes(k))) return true;
+  if ((urunIds ?? []).includes(productId)) return true;
+  return false;
+}
+
+function inScope(item: CartItem, c: Campaign, catMap: CategoryMap) {
+  if (!c.hedef_tip || c.hedef_tip === "tumu") return true;
+  if (c.hedef_tip === "kategori") return matches(item.product_id, catMap, c.hedef_kategori_ids, []);
+  if (c.hedef_tip === "urun") return matches(item.product_id, catMap, [], c.hedef_urun_ids);
+  return true;
+}
+
 export function computeTotals(
   items: CartItem[],
   shipping: Shipping | undefined,
   campaigns: Campaign[] | undefined,
   couponCode?: string,
+  catMap: CategoryMap = {},
 ): PriceBreakdown {
   const subtotal = items.reduce((n, i) => n + i.price * i.qty, 0);
   const baseShipping = shipping?.aktif ? Number(shipping.ucret) || 0 : 0;
   const ids = new Set(items.map((i) => i.product_id));
 
-  const units = items.flatMap((i) => Array.from({ length: Math.max(0, i.qty) }, () => i.price)).sort((a, b) => a - b);
+  const unitsOf = (list: CartItem[]) =>
+    list.flatMap((i) => Array.from({ length: Math.max(0, i.qty) }, () => i.price)).sort((a, b) => a - b);
+  const units = unitsOf(items);
   const totalQty = units.length;
   const code = (couponCode ?? "").trim().toLowerCase();
   let couponError: string | null = code ? "Geçersiz indirim kodu" : null;
