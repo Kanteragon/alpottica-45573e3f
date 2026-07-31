@@ -8,6 +8,7 @@ import { useProduct, useProducts, useAttributes } from "@/lib/queries";
 import { ProductCard } from "@/components/ProductCard";
 import { ShoppingCart, Heart, ShieldCheck, Truck, RefreshCcw, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "@/lib/cart";
+import { useFavorites } from "@/lib/favorites";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -27,6 +28,7 @@ function ProductDetail() {
   const { data: allProducts = [] } = useProducts();
   const { data: attrs = [] } = useAttributes();
   const { add } = useCart();
+  const { isFavorite: isFav, toggle: toggleFav } = useFavorites();
   const [idx, setIdx] = useState(0);
 
   // Dynamic <title> per product
@@ -232,7 +234,13 @@ function ProductDetail() {
             >
               <ShoppingCart className="w-4 h-4" /> +SEPETE EKLE
             </button>
-            <button className="px-6 py-4 rounded-full border border-brand-ink text-brand-ink hover:bg-brand-ink hover:text-white transition"><Heart className="w-4 h-4" /></button>
+            <button
+              onClick={() => toggleFav(product.id)}
+              aria-label="Favori"
+              className={`px-6 py-4 rounded-full border border-brand-ink transition ${isFav(product.id) ? "bg-brand-ink text-white" : "text-brand-ink hover:bg-brand-ink hover:text-white"}`}
+            >
+              <Heart className={`w-4 h-4 ${isFav(product.id) ? "fill-current" : ""}`} />
+            </button>
           </div>
 
           <a href={`https://wa.me/905466460244?text=${waMsg}`} target="_blank" rel="noreferrer" className="hidden md:block text-center w-full py-4 rounded-full bg-[#25D366] text-white text-sm tracking-widest font-semibold hover:opacity-90 transition mb-8">
@@ -242,7 +250,7 @@ function ProductDetail() {
           <div className="grid grid-cols-3 gap-4 text-center pt-6 border-t border-border">
             <div><ShieldCheck className="w-5 h-5 mx-auto text-brand-ink mb-2" /><p className="text-[11px] text-muted-foreground tracking-wider">ORİJİNAL ÜRÜN</p></div>
             <div><Truck className="w-5 h-5 mx-auto text-brand-ink mb-2" /><p className="text-[11px] text-muted-foreground tracking-wider">ÜCRETSİZ KARGO</p></div>
-            <div><RefreshCcw className="w-5 h-5 mx-auto text-brand-ink mb-2" /><p className="text-[11px] text-muted-foreground tracking-wider">14 GÜN İADE</p></div>
+            <div><RefreshCcw className="w-5 h-5 mx-auto text-brand-ink mb-2" /><p className="text-[11px] text-muted-foreground tracking-wider">ŞEFFAF KARGO & KAPIDA ÖDEME</p></div>
           </div>
         </div>
       </section>

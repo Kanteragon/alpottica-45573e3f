@@ -4,11 +4,13 @@ import { useState } from "react";
 import type { Product } from "@/lib/products";
 import { discountPct, formatTL } from "@/lib/products";
 import { useCart } from "@/lib/cart";
+import { useFavorites } from "@/lib/favorites";
 import { toast } from "sonner";
 
 export function ProductCard({ product }: { product: Product }) {
   const disc = discountPct(product);
   const { add } = useCart();
+  const { isFavorite, toggle: toggleFav } = useFavorites();
   
   // Galeriyi oluşturuyoruz
   const rawGallery = (product.images?.length ? product.images : [product.image]).filter(Boolean);
@@ -53,11 +55,11 @@ export function ProductCard({ product }: { product: Product }) {
           </span>
         )}
         <button
-          onClick={(e) => { e.preventDefault(); }}
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFav(product.id); }}
           aria-label="Favori"
-          className="absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center text-brand-ink hover:text-brand-cta transition opacity-0 group-hover:opacity-100"
+          className={`absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center transition ${isFavorite(product.id) ? "text-brand-cta opacity-100" : "text-brand-ink hover:text-brand-cta opacity-0 group-hover:opacity-100"}`}
         >
-          <Heart className="w-4 h-4" />
+          <Heart className={`w-4 h-4 ${isFavorite(product.id) ? "fill-current" : ""}`} />
         </button>
 
         {showControls && (

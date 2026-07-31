@@ -4,7 +4,7 @@ const ITEMS = [
   { icon: ShieldCheck, title: "Polarize & Antifar", desc: "Her ortamda tam koruma" },
   { icon: Sparkles, title: "Premium Malzeme", desc: "Hafif metal & TR90 çerçeveler" },
   { icon: Truck, title: "Ücretsiz Kargo", desc: "Türkiye geneli 1-3 iş günü" },
-  { icon: RefreshCcw, title: "14 Gün İade", desc: "Koşulsuz değişim garantisi" },
+  { icon: RefreshCcw, title: "Şeffaf Kargo & Kapıda Ödeme", desc: "Ürünü gör, kapıda öde" },
 ];
 
 export function FeatureStrip() {

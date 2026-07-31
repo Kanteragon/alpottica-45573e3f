@@ -1,3 +1,4 @@
+import { trackEvent } from "@/lib/analytics";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 
 export type CartItem = {
@@ -40,6 +41,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items]);
 
   const add: CartCtx["add"] = (i) => {
+    trackEvent("add_to_cart", { product_id: i.product_id });
     setItems((prev) => {
       const existing = prev.find((p) => p.product_id === i.product_id);
       const qty = i.qty ?? 1;

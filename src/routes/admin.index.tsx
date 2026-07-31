@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatTL } from "@/lib/products";
-import { Package, ShoppingBag, Users, TrendingUp } from "lucide-react";
+import { Package, ShoppingBag, Users, TrendingUp, Eye, UserPlus, ShoppingCart } from "lucide-react";
 
 export const Route = createFileRoute("/admin/")({
   component: Dashboard,
@@ -29,6 +29,30 @@ function Dashboard() {
     },
   });
 
+  const { data: today } = useQuery({
+    queryKey: ["admin-today"],
+    refetchInterval: 60_000,
+    queryFn: async () => {
+      const start = new Date();
+      start.setHours(0, 0, 0, 0);
+      const iso = start.toISOString();
+      const [visits, carts, signups, orders] = await Promise.all([
+        supabase.from("site_events").select("session_id").eq("tip", "visit").gte("created_at", iso),
+        supabase.from("site_events").select("id", { count: "exact", head: true }).eq("tip", "add_to_cart").gte("created_at", iso),
+        supabase.from("profiles").select("id", { count: "exact", head: true }).gte("created_at", iso),
+        supabase.from("orders").select("id", { count: "exact", head: true }).gte("created_at", iso),
+      ]);
+      const uniq = new Set((visits.data ?? []).map((v) => v.session_id ?? ""));
+      return {
+        visitors: uniq.size,
+        pageviews: visits.data?.length ?? 0,
+        carts: carts.count ?? 0,
+        signups: signups.count ?? 0,
+        orders: orders.count ?? 0,
+      };
+    },
+  });
+
   const { data: recent } = useQuery({
     queryKey: ["admin-recent-orders"],
     queryFn: async () => {
@@ -44,6 +68,13 @@ function Dashboard() {
     { label: "Ciro", value: stats ? formatTL(stats.revenue) : "-", icon: TrendingUp, color: "bg-orange-100 text-orange-700" },
   ];
 
+  const todayCards = [
+    { label: "Bugün Ziyaretçi", value: today?.visitors, sub: `${today?.pageviews ?? 0} sayfa görüntüleme`, icon: Eye, color: "bg-sky-100 text-sky-700" },
+    { label: "Bugün Yeni Hesap", value: today?.signups, sub: "kayıt olan kullanıcı", icon: UserPlus, color: "bg-emerald-100 text-emerald-700" },
+    { label: "Bugün Sepete Ekleme", value: today?.carts, sub: "ürün sepete eklendi", icon: ShoppingCart, color: "bg-amber-100 text-amber-700" },
+    { label: "Bugün Sipariş", value: today?.orders, sub: "yeni sipariş", icon: ShoppingBag, color: "bg-rose-100 text-rose-700" },
+  ];
+
   return (
     <div>
       <h1 className="font-display text-4xl text-brand-ink mb-8">Kontrol Paneli</h1>
@@ -56,6 +87,19 @@ function Dashboard() {
           </div>
         ))}
       </div>
+
+      <h2 className="font-display text-2xl text-brand-ink mb-4">Bugün</h2>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+        {todayCards.map((c) => (
+          <div key={c.label} className="bg-white rounded-2xl p-6 border">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${c.color}`}><c.icon className="w-6 h-6" /></div>
+            <p className="text-2xl font-bold text-brand-ink">{c.value ?? "-"}</p>
+            <p className="text-sm text-muted-foreground mt-1">{c.label}</p>
+            <p className="text-xs text-muted-foreground/70 mt-0.5">{c.sub}</p>
+          </div>
+        ))}
+      </div>
+
 
       <div className="bg-white rounded-2xl border p-6">
         <h2 className="font-display text-2xl text-brand-ink mb-4">Son Siparişler</h2>

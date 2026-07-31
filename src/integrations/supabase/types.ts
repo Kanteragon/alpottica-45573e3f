@@ -112,6 +112,13 @@ export type Database = {
           bitis: string | null
           created_at: string
           esik: number
+          grup_a_kategori_ids: string[]
+          grup_a_urun_ids: string[]
+          grup_b_kategori_ids: string[]
+          grup_b_urun_ids: string[]
+          hedef_kategori_ids: string[]
+          hedef_tip: string
+          hedef_urun_ids: string[]
           id: string
           indirim_oran: number
           indirim_tutar: number
@@ -131,6 +138,13 @@ export type Database = {
           bitis?: string | null
           created_at?: string
           esik?: number
+          grup_a_kategori_ids?: string[]
+          grup_a_urun_ids?: string[]
+          grup_b_kategori_ids?: string[]
+          grup_b_urun_ids?: string[]
+          hedef_kategori_ids?: string[]
+          hedef_tip?: string
+          hedef_urun_ids?: string[]
           id?: string
           indirim_oran?: number
           indirim_tutar?: number
@@ -150,6 +164,13 @@ export type Database = {
           bitis?: string | null
           created_at?: string
           esik?: number
+          grup_a_kategori_ids?: string[]
+          grup_a_urun_ids?: string[]
+          grup_b_kategori_ids?: string[]
+          grup_b_urun_ids?: string[]
+          hedef_kategori_ids?: string[]
+          hedef_tip?: string
+          hedef_urun_ids?: string[]
           id?: string
           indirim_oran?: number
           indirim_tutar?: number
@@ -649,6 +670,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      site_events: {
+        Row: {
+          created_at: string
+          id: string
+          path: string | null
+          product_id: string | null
+          session_id: string | null
+          tip: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          path?: string | null
+          product_id?: string | null
+          session_id?: string | null
+          tip: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          path?: string | null
+          product_id?: string | null
+          session_id?: string | null
+          tip?: string
+          user_id?: string | null
+        }
+        Relationships: []
       }
       site_settings: {
         Row: {
