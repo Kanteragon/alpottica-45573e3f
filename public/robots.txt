@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /hesabim
+Disallow: /odeme
+Disallow: /sepet
+
+Sitemap: https://alpottica.lovable.app/sitemap.xml

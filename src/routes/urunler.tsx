@@ -21,11 +21,26 @@ export const Route = createFileRoute("/urunler")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Tüm Ürünler — Alpottica Istanbul" },
-      { name: "description", content: "Alpottica'nın tüm güneş gözlüğü ve klipsli modelleri." },
-      { property: "og:title", content: "Ürünler — Alpottica" },
-      { property: "og:description", content: "Alpottica'nın tüm güneş gözlüğü ve klipsli modelleri." },
+      { title: "Tüm Modeller | Klipsli ve Güneş Gözlüğü — Alpottica Istanbul" },
+      {
+        name: "description",
+        content:
+          "Alpottica Istanbul klipsli modeller, polarize güneş gözlükleri ve outlet fırsatları. Kapıda ödeme ve şeffaf kargo ile hemen sipariş verin.",
+      },
+      {
+        name: "keywords",
+        content: "klipsli modeller, klipsli gözlük, güneş gözlüğü modelleri, polarize gözlük, outlet gözlük, alpottica",
+      },
+      { property: "og:title", content: "Tüm Modeller — Alpottica Istanbul" },
+      {
+        property: "og:description",
+        content: "Klipsli modeller, polarize güneş gözlükleri ve outlet fırsatları — Alpottica Istanbul.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://alpottica.lovable.app/urunler" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://alpottica.lovable.app/urunler" }],
   }),
   component: Products,
 });

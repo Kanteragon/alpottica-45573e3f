@@ -1,12 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { StaticPage } from "@/components/StaticPage";
+import { loadPageSeo, pageHead } from "@/lib/page-seo";
+
+const SLUG = "kullanim-kosullari";
 
 export const Route = createFileRoute("/kullanim-kosullari")({
-  head: () => ({
-    meta: [
-      { title: "Kullanım Koşulları — Alpottica" },
-      { name: "description", content: "Alpottica kullanım koşulları." },
-    ],
-  }),
-  component: () => <StaticPage slug="kullanim-kosullari" />,
+  loader: () => loadPageSeo(SLUG),
+  head: ({ loaderData }) =>
+    pageHead(loaderData, SLUG, 'Kullanım Koşulları — Alpottica', 'Alpottica Istanbul web sitesi kullanım koşulları.'),
+  component: () => <StaticPage slug={SLUG} />,
 });

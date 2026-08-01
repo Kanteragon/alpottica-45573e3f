@@ -239,6 +239,9 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
   const [bTip, setBTip] = useState((row?.grup_b_kategori_ids?.length ?? 0) > 0 ? "kategori" : "urun");
   const [bCats, setBCats] = useState<string[]>(row?.grup_b_kategori_ids ?? []);
   const [bProds, setBProds] = useState<string[]>(row?.grup_b_urun_ids ?? (row?.urun_b ? [row.urun_b] : []));
+  const [kosulTip, setKosulTip] = useState(row?.kosul_tip ?? "tumu");
+  const [kosulCats, setKosulCats] = useState<string[]>(row?.kosul_kategori_ids ?? []);
+  const [kosulProds, setKosulProds] = useState<string[]>(row?.kosul_urun_ids ?? []);
   const [busy, setBusy] = useState(false);
 
   const save = async () => {
@@ -263,6 +266,9 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
       grup_a_urun_ids: f.tip === "kombine_indirim" && aTip === "urun" ? aProds : [],
       grup_b_kategori_ids: f.tip === "kombine_indirim" && bTip === "kategori" ? bCats : [],
       grup_b_urun_ids: f.tip === "kombine_indirim" && bTip === "urun" ? bProds : [],
+      kosul_tip: f.tip === "ikinci_urun" ? kosulTip : "tumu",
+      kosul_kategori_ids: f.tip === "ikinci_urun" && kosulTip === "kategori" ? kosulCats : [],
+      kosul_urun_ids: f.tip === "ikinci_urun" && kosulTip === "urun" ? kosulProds : [],
       indirim_tutar: Number(f.indirim_tutar) || 0,
       indirim_oran: Number(f.indirim_oran) || 0,
       kod: f.tip === "kupon" ? f.kod.trim() : null,
@@ -336,6 +342,21 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
             <>
               <ScopePicker label="A Grubu (kategori veya ürünler)" tip={aTip} onTip={setATip} cats={aCats} onCats={setACats} prods={aProds} onProds={setAProds} />
               <ScopePicker label="B Grubu (kategori veya ürünler)" tip={bTip} onTip={setBTip} cats={bCats} onCats={setBCats} prods={bProds} onProds={setBProds} />
+            </>
+          ) : f.tip === "ikinci_urun" ? (
+            <>
+              <ScopePicker
+                label="1. Ürün — koşul (sepette bulunması gereken)"
+                tip={kosulTip} onTip={setKosulTip}
+                cats={kosulCats} onCats={setKosulCats}
+                prods={kosulProds} onProds={setKosulProds}
+              />
+              <ScopePicker
+                label="2. Ürün — indirim uygulanacak ürünler"
+                tip={hedefTip} onTip={setHedefTip}
+                cats={hedefCats} onCats={setHedefCats}
+                prods={hedefProds} onProds={setHedefProds}
+              />
             </>
           ) : f.tip !== "ucretsiz_kargo" ? (
             <ScopePicker

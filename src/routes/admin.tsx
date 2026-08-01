@@ -23,6 +23,7 @@ const NAV: Entry[] = [
       { to: "/admin/sliderlar", label: "Slider Yönetimi", icon: Images },
       { to: "/admin/menu", label: "Menü Yönetimi", icon: MenuIcon },
       { to: "/admin/vitrin", label: "Vitrin Yönetimi", icon: Star },
+      { to: "/admin/sayfalar", label: "Sayfa Yönetimi", icon: FileText },
     ],
   },
   {

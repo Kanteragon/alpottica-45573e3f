@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { formatTL, discountPct, mapDbProduct, type DbProduct } from "@/lib/products";
-import { useProduct, useProducts, useAttributes } from "@/lib/queries";
+import { useProduct, useProducts, useAttributes, fetchProductBySlug } from "@/lib/queries";
 import { ProductCard } from "@/components/ProductCard";
 import { ShoppingCart, Heart, ShieldCheck, Truck, RefreshCcw, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "@/lib/cart";
@@ -12,13 +12,77 @@ import { useFavorites } from "@/lib/favorites";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
+const SITE = "https://alpottica.lovable.app";
+
 export const Route = createFileRoute("/urun/$slug")({
-  head: () => ({
-    meta: [
-      { title: "Ürün — Alpottica" },
-      { name: "description", content: "Alpottica Istanbul ürün detayı." },
-    ],
-  }),
+  loader: async ({ params }) => {
+    try {
+      return { product: await fetchProductBySlug(params.slug) };
+    } catch {
+      return { product: null };
+    }
+  },
+  head: ({ params, loaderData }) => {
+    const p = loaderData?.product ?? null;
+    const url = `${SITE}/urun/${params.slug}`;
+    if (!p) {
+      return {
+        meta: [
+          { title: "Ürün — Alpottica Istanbul" },
+          { name: "description", content: "Alpottica Istanbul güneş gözlüğü ve klipsli gözlük modelleri." },
+        ],
+        links: [{ rel: "canonical", href: url }],
+      };
+    }
+    const title = p.seo_title?.trim() || `${p.name} | Alpottica Istanbul`;
+    const desc =
+      p.seo_description?.trim() ||
+      `${p.name} — ${formatTL(p.price)}. Alpottica Istanbul güneş gözlüğü koleksiyonu, kapıda ödeme ve şeffaf kargo avantajıyla.`;
+    const keywords =
+      p.seo_keywords?.trim() ||
+      ["alpottica", p.name, "güneş gözlüğü", "klipsli gözlük", p.color, p.lensColor].filter(Boolean).join(", ");
+    const meta: { title?: string; name?: string; property?: string; content?: string }[] = [
+      { title },
+      { name: "description", content: desc },
+      { name: "keywords", content: keywords },
+      { property: "og:title", content: title },
+      { property: "og:description", content: desc },
+      { property: "og:type", content: "product" },
+      { property: "og:url", content: url },
+      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: title },
+      { name: "twitter:description", content: desc },
+    ];
+    if (p.image?.startsWith("https://")) {
+      meta.push({ property: "og:image", content: p.image });
+      meta.push({ name: "twitter:image", content: p.image });
+    }
+    return {
+      meta,
+      links: [{ rel: "canonical", href: url }],
+      scripts: [
+        {
+          type: "application/ld+json",
+          children: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Product",
+            name: p.name,
+            description: desc,
+            sku: p.sku,
+            image: p.images?.filter((i) => i?.startsWith("https://")) ?? [],
+            brand: { "@type": "Brand", name: "Alpottica" },
+            offers: {
+              "@type": "Offer",
+              url,
+              priceCurrency: "TRY",
+              price: p.price,
+              availability: p.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+            },
+          }),
+        },
+      ],
+    };
+  },
   component: ProductDetail,
 });
 

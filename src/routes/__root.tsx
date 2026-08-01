@@ -81,6 +81,33 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "twitter:description", content: "Alpottica Istanbul: premium gözlük koleksiyonu." },
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
+      { property: "og:site_name", content: "Alpottica Istanbul" },
+      { property: "og:locale", content: "tr_TR" },
+      { name: "robots", content: "index, follow" },
+      { name: "author", content: "Alpottica Istanbul" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "Alpottica Istanbul",
+          alternateName: "Alpottica",
+          url: "https://alpottica.lovable.app",
+          description:
+            "Alpottica Istanbul: klipsli, polarize ve antifar filtreli premium güneş gözlüğü ve optik çerçeve markası.",
+          telephone: "+905466460244",
+          sameAs: ["https://www.instagram.com/alpottica"],
+          contactPoint: {
+            "@type": "ContactPoint",
+            telephone: "+905466460244",
+            contactType: "customer service",
+            areaServed: "TR",
+            availableLanguage: "Turkish",
+          },
+        }),
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },

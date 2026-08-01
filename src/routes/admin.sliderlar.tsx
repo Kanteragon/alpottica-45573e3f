@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Trash2, Plus, Smartphone, Tablet, Monitor } from "lucide-react";
+import { Trash2, Plus, Smartphone, Tablet, Monitor, Pencil, X } from "lucide-react";
 import { ImageUploader } from "@/components/ImageUploader";
 
 type Slider = {
@@ -14,10 +14,107 @@ type Slider = {
 
 export const Route = createFileRoute("/admin/sliderlar")({ component: Sliders });
 
-const EMPTY = {
+type FormState = {
+  baslik: string; alt_baslik: string; gorsel: string; buton_yazi: string; buton_link: string;
+  sira: number; aktif: boolean; show_mobile: boolean; show_tablet: boolean; show_desktop: boolean;
+};
+
+const EMPTY: FormState = {
   baslik: "", alt_baslik: "", gorsel: "", buton_yazi: "", buton_link: "",
   sira: 0, aktif: true, show_mobile: true, show_tablet: true, show_desktop: true,
 };
+
+function toForm(r: Slider): FormState {
+  return {
+    baslik: r.baslik ?? "", alt_baslik: r.alt_baslik ?? "", gorsel: r.gorsel,
+    buton_yazi: r.buton_yazi ?? "", buton_link: r.buton_link ?? "", sira: r.sira ?? 0,
+    aktif: r.aktif, show_mobile: r.show_mobile, show_tablet: r.show_tablet, show_desktop: r.show_desktop,
+  };
+}
+
+function SliderFields({ form, setForm }: { form: FormState; setForm: (f: FormState) => void }) {
+  return (
+    <>
+      <div className="grid md:grid-cols-2 gap-3 mb-4">
+        <input placeholder="Başlık" value={form.baslik} onChange={(e) => setForm({ ...form, baslik: e.target.value })} className="border rounded-full px-4 py-2" />
+        <input placeholder="Alt başlık" value={form.alt_baslik} onChange={(e) => setForm({ ...form, alt_baslik: e.target.value })} className="border rounded-full px-4 py-2" />
+        <input placeholder="Buton yazısı" value={form.buton_yazi} onChange={(e) => setForm({ ...form, buton_yazi: e.target.value })} className="border rounded-full px-4 py-2" />
+        <input placeholder="Buton linki" value={form.buton_link} onChange={(e) => setForm({ ...form, buton_link: e.target.value })} className="border rounded-full px-4 py-2" />
+        <input type="number" placeholder="Sıra" value={form.sira} onChange={(e) => setForm({ ...form, sira: Number(e.target.value) })} className="border rounded-full px-4 py-2" />
+      </div>
+
+      <div className="mb-4">
+        <p className="text-xs uppercase tracking-widest mb-2 text-muted-foreground">Slider Görseli</p>
+        <ImageUploader
+          bucket="slider-images"
+          value={form.gorsel ? [form.gorsel] : []}
+          onChange={(urls) => setForm({ ...form, gorsel: urls[0] ?? "" })}
+          multiple={false}
+          label="Görsel Yükle"
+        />
+      </div>
+
+      <div className="mb-4">
+        <p className="text-xs uppercase tracking-widest mb-2 text-muted-foreground">Hangi cihazlarda gösterilsin?</p>
+        <div className="flex flex-wrap gap-4">
+          <label className="inline-flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={form.show_mobile} onChange={(e) => setForm({ ...form, show_mobile: e.target.checked })} />
+            <Smartphone className="w-4 h-4" /> Mobil
+          </label>
+          <label className="inline-flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={form.show_tablet} onChange={(e) => setForm({ ...form, show_tablet: e.target.checked })} />
+            <Tablet className="w-4 h-4" /> Tablet
+          </label>
+          <label className="inline-flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={form.show_desktop} onChange={(e) => setForm({ ...form, show_desktop: e.target.checked })} />
+            <Monitor className="w-4 h-4" /> Masaüstü
+          </label>
+          <label className="inline-flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={form.aktif} onChange={(e) => setForm({ ...form, aktif: e.target.checked })} /> Aktif
+          </label>
+        </div>
+      </div>
+    </>
+  );
+}
+
+function EditSlider({ row, onClose }: { row: Slider; onClose: () => void }) {
+  const qc = useQueryClient();
+  const [form, setForm] = useState<FormState>(toForm(row));
+  const [busy, setBusy] = useState(false);
+
+  const save = async () => {
+    if (!form.gorsel) return toast.error("Görsel zorunlu");
+    setBusy(true);
+    const { error } = await supabase.from("sliders").update(form).eq("id", row.id);
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    qc.invalidateQueries({ queryKey: ["admin-sliders"] });
+    qc.invalidateQueries({ queryKey: ["sliders"] });
+    toast.success("Güncellendi");
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b">
+          <h2 className="font-display text-2xl">Slider Düzenle</h2>
+          <button onClick={onClose}><X className="w-5 h-5" /></button>
+        </div>
+        <div className="p-5">
+          <SliderFields form={form} setForm={setForm} />
+        </div>
+        <div className="p-5 border-t flex justify-end gap-3">
+          <button onClick={onClose} className="px-5 py-2 rounded-full border">İptal</button>
+          <button disabled={busy} onClick={save} className="px-5 py-2 rounded-full bg-brand-ink text-white disabled:opacity-60">
+            {busy ? "..." : "Kaydet"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function Sliders() {
   const qc = useQueryClient();
@@ -26,25 +123,32 @@ function Sliders() {
     queryFn: async () => ((await supabase.from("sliders").select("*").order("sira")).data ?? []) as Slider[],
   });
 
-  const [form, setForm] = useState(EMPTY);
+  const [form, setForm] = useState<FormState>(EMPTY);
+  const [editing, setEditing] = useState<Slider | null>(null);
+
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey: ["admin-sliders"] });
+    qc.invalidateQueries({ queryKey: ["sliders"] });
+  };
 
   const add = async () => {
     if (!form.gorsel) return toast.error("Görsel zorunlu");
     const { error } = await supabase.from("sliders").insert(form);
     if (error) return toast.error(error.message);
     setForm(EMPTY);
-    qc.invalidateQueries({ queryKey: ["admin-sliders"] });
+    refresh();
     toast.success("Eklendi");
   };
 
   const del = async (id: string) => {
+    if (!confirm("Slider silinsin mi?")) return;
     await supabase.from("sliders").delete().eq("id", id);
-    qc.invalidateQueries({ queryKey: ["admin-sliders"] });
+    refresh();
   };
 
   const toggle = async (r: Slider) => {
     await supabase.from("sliders").update({ aktif: !r.aktif }).eq("id", r.id);
-    qc.invalidateQueries({ queryKey: ["admin-sliders"] });
+    refresh();
   };
 
   const toggleDevice = async (r: Slider, key: "show_mobile" | "show_tablet" | "show_desktop") => {
@@ -52,7 +156,7 @@ function Sliders() {
       : key === "show_tablet" ? { show_tablet: !r.show_tablet }
       : { show_desktop: !r.show_desktop };
     await supabase.from("sliders").update(patch).eq("id", r.id);
-    qc.invalidateQueries({ queryKey: ["admin-sliders"] });
+    refresh();
   };
 
   return (
@@ -60,43 +164,7 @@ function Sliders() {
       <h1 className="font-display text-4xl text-brand-ink mb-8">Sliderlar</h1>
       <div className="bg-white rounded-2xl border p-6 mb-6">
         <h2 className="font-display text-2xl mb-4">Yeni Slider</h2>
-        <div className="grid md:grid-cols-2 gap-3 mb-4">
-          <input placeholder="Başlık" value={form.baslik} onChange={(e) => setForm({ ...form, baslik: e.target.value })} className="border rounded-full px-4 py-2" />
-          <input placeholder="Alt başlık" value={form.alt_baslik} onChange={(e) => setForm({ ...form, alt_baslik: e.target.value })} className="border rounded-full px-4 py-2" />
-          <input placeholder="Buton yazısı" value={form.buton_yazi} onChange={(e) => setForm({ ...form, buton_yazi: e.target.value })} className="border rounded-full px-4 py-2" />
-          <input placeholder="Buton linki" value={form.buton_link} onChange={(e) => setForm({ ...form, buton_link: e.target.value })} className="border rounded-full px-4 py-2" />
-          <input type="number" placeholder="Sıra" value={form.sira} onChange={(e) => setForm({ ...form, sira: Number(e.target.value) })} className="border rounded-full px-4 py-2" />
-        </div>
-
-        <div className="mb-4">
-          <p className="text-xs uppercase tracking-widest mb-2 text-muted-foreground">Slider Görseli</p>
-          <ImageUploader
-            bucket="slider-images"
-            value={form.gorsel ? [form.gorsel] : []}
-            onChange={(urls) => setForm({ ...form, gorsel: urls[0] ?? "" })}
-            multiple={false}
-            label="Görsel Yükle"
-          />
-        </div>
-
-        <div className="mb-4">
-          <p className="text-xs uppercase tracking-widest mb-2 text-muted-foreground">Hangi cihazlarda gösterilsin?</p>
-          <div className="flex flex-wrap gap-4">
-            <label className="inline-flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.show_mobile} onChange={(e) => setForm({ ...form, show_mobile: e.target.checked })} />
-              <Smartphone className="w-4 h-4" /> Mobil
-            </label>
-            <label className="inline-flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.show_tablet} onChange={(e) => setForm({ ...form, show_tablet: e.target.checked })} />
-              <Tablet className="w-4 h-4" /> Tablet
-            </label>
-            <label className="inline-flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.show_desktop} onChange={(e) => setForm({ ...form, show_desktop: e.target.checked })} />
-              <Monitor className="w-4 h-4" /> Masaüstü
-            </label>
-          </div>
-        </div>
-
+        <SliderFields form={form} setForm={setForm} />
         <button onClick={add} className="bg-brand-ink text-white rounded-full px-6 py-2.5 flex items-center gap-2">
           <Plus className="w-4 h-4" /> Ekle
         </button>
@@ -125,10 +193,13 @@ function Sliders() {
             <button onClick={() => toggle(r)} className={`px-3 py-1 rounded-full text-xs ${r.aktif ? "bg-green-100 text-green-700" : "bg-gray-100"}`}>
               {r.aktif ? "Aktif" : "Pasif"}
             </button>
+            <button onClick={() => setEditing(r)} className="p-2 hover:bg-brand-sand rounded" title="Düzenle"><Pencil className="w-4 h-4" /></button>
             <button onClick={() => del(r.id)} className="p-2 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
           </div>
         ))}
       </div>
+
+      {editing && <EditSlider row={editing} onClose={() => setEditing(null)} />}
     </div>
   );
 }

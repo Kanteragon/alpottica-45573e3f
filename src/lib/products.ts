@@ -17,6 +17,9 @@ export type Product = {
   marka_id?: string | null;
   variant_group_id?: string | null;
   ozellikler?: Record<string, string>;
+  seo_title?: string | null;
+  seo_description?: string | null;
+  seo_keywords?: string | null;
 };
 
 export type DbProduct = {
@@ -34,6 +37,9 @@ export type DbProduct = {
   kategori_id?: string | null;
   marka_id?: string | null;
   variant_group_id?: string | null;
+  seo_title?: string | null;
+  seo_description?: string | null;
+  seo_keywords?: string | null;
 };
 
 export function mapDbProduct(r: DbProduct): Product {
@@ -58,6 +64,9 @@ export function mapDbProduct(r: DbProduct): Product {
     marka_id: r.marka_id ?? null,
     variant_group_id: r.variant_group_id ?? null,
     ozellikler: oz,
+    seo_title: r.seo_title ?? null,
+    seo_description: r.seo_description ?? null,
+    seo_keywords: r.seo_keywords ?? null,
   };
 }
 

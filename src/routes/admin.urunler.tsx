@@ -404,6 +404,9 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
     barkod: product?.barkod ?? "",
     variant_group_id: product?.variant_group_id ?? "",
     ozellikler: (product?.ozellikler ?? {}) as Record<string, string>,
+    seo_title: (product as unknown as { seo_title?: string | null })?.seo_title ?? "",
+    seo_description: (product as unknown as { seo_description?: string | null })?.seo_description ?? "",
+    seo_keywords: (product as unknown as { seo_keywords?: string | null })?.seo_keywords ?? "",
   });
   const [categoryIds, setCategoryIds] = useState<string[]>([]);
   const [catsLoaded, setCatsLoaded] = useState(false);
@@ -441,6 +444,9 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
     model_kodu: form.model_kodu || null,
     barkod: form.barkod || null,
     variant_group_id: form.variant_group_id || null,
+    seo_title: form.seo_title || null,
+    seo_description: form.seo_description || null,
+    seo_keywords: form.seo_keywords || null,
   });
 
   const syncCategories = async (productId: string) => {
@@ -626,7 +632,26 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
               />
             )}
 
-            {["discount","showcase","seo","links","notify","orders","moves","shelves","reviews"].includes(tab) && (
+            {tab === "seo" && (
+              <div className="space-y-4 max-w-2xl">
+                <p className="text-sm text-muted-foreground">
+                  Boş bırakılırsa ürün adı ve fiyatından otomatik SEO metni üretilir.
+                </p>
+                <F label="SEO Başlığı (60 karakter önerilir)">
+                  <input value={form.seo_title} onChange={(e) => setForm({ ...form, seo_title: e.target.value })} className="input" placeholder={`${form.urun_adi} | Alpottica Istanbul`} />
+                  <span className="text-xs text-muted-foreground">{form.seo_title.length} karakter</span>
+                </F>
+                <F label="Meta Açıklama (160 karakter önerilir)">
+                  <textarea rows={3} value={form.seo_description} onChange={(e) => setForm({ ...form, seo_description: e.target.value })} className="input" />
+                  <span className="text-xs text-muted-foreground">{form.seo_description.length} karakter</span>
+                </F>
+                <F label="Anahtar Kelimeler (virgülle)">
+                  <input value={form.seo_keywords} onChange={(e) => setForm({ ...form, seo_keywords: e.target.value })} className="input" placeholder="alpottica, klipsli gözlük, güneş gözlüğü" />
+                </F>
+              </div>
+            )}
+
+            {["discount","showcase","links","notify","orders","moves","shelves","reviews"].includes(tab) && (
               <div className="text-sm text-muted-foreground italic border rounded-xl p-8 text-center">
                 Bu sekme yakında aktif olacak.
               </div>

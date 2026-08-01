@@ -124,6 +124,9 @@ export type Database = {
           indirim_tutar: number
           kategori_id: string | null
           kod: string | null
+          kosul_kategori_ids: string[]
+          kosul_tip: string
+          kosul_urun_ids: string[]
           max_indirim: number
           min_adet: number
           tip: string
@@ -150,6 +153,9 @@ export type Database = {
           indirim_tutar?: number
           kategori_id?: string | null
           kod?: string | null
+          kosul_kategori_ids?: string[]
+          kosul_tip?: string
+          kosul_urun_ids?: string[]
           max_indirim?: number
           min_adet?: number
           tip?: string
@@ -176,6 +182,9 @@ export type Database = {
           indirim_tutar?: number
           kategori_id?: string | null
           kod?: string | null
+          kosul_kategori_ids?: string[]
+          kosul_tip?: string
+          kosul_urun_ids?: string[]
           max_indirim?: number
           min_adet?: number
           tip?: string
@@ -195,23 +204,32 @@ export type Database = {
       }
       categories: {
         Row: {
+          aciklama: string | null
           created_at: string
           id: string
           name: string
+          seo_description: string | null
+          seo_title: string | null
           slug: string
           sort: number
         }
         Insert: {
+          aciklama?: string | null
           created_at?: string
           id?: string
           name: string
+          seo_description?: string | null
+          seo_title?: string | null
           slug: string
           sort?: number
         }
         Update: {
+          aciklama?: string | null
           created_at?: string
           id?: string
           name?: string
+          seo_description?: string | null
+          seo_title?: string | null
           slug?: string
           sort?: number
         }
@@ -416,6 +434,9 @@ export type Database = {
           aktif: boolean
           content: string | null
           id: string
+          seo_description: string | null
+          seo_keywords: string | null
+          seo_title: string | null
           slug: string
           title: string
           updated_at: string
@@ -424,6 +445,9 @@ export type Database = {
           aktif?: boolean
           content?: string | null
           id?: string
+          seo_description?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
           slug: string
           title: string
           updated_at?: string
@@ -432,6 +456,9 @@ export type Database = {
           aktif?: boolean
           content?: string | null
           id?: string
+          seo_description?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
           slug?: string
           title?: string
           updated_at?: string
@@ -479,16 +506,19 @@ export type Database = {
           category_id: string
           created_at: string
           product_id: string
+          sira: number
         }
         Insert: {
           category_id: string
           created_at?: string
           product_id: string
+          sira?: number
         }
         Update: {
           category_id?: string
           created_at?: string
           product_id?: string
+          sira?: number
         }
         Relationships: [
           {
@@ -523,6 +553,9 @@ export type Database = {
           ozellikler: Json
           resimler: string[]
           satis_fiyati: number
+          seo_description: string | null
+          seo_keywords: string | null
+          seo_title: string | null
           slug: string
           stok_adedi: number
           stok_kodu: string
@@ -545,6 +578,9 @@ export type Database = {
           ozellikler?: Json
           resimler?: string[]
           satis_fiyati?: number
+          seo_description?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
           slug: string
           stok_adedi?: number
           stok_kodu: string
@@ -567,6 +603,9 @@ export type Database = {
           ozellikler?: Json
           resimler?: string[]
           satis_fiyati?: number
+          seo_description?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
           slug?: string
           stok_adedi?: number
           stok_kodu?: string
@@ -707,6 +746,9 @@ export type Database = {
           id: number
           logo_max_width: number
           logo_url: string | null
+          seo_description: string | null
+          seo_keywords: string | null
+          seo_title: string | null
           updated_at: string
         }
         Insert: {
@@ -714,6 +756,9 @@ export type Database = {
           id?: number
           logo_max_width?: number
           logo_url?: string | null
+          seo_description?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
           updated_at?: string
         }
         Update: {
@@ -721,6 +766,9 @@ export type Database = {
           id?: number
           logo_max_width?: number
           logo_url?: string | null
+          seo_description?: string | null
+          seo_keywords?: string | null
+          seo_title?: string | null
           updated_at?: string
         }
         Relationships: []
