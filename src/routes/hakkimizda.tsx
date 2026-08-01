@@ -1,14 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { StaticPage } from "@/components/StaticPage";
+import { loadPageSeo, pageHead } from "@/lib/page-seo";
+
+const SLUG = "hakkimizda";
 
 export const Route = createFileRoute("/hakkimizda")({
-  head: () => ({
-    meta: [
-      { title: "Hakkımızda — Alpottica" },
-      { name: "description", content: "Alpottica Istanbul hakkında bilgi." },
-      { property: "og:title", content: "Hakkımızda — Alpottica" },
-      { property: "og:description", content: "Alpottica Istanbul hakkında bilgi." },
-    ],
-  }),
-  component: () => <StaticPage slug="hakkimizda" />,
+  loader: () => loadPageSeo(SLUG),
+  head: ({ loaderData }) =>
+    pageHead(loaderData, SLUG, 'Hakkımızda — Alpottica Istanbul', 'Alpottica Istanbul: klipsli, polarize ve antifar filtreli premium güneş gözlüğü markası hakkında bilgi.'),
+  component: () => <StaticPage slug={SLUG} />,
 });

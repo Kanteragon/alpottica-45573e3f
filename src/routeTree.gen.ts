@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as UyelikSozlesmesiRouteImport } from './routes/uyelik-sozlesmesi'
 import { Route as UrunlerRouteImport } from './routes/urunler'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SepetRouteImport } from './routes/sepet'
 import { Route as OdemeRouteImport } from './routes/odeme'
 import { Route as KullanimKosullariRouteImport } from './routes/kullanim-kosullari'
@@ -29,6 +30,7 @@ import { Route as AdminTopluGuncellemeRouteImport } from './routes/admin.toplu-g
 import { Route as AdminSliderlarRouteImport } from './routes/admin.sliderlar'
 import { Route as AdminSiparislerRouteImport } from './routes/admin.siparisler'
 import { Route as AdminScriptlerRouteImport } from './routes/admin.scriptler'
+import { Route as AdminSayfalarRouteImport } from './routes/admin.sayfalar'
 import { Route as AdminOzelliklerRouteImport } from './routes/admin.ozellikler'
 import { Route as AdminMenuRouteImport } from './routes/admin.menu'
 import { Route as AdminMarkalarRouteImport } from './routes/admin.markalar'
@@ -47,6 +49,11 @@ const UyelikSozlesmesiRoute = UyelikSozlesmesiRouteImport.update({
 const UrunlerRoute = UrunlerRouteImport.update({
   id: '/urunler',
   path: '/urunler',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SepetRoute = SepetRouteImport.update({
@@ -139,6 +146,11 @@ const AdminScriptlerRoute = AdminScriptlerRouteImport.update({
   path: '/scriptler',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminSayfalarRoute = AdminSayfalarRouteImport.update({
+  id: '/sayfalar',
+  path: '/sayfalar',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminOzelliklerRoute = AdminOzelliklerRouteImport.update({
   id: '/ozellikler',
   path: '/ozellikler',
@@ -196,6 +208,7 @@ export interface FileRoutesByFullPath {
   '/kullanim-kosullari': typeof KullanimKosullariRoute
   '/odeme': typeof OdemeRoute
   '/sepet': typeof SepetRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/urunler': typeof UrunlerRoute
   '/uyelik-sozlesmesi': typeof UyelikSozlesmesiRoute
   '/admin/aktarim': typeof AdminAktarimRoute
@@ -207,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/admin/markalar': typeof AdminMarkalarRoute
   '/admin/menu': typeof AdminMenuRoute
   '/admin/ozellikler': typeof AdminOzelliklerRoute
+  '/admin/sayfalar': typeof AdminSayfalarRoute
   '/admin/scriptler': typeof AdminScriptlerRoute
   '/admin/siparisler': typeof AdminSiparislerRoute
   '/admin/sliderlar': typeof AdminSliderlarRoute
@@ -226,6 +240,7 @@ export interface FileRoutesByTo {
   '/kullanim-kosullari': typeof KullanimKosullariRoute
   '/odeme': typeof OdemeRoute
   '/sepet': typeof SepetRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/urunler': typeof UrunlerRoute
   '/uyelik-sozlesmesi': typeof UyelikSozlesmesiRoute
   '/admin/aktarim': typeof AdminAktarimRoute
@@ -237,6 +252,7 @@ export interface FileRoutesByTo {
   '/admin/markalar': typeof AdminMarkalarRoute
   '/admin/menu': typeof AdminMenuRoute
   '/admin/ozellikler': typeof AdminOzelliklerRoute
+  '/admin/sayfalar': typeof AdminSayfalarRoute
   '/admin/scriptler': typeof AdminScriptlerRoute
   '/admin/siparisler': typeof AdminSiparislerRoute
   '/admin/sliderlar': typeof AdminSliderlarRoute
@@ -258,6 +274,7 @@ export interface FileRoutesById {
   '/kullanim-kosullari': typeof KullanimKosullariRoute
   '/odeme': typeof OdemeRoute
   '/sepet': typeof SepetRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/urunler': typeof UrunlerRoute
   '/uyelik-sozlesmesi': typeof UyelikSozlesmesiRoute
   '/admin/aktarim': typeof AdminAktarimRoute
@@ -269,6 +286,7 @@ export interface FileRoutesById {
   '/admin/markalar': typeof AdminMarkalarRoute
   '/admin/menu': typeof AdminMenuRoute
   '/admin/ozellikler': typeof AdminOzelliklerRoute
+  '/admin/sayfalar': typeof AdminSayfalarRoute
   '/admin/scriptler': typeof AdminScriptlerRoute
   '/admin/siparisler': typeof AdminSiparislerRoute
   '/admin/sliderlar': typeof AdminSliderlarRoute
@@ -291,6 +309,7 @@ export interface FileRouteTypes {
     | '/kullanim-kosullari'
     | '/odeme'
     | '/sepet'
+    | '/sitemap.xml'
     | '/urunler'
     | '/uyelik-sozlesmesi'
     | '/admin/aktarim'
@@ -302,6 +321,7 @@ export interface FileRouteTypes {
     | '/admin/markalar'
     | '/admin/menu'
     | '/admin/ozellikler'
+    | '/admin/sayfalar'
     | '/admin/scriptler'
     | '/admin/siparisler'
     | '/admin/sliderlar'
@@ -321,6 +341,7 @@ export interface FileRouteTypes {
     | '/kullanim-kosullari'
     | '/odeme'
     | '/sepet'
+    | '/sitemap.xml'
     | '/urunler'
     | '/uyelik-sozlesmesi'
     | '/admin/aktarim'
@@ -332,6 +353,7 @@ export interface FileRouteTypes {
     | '/admin/markalar'
     | '/admin/menu'
     | '/admin/ozellikler'
+    | '/admin/sayfalar'
     | '/admin/scriptler'
     | '/admin/siparisler'
     | '/admin/sliderlar'
@@ -352,6 +374,7 @@ export interface FileRouteTypes {
     | '/kullanim-kosullari'
     | '/odeme'
     | '/sepet'
+    | '/sitemap.xml'
     | '/urunler'
     | '/uyelik-sozlesmesi'
     | '/admin/aktarim'
@@ -363,6 +386,7 @@ export interface FileRouteTypes {
     | '/admin/markalar'
     | '/admin/menu'
     | '/admin/ozellikler'
+    | '/admin/sayfalar'
     | '/admin/scriptler'
     | '/admin/siparisler'
     | '/admin/sliderlar'
@@ -384,6 +408,7 @@ export interface RootRouteChildren {
   KullanimKosullariRoute: typeof KullanimKosullariRoute
   OdemeRoute: typeof OdemeRoute
   SepetRoute: typeof SepetRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   UrunlerRoute: typeof UrunlerRoute
   UyelikSozlesmesiRoute: typeof UyelikSozlesmesiRoute
   UrunSlugRoute: typeof UrunSlugRoute
@@ -403,6 +428,13 @@ declare module '@tanstack/react-router' {
       path: '/urunler'
       fullPath: '/urunler'
       preLoaderRoute: typeof UrunlerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sepet': {
@@ -531,6 +563,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminScriptlerRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/sayfalar': {
+      id: '/admin/sayfalar'
+      path: '/sayfalar'
+      fullPath: '/admin/sayfalar'
+      preLoaderRoute: typeof AdminSayfalarRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/ozellikler': {
       id: '/admin/ozellikler'
       path: '/ozellikler'
@@ -607,6 +646,7 @@ interface AdminRouteChildren {
   AdminMarkalarRoute: typeof AdminMarkalarRoute
   AdminMenuRoute: typeof AdminMenuRoute
   AdminOzelliklerRoute: typeof AdminOzelliklerRoute
+  AdminSayfalarRoute: typeof AdminSayfalarRoute
   AdminScriptlerRoute: typeof AdminScriptlerRoute
   AdminSiparislerRoute: typeof AdminSiparislerRoute
   AdminSliderlarRoute: typeof AdminSliderlarRoute
@@ -626,6 +666,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminMarkalarRoute: AdminMarkalarRoute,
   AdminMenuRoute: AdminMenuRoute,
   AdminOzelliklerRoute: AdminOzelliklerRoute,
+  AdminSayfalarRoute: AdminSayfalarRoute,
   AdminScriptlerRoute: AdminScriptlerRoute,
   AdminSiparislerRoute: AdminSiparislerRoute,
   AdminSliderlarRoute: AdminSliderlarRoute,
@@ -648,6 +689,7 @@ const rootRouteChildren: RootRouteChildren = {
   KullanimKosullariRoute: KullanimKosullariRoute,
   OdemeRoute: OdemeRoute,
   SepetRoute: SepetRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   UrunlerRoute: UrunlerRoute,
   UyelikSozlesmesiRoute: UyelikSozlesmesiRoute,
   UrunSlugRoute: UrunSlugRoute,

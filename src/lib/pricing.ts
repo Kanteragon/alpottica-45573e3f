@@ -27,6 +27,9 @@ export type Campaign = {
   grup_a_urun_ids: string[];
   grup_b_kategori_ids: string[];
   grup_b_urun_ids: string[];
+  kosul_tip: string;
+  kosul_kategori_ids: string[];
+  kosul_urun_ids: string[];
 };
 
 /** product_id -> kategori id listesi */
@@ -81,6 +84,9 @@ export function useCampaigns() {
         min_adet: Number((c as { min_adet?: number }).min_adet ?? 2),
         max_indirim: Number((c as { max_indirim?: number }).max_indirim ?? 0),
         kod: ((c as { kod?: string | null }).kod ?? null),
+        kosul_tip: ((c as { kosul_tip?: string }).kosul_tip ?? "tumu"),
+        kosul_kategori_ids: ((c as { kosul_kategori_ids?: string[] }).kosul_kategori_ids ?? []),
+        kosul_urun_ids: ((c as { kosul_urun_ids?: string[] }).kosul_urun_ids ?? []),
       })) as Campaign[];
     },
   });
@@ -118,6 +124,14 @@ function matches(
   if ((kategoriIds ?? []).some((k) => cats.includes(k))) return true;
   if ((urunIds ?? []).includes(productId)) return true;
   return false;
+}
+
+function inKosul(item: CartItem, c: Campaign, catMap: CategoryMap) {
+  const tip = c.kosul_tip || "tumu";
+  if (tip === "tumu") return true;
+  if (tip === "kategori") return matches(item.product_id, catMap, c.kosul_kategori_ids, []);
+  if (tip === "urun") return matches(item.product_id, catMap, [], c.kosul_urun_ids);
+  return true;
 }
 
 function inScope(item: CartItem, c: Campaign, catMap: CategoryMap) {
@@ -161,13 +175,16 @@ export function computeTotals(
       }
     } else if (c.tip === "ikinci_urun") {
       const need = Math.max(2, c.min_adet || 2);
-      const scopedUnits = unitsOf(scoped);
-      if (scopedUnits.length >= need) {
-        const sets = Math.floor(scopedUnits.length / need);
-        // her sette en ucuz ürün indirimli
+      // koşul grubu (sepette bulunması gereken ürünler) ile indirim grubu ayrı değerlendirilir
+      const kosulItems = items.filter((i) => inKosul(i, c, catMap));
+      const unionItems = Array.from(new Set([...kosulItems, ...scoped]));
+      const unionUnits = unionItems.reduce((n, i) => n + Math.max(0, i.qty), 0);
+      const targetUnits = unitsOf(scoped);
+      if (kosulItems.length > 0 && targetUnits.length > 0 && unionUnits >= need) {
+        const sets = Math.min(Math.floor(unionUnits / need), targetUnits.length);
         let amount = 0;
         for (let s = 0; s < sets; s++) {
-          const unit = scopedUnits[s] ?? 0;
+          const unit = targetUnits[s] ?? 0;
           amount += c.indirim_tutar > 0 ? Math.min(c.indirim_tutar, unit) : (unit * c.indirim_oran) / 100;
         }
         amount = capped(amount, c);

@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { mapDbProduct, type Product, type DbProduct } from "@/lib/products";
 
 const PRODUCT_COLS =
-  "id,slug,stok_kodu,urun_adi,aciklama,satis_fiyati,liste_fiyati,stok_adedi,resimler,ozellikler,etiketler,kategori_id,marka_id,variant_group_id";
+  "id,slug,stok_kodu,urun_adi,aciklama,satis_fiyati,liste_fiyati,stok_adedi,resimler,ozellikler,etiketler,kategori_id,marka_id,variant_group_id,seo_title,seo_description,seo_keywords";
 
 export type ProductFilter = {
   tag?: string;
@@ -17,6 +17,7 @@ export type ProductFilter = {
 };
 
 export async function fetchProducts(filter: ProductFilter = {}): Promise<Product[]> {
+  let orderMap: Record<string, number> | null = null;
   let q = supabase.from("products").select(PRODUCT_COLS).order("created_at", { ascending: false });
   if (filter.tag && filter.tag !== "tumu") {
     // Match by tag OR by a category whose slug/name matches the tag (Excel categories)
@@ -27,8 +28,17 @@ export async function fetchProducts(filter: ProductFilter = {}): Promise<Product
     const catIds = (cats ?? []).map((c) => c.id as string);
     let ids: string[] = [];
     if (catIds.length) {
-      const { data: pcs } = await supabase.from("product_categories").select("product_id").in("category_id", catIds);
+      const { data: pcs } = await supabase
+        .from("product_categories")
+        .select("product_id,sira")
+        .in("category_id", catIds)
+        .order("sira");
       ids = Array.from(new Set((pcs ?? []).map((r) => r.product_id as string)));
+      orderMap = {};
+      (pcs ?? []).forEach((r, i) => {
+        const pid = r.product_id as string;
+        if (orderMap![pid] === undefined) orderMap![pid] = Number((r as { sira?: number }).sira ?? i);
+      });
     }
     const parts = [`etiketler.cs.{${filter.tag}}`];
     if (catIds.length) parts.push(`kategori_id.in.(${catIds.join(",")})`);
@@ -36,7 +46,15 @@ export async function fetchProducts(filter: ProductFilter = {}): Promise<Product
     q = q.or(parts.join(","));
   }
   if (filter.kategori_id) {
-    const { data: pcs } = await supabase.from("product_categories").select("product_id").eq("category_id", filter.kategori_id);
+    const { data: pcs } = await supabase
+      .from("product_categories")
+      .select("product_id,sira")
+      .eq("category_id", filter.kategori_id)
+      .order("sira");
+    orderMap = {};
+    (pcs ?? []).forEach((r, i) => {
+      orderMap![r.product_id as string] = Number((r as { sira?: number }).sira ?? i);
+    });
     const ids = Array.from(new Set((pcs ?? []).map((r) => r.product_id as string)));
     if (ids.length > 0) {
       q = q.or(`kategori_id.eq.${filter.kategori_id},id.in.(${ids.join(",")})`);
@@ -54,6 +72,10 @@ export async function fetchProducts(filter: ProductFilter = {}): Promise<Product
   let list = (data as unknown as DbProduct[]).map(mapDbProduct);
   if (filter.color) list = list.filter((p) => p.color.toLowerCase() === filter.color!.toLowerCase());
   if (filter.size) list = list.filter((p) => String(p.size) === String(filter.size));
+  if (orderMap) {
+    const om = orderMap;
+    list = [...list].sort((a, b) => (om[a.id] ?? 9999) - (om[b.id] ?? 9999));
+  }
   return list;
 }
 

@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Trash2, Plus, PackagePlus, X, Search } from "lucide-react";
+import { Trash2, Plus, PackagePlus, X, Search, ArrowUp, ArrowDown } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/kategoriler")({ component: Cats });
@@ -61,7 +61,7 @@ function Cats() {
   );
 }
 
-type Row = { id: string; urun_adi: string; stok_kodu: string; resimler: string[] | null };
+type Row = { id: string; urun_adi: string; stok_kodu: string; resimler: string[] | null; sira?: number };
 
 function CategoryProducts({ cat, onClose }: { cat: Cat; onClose: () => void }) {
   const qc = useQueryClient();
@@ -74,10 +74,14 @@ function CategoryProducts({ cat, onClose }: { cat: Cat; onClose: () => void }) {
     queryFn: async () => {
       const { data } = await supabase
         .from("product_categories")
-        .select("product_id, products(id,urun_adi,stok_kodu,resimler)")
-        .eq("category_id", cat.id);
+        .select("product_id, sira, products(id,urun_adi,stok_kodu,resimler)")
+        .eq("category_id", cat.id)
+        .order("sira");
       return (data ?? [])
-        .map((r) => (r as unknown as { products: Row | null }).products)
+        .map((r) => {
+          const rr = r as unknown as { sira: number | null; products: Row | null };
+          return rr.products ? { ...rr.products, sira: rr.sira ?? 0 } : null;
+        })
         .filter(Boolean) as Row[];
     },
   });
@@ -103,7 +107,8 @@ function CategoryProducts({ cat, onClose }: { cat: Cat; onClose: () => void }) {
   const save = async () => {
     if (sel.size === 0) return toast.error("Ürün seçin");
     setBusy(true);
-    const rows = Array.from(sel).map((pid) => ({ product_id: pid, category_id: cat.id }));
+    const base = assigned.length;
+    const rows = Array.from(sel).map((pid, i) => ({ product_id: pid, category_id: cat.id, sira: base + i }));
     const { error } = await supabase
       .from("product_categories")
       .upsert(rows, { onConflict: "product_id,category_id", ignoreDuplicates: true });
@@ -111,6 +116,21 @@ function CategoryProducts({ cat, onClose }: { cat: Cat; onClose: () => void }) {
     if (error) return toast.error(error.message);
     toast.success(`${sel.size} ürün "${cat.name}" kategorisine eklendi`);
     setSel(new Set());
+    refetch();
+    qc.invalidateQueries({ queryKey: ["products"] });
+  };
+
+  const move = async (index: number, dir: -1 | 1) => {
+    const next = index + dir;
+    if (next < 0 || next >= assigned.length) return;
+    const reordered = [...assigned];
+    const [item] = reordered.splice(index, 1);
+    reordered.splice(next, 0, item);
+    await Promise.all(
+      reordered.map((r, i) =>
+        supabase.from("product_categories").update({ sira: i }).eq("category_id", cat.id).eq("product_id", r.id)
+      )
+    );
     refetch();
     qc.invalidateQueries({ queryKey: ["products"] });
   };
@@ -170,14 +190,19 @@ function CategoryProducts({ cat, onClose }: { cat: Cat; onClose: () => void }) {
 
           {assigned.length > 0 && (
             <div>
-              <p className="text-[11px] tracking-widest uppercase text-muted-foreground mb-2">Kategorideki Ürünler</p>
-              <div className="grid sm:grid-cols-2 gap-2">
-                {assigned.map((r) => (
+              <p className="text-[11px] tracking-widest uppercase text-muted-foreground mb-2">
+                Kategorideki Ürünler — sıralama sitede de bu şekilde görünür
+              </p>
+              <div className="space-y-2">
+                {assigned.map((r, i) => (
                   <div key={r.id} className="flex items-center gap-3 border rounded-xl p-2.5">
+                    <span className="text-xs text-muted-foreground w-5 text-center">{i + 1}</span>
                     <span className="w-10 h-10 rounded-lg bg-brand-sand/40 overflow-hidden shrink-0">
                       {r.resimler?.[0] && <img src={r.resimler[0]} alt="" className="w-full h-full object-contain" />}
                     </span>
                     <span className="min-w-0 flex-1 text-sm truncate">{r.urun_adi}</span>
+                    <button onClick={() => move(i, -1)} disabled={i === 0} className="p-2 rounded hover:bg-brand-sand disabled:opacity-30"><ArrowUp className="w-4 h-4" /></button>
+                    <button onClick={() => move(i, 1)} disabled={i === assigned.length - 1} className="p-2 rounded hover:bg-brand-sand disabled:opacity-30"><ArrowDown className="w-4 h-4" /></button>
                     <button onClick={() => remove(r.id)} className="p-2 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 ))}

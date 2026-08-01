@@ -31,6 +31,7 @@ function Login() {
   const [fullName, setFullName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [consent, setConsent] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -48,6 +49,7 @@ function Login() {
     setBusy(true);
     try {
       if (mode === "register") {
+        if (!consent) throw new Error("Devam etmek için Üyelik Sözleşmesi ve KVKK metnini onaylamalısınız.");
         if (password.length < 6) throw new Error("Şifre en az 6 karakter olmalıdır.");
         const { error } = await supabase.auth.signUp({
           email: email.trim(),
@@ -125,7 +127,25 @@ function Login() {
               <textarea value={address} onChange={(e) => setAddress(e.target.value)} rows={3} className="w-full border border-border rounded-2xl p-3 focus:outline-none focus:border-brand-ink" />
             </div>
           )}
-          <button disabled={busy} className="w-full bg-brand-cta text-white py-3 rounded-full font-semibold tracking-wider hover:opacity-90 disabled:opacity-60">
+          {mode === "register" && (
+            <label className="flex items-start gap-3 text-sm text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={consent}
+                onChange={(e) => setConsent(e.target.checked)}
+                className="mt-1 shrink-0"
+              />
+              <span>
+                <a href="/uyelik-sozlesmesi" target="_blank" rel="noopener noreferrer" className="text-brand-ink underline underline-offset-2">Üyelik Sözleşmesi</a>
+                {", "}
+                <a href="/gizlilik-sozlesmesi" target="_blank" rel="noopener noreferrer" className="text-brand-ink underline underline-offset-2">KVKK / Gizlilik Sözleşmesi</a>
+                {" ve "}
+                <a href="/kullanim-kosullari" target="_blank" rel="noopener noreferrer" className="text-brand-ink underline underline-offset-2">Kullanım Koşulları</a>
+                'nı okudum, kabul ediyorum.
+              </span>
+            </label>
+          )}
+          <button disabled={busy || (mode === "register" && !consent)} className="w-full bg-brand-cta text-white py-3 rounded-full font-semibold tracking-wider hover:opacity-90 disabled:opacity-60">
             {busy ? "..." : mode === "register" ? "KAYIT OL" : "GİRİŞ YAP"}
           </button>
         </form>
