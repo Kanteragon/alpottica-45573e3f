@@ -18,6 +18,11 @@ function Cats() {
   });
   const [form, setForm] = useState({ name: "", slug: "", sort: 0 });
   const [picker, setPicker] = useState<Cat | null>(null);
+  const [order, setOrder] = useState<Cat[]>([]);
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [edit, setEdit] = useState<{ id: string; name: string; slug: string } | null>(null);
+
+  useEffect(() => { setOrder(rows); }, [rows]);
 
   const add = async () => {
     if (!form.name || !form.slug) return toast.error("Ad ve slug gerekli");
@@ -32,26 +37,92 @@ function Cats() {
     qc.invalidateQueries({ queryKey: ["admin-cats"] });
   };
 
+  const persist = async (list: Cat[]) => {
+    setOrder(list);
+    await Promise.all(list.map((c, i) => supabase.from("categories").update({ sort: i }).eq("id", c.id)));
+    qc.invalidateQueries({ queryKey: ["admin-cats"] });
+    qc.invalidateQueries({ queryKey: ["categories"] });
+  };
+
+  const onDrop = (target: number) => {
+    if (dragIdx === null || dragIdx === target) return setDragIdx(null);
+    const list = [...order];
+    const [item] = list.splice(dragIdx, 1);
+    list.splice(target, 0, item);
+    setDragIdx(null);
+    persist(list);
+    toast.success("Sıralama güncellendi");
+  };
+
+  const shuffle = async () => {
+    const list = [...order];
+    for (let i = list.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [list[i], list[j]] = [list[j], list[i]];
+    }
+    await persist(list);
+    toast.success("Kategoriler rastgele sıralandı");
+  };
+
+  const saveEdit = async () => {
+    if (!edit) return;
+    const slug = edit.slug.trim().replace(/^\/+/, "");
+    if (!edit.name.trim() || !slug) return toast.error("Ad ve URL gerekli");
+    const { error } = await supabase.from("categories").update({ name: edit.name.trim(), slug }).eq("id", edit.id);
+    if (error) return toast.error(error.message);
+    setEdit(null);
+    toast.success("Kategori güncellendi");
+    qc.invalidateQueries({ queryKey: ["admin-cats"] });
+    qc.invalidateQueries({ queryKey: ["categories"] });
+  };
+
   return (
     <div>
-      <h1 className="font-display text-3xl sm:text-4xl text-brand-ink mb-6 sm:mb-8">Kategoriler</h1>
+      <div className="flex items-end justify-between flex-wrap gap-3 mb-6 sm:mb-8">
+        <h1 className="font-display text-3xl sm:text-4xl text-brand-ink">Kategoriler</h1>
+        <button onClick={shuffle} className="inline-flex items-center gap-2 border rounded-full px-4 py-2 text-sm hover:border-brand-ink transition">
+          <Shuffle className="w-4 h-4" /> Rastgele Sırala
+        </button>
+      </div>
       <div className="bg-white rounded-2xl border p-4 sm:p-6 mb-6 flex flex-wrap gap-3">
         <input placeholder="Ad" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value, slug: e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-") })} className="border rounded-full px-4 py-2 flex-1 min-w-[180px]" />
-        <input placeholder="Slug" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="border rounded-full px-4 py-2 flex-1 min-w-[180px]" />
+        <input placeholder="SEO URL (slug)" value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="border rounded-full px-4 py-2 flex-1 min-w-[180px]" />
         <input type="number" placeholder="Sıra" value={form.sort} onChange={(e) => setForm({ ...form, sort: Number(e.target.value) })} className="border rounded-full px-4 py-2 w-24" />
         <button onClick={add} className="bg-brand-ink text-white rounded-full px-5 py-2 flex items-center gap-2"><Plus className="w-4 h-4" /> Ekle</button>
       </div>
+
+      <p className="text-xs text-muted-foreground mb-2">Sıralamak için kategorileri sürükleyip bırakın. SEO URL alanı sitedeki kategori adresini belirler (örn. /urunler?tag=klipsli-modeller).</p>
       <div className="bg-white rounded-2xl border divide-y">
-        {rows.map((c) => (
-          <div key={c.id} className="p-4 flex items-center gap-3">
-            <div className="flex-1 min-w-0">
-              <p className="font-medium truncate">{c.name}</p>
-              <p className="text-xs text-muted-foreground truncate">/{c.slug} · sıra {c.sort}</p>
-            </div>
-            <button onClick={() => setPicker(c)} className="shrink-0 flex items-center gap-2 text-sm border rounded-full px-3 py-2 hover:border-brand-ink transition">
-              <PackagePlus className="w-4 h-4" /> <span className="hidden sm:inline">Ürün Ekle</span>
-            </button>
-            <button onClick={() => del(c.id)} className="shrink-0 p-2 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
+        {order.map((c, i) => (
+          <div
+            key={c.id}
+            draggable
+            onDragStart={() => setDragIdx(i)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={() => onDrop(i)}
+            className={`p-4 flex items-center gap-3 ${dragIdx === i ? "opacity-50" : ""}`}
+          >
+            <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab shrink-0" />
+            {edit?.id === c.id ? (
+              <div className="flex-1 flex flex-wrap gap-2">
+                <input value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} className="border rounded-full px-3 py-1.5 text-sm flex-1 min-w-[140px]" />
+                <input value={edit.slug} onChange={(e) => setEdit({ ...edit, slug: e.target.value })} className="border rounded-full px-3 py-1.5 text-sm flex-1 min-w-[140px] font-mono" />
+                <button onClick={saveEdit} className="bg-brand-ink text-white rounded-full px-4 py-1.5 text-sm">Kaydet</button>
+                <button onClick={() => setEdit(null)} className="border rounded-full px-4 py-1.5 text-sm">İptal</button>
+              </div>
+            ) : (
+              <>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{c.name}</p>
+                  <p className="text-xs text-muted-foreground truncate">/{c.slug} · sıra {c.sort}</p>
+                </div>
+                <button onClick={() => setEdit({ id: c.id, name: c.name, slug: c.slug })} className="shrink-0 p-2 hover:bg-brand-sand rounded"><Pencil className="w-4 h-4" /></button>
+                <button onClick={() => setPicker(c)} className="shrink-0 flex items-center gap-2 text-sm border rounded-full px-3 py-2 hover:border-brand-ink transition">
+                  <PackagePlus className="w-4 h-4" /> <span className="hidden sm:inline">Ürün Ekle</span>
+                </button>
+                <button onClick={() => del(c.id)} className="shrink-0 p-2 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
+              </>
+            )}
           </div>
         ))}
       </div>
@@ -60,6 +131,7 @@ function Cats() {
     </div>
   );
 }
+
 
 type Row = { id: string; urun_adi: string; stok_kodu: string; resimler: string[] | null; sira?: number };
 
