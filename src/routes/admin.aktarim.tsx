@@ -12,6 +12,7 @@ type Row = {
   ModelKodu?: string; StokKodu?: string; Barkod?: string; UrunAdi?: string; Aciklama?: string;
   StokAdedi?: number | string; AlisFiyati?: number | string; ListeFiyati?: number | string; SatisFiyati?: number | string;
   Kategori?: string; Marka?: string; Resim?: string; Ozellik?: string; Etiketler?: string; Aktif?: string | boolean;
+  SEOBaslik?: string; SEOAciklama?: string; SEOAnahtarKelimeler?: string;
 };
 
 const TEMPLATE_HEADERS: Row = {
@@ -21,6 +22,9 @@ const TEMPLATE_HEADERS: Row = {
   Resim: "https://ornek.com/1.jpg;https://ornek.com/2.jpg",
   Ozellik: "renk:Siyah;cam_rengi:Yeşil;ekartman:56",
   Etiketler: "klipsli,yeni", Aktif: "Evet",
+  SEOBaslik: "Klipsli Güneş Gözlüğü | Alpottica Istanbul",
+  SEOAciklama: "Alpottica Istanbul klipsli güneş gözlüğü modeli. Kapıda ödeme ve şeffaf kargo.",
+  SEOAnahtarKelimeler: "klipsli güneş gözlüğü, alpottica, güneş gözlüğü",
 };
 
 function slugify(s: string) { return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); }
@@ -118,6 +122,9 @@ function Import() {
             etiketler: String(r.Etiketler ?? "").split(/[,;]/).map((s) => s.trim()).filter(Boolean),
             aktif: r.Aktif === false || String(r.Aktif).toLowerCase() === "hayır" || String(r.Aktif).toLowerCase() === "no" ? false : true,
             slug: slugify(String(r.StokKodu) + "-" + name).slice(0, 80),
+            seo_title: r.SEOBaslik ? String(r.SEOBaslik).trim() : null,
+            seo_description: r.SEOAciklama ? String(r.SEOAciklama).trim() : null,
+            seo_keywords: r.SEOAnahtarKelimeler ? String(r.SEOAnahtarKelimeler).trim() : null,
           },
         });
       }
@@ -193,6 +200,9 @@ function Import() {
           Ozellik: Object.entries((p.ozellikler ?? {}) as Record<string, string>).map(([k, v]) => `${k}:${v}`).join(";"),
           Etiketler: (p.etiketler ?? []).join(","),
           Aktif: p.aktif ? "Evet" : "Hayır",
+          SEOBaslik: p.seo_title ?? "",
+          SEOAciklama: p.seo_description ?? "",
+          SEOAnahtarKelimeler: p.seo_keywords ?? "",
         };
       });
       if (rows.length === 0) {
