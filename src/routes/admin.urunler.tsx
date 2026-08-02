@@ -275,11 +275,12 @@ function BulkUpdate({ ids, onClose }: { ids: string[]; onClose: () => void }) {
     const { data } = await supabase.from("products").select("id, urun_adi").in("id", ids);
     for (const row of data ?? []) {
       const fill = (t: string) => t.replace(/\{ad\}/g, row.urun_adi as string).trim();
-      const payload: Record<string, string> = {};
+      const payload: { seo_title?: string; seo_description?: string; seo_keywords?: string } = {};
       if (seo.title.trim()) payload.seo_title = fill(seo.title).slice(0, 70);
       if (seo.desc.trim()) payload.seo_description = fill(seo.desc).slice(0, 300);
       if (seo.keywords.trim()) payload.seo_keywords = fill(seo.keywords);
       await supabase.from("products").update(payload).eq("id", row.id);
+
     }
     toast.success(`${ids.length} ürünün meta etiketleri güncellendi`);
   };
