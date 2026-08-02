@@ -232,12 +232,14 @@ function AdminProducts() {
 }
 
 function BulkUpdate({ ids, onClose }: { ids: string[]; onClose: () => void }) {
-  const [mode, setMode] = useState<"price" | "stock" | "discount" | "category" | "variant">("price");
+  const [mode, setMode] = useState<"price" | "stock" | "discount" | "category" | "variant" | "seo">("price");
   const [val, setVal] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const { data: cats = [] } = useCategories();
   const [catIds, setCatIds] = useState<Set<string>>(new Set());
   const [setPrimary, setSetPrimary] = useState(true);
+  const [seo, setSeo] = useState({ title: "", desc: "", keywords: "" });
+
 
   const toggleCat = (id: string) => {
     const next = new Set(catIds);
