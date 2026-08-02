@@ -65,8 +65,11 @@ export function SearchBox({ solid }: { solid: boolean }) {
                   type="text"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  placeholder="Ürün adı veya model kodu ile arayın..."
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submit(); } }}
+                  enterKeyHint="search"
+                  placeholder="Ürün adı veya model kodu ile arayın… (Enter ile ara)"
                   className="flex-1 text-lg outline-none bg-transparent text-brand-ink placeholder:text-muted-foreground"
+
                 />
                 <button onClick={() => setOpen(false)} aria-label="Kapat" className="text-brand-ink hover:opacity-70">
                   <X className="w-5 h-5" />
