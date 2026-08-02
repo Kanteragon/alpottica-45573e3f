@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Trash2, Plus, PackagePlus, X, Search, ArrowUp, ArrowDown } from "lucide-react";
+import { Trash2, Plus, PackagePlus, X, Search, ArrowUp, ArrowDown, Shuffle, GripVertical, Pencil } from "lucide-react";
+
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/kategoriler")({ component: Cats });
