@@ -270,6 +270,20 @@ function BulkUpdate({ ids, onClose }: { ids: string[]; onClose: () => void }) {
     toast.success(`${ids.length} ürün varyasyon olarak bağlandı`);
   };
 
+  const applySeo = async () => {
+    if (!seo.title.trim() && !seo.desc.trim() && !seo.keywords.trim()) return toast.error("En az bir SEO alanı doldurun");
+    const { data } = await supabase.from("products").select("id, urun_adi").in("id", ids);
+    for (const row of data ?? []) {
+      const fill = (t: string) => t.replace(/\{ad\}/g, row.urun_adi as string).trim();
+      const payload: Record<string, string> = {};
+      if (seo.title.trim()) payload.seo_title = fill(seo.title).slice(0, 70);
+      if (seo.desc.trim()) payload.seo_description = fill(seo.desc).slice(0, 300);
+      if (seo.keywords.trim()) payload.seo_keywords = fill(seo.keywords);
+      await supabase.from("products").update(payload).eq("id", row.id);
+    }
+    toast.success(`${ids.length} ürünün meta etiketleri güncellendi`);
+  };
+
   const apply = async () => {
     setBusy(true);
     try {
@@ -277,7 +291,10 @@ function BulkUpdate({ ids, onClose }: { ids: string[]; onClose: () => void }) {
         await applyCategories();
       } else if (mode === "variant") {
         await applyVariantGroup();
+      } else if (mode === "seo") {
+        await applySeo();
       } else {
+
         const num = Number(val);
         if (Number.isNaN(num) || val === "") return toast.error("Geçerli sayı girin");
         if (mode === "stock") {
