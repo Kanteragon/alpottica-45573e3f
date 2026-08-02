@@ -78,6 +78,13 @@ function Products() {
   const [visible, setVisible] = useState(24);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  // URL'deki arama terimi değişince (navbar aramasından Enter ile gelince) listeyi güncelle
+  useEffect(() => {
+    setQuery(search.q ?? "");
+    setVisible(24);
+  }, [search.q]);
+
+
   const { data: cats } = useCategories();
   const { data: brands } = useBrands();
   const { data: attrs = [] } = useAttributes();

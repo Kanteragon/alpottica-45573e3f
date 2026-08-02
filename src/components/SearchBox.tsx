@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Search, X } from "lucide-react";
 import { useProducts } from "@/lib/queries";
 import { formatTL } from "@/lib/products";
@@ -9,6 +9,15 @@ export function SearchBox({ solid }: { solid: boolean }) {
   const [q, setQ] = useState("");
   const [debounced, setDebounced] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const navigate = useNavigate();
+
+  const submit = () => {
+    const term = q.trim();
+    if (!term) return;
+    setOpen(false);
+    navigate({ to: "/urunler", search: { q: term } });
+  };
+
 
   useEffect(() => {
     const t = setTimeout(() => setDebounced(q.trim()), 200);
@@ -56,8 +65,11 @@ export function SearchBox({ solid }: { solid: boolean }) {
                   type="text"
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
-                  placeholder="Ürün adı veya model kodu ile arayın..."
+                  onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); submit(); } }}
+                  enterKeyHint="search"
+                  placeholder="Ürün adı veya model kodu ile arayın… (Enter ile ara)"
                   className="flex-1 text-lg outline-none bg-transparent text-brand-ink placeholder:text-muted-foreground"
+
                 />
                 <button onClick={() => setOpen(false)} aria-label="Kapat" className="text-brand-ink hover:opacity-70">
                   <X className="w-5 h-5" />

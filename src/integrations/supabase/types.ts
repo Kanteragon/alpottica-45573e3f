@@ -818,6 +818,47 @@ export type Database = {
         }
         Relationships: []
       }
+      stock_movements: {
+        Row: {
+          aciklama: string | null
+          created_at: string
+          id: string
+          miktar: number
+          onceki: number
+          product_id: string
+          sonraki: number
+          tip: string
+        }
+        Insert: {
+          aciklama?: string | null
+          created_at?: string
+          id?: string
+          miktar?: number
+          onceki?: number
+          product_id: string
+          sonraki?: number
+          tip?: string
+        }
+        Update: {
+          aciklama?: string | null
+          created_at?: string
+          id?: string
+          miktar?: number
+          onceki?: number
+          product_id?: string
+          sonraki?: number
+          tip?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string

@@ -232,12 +232,14 @@ function AdminProducts() {
 }
 
 function BulkUpdate({ ids, onClose }: { ids: string[]; onClose: () => void }) {
-  const [mode, setMode] = useState<"price" | "stock" | "discount" | "category" | "variant">("price");
+  const [mode, setMode] = useState<"price" | "stock" | "discount" | "category" | "variant" | "seo">("price");
   const [val, setVal] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const { data: cats = [] } = useCategories();
   const [catIds, setCatIds] = useState<Set<string>>(new Set());
   const [setPrimary, setSetPrimary] = useState(true);
+  const [seo, setSeo] = useState({ title: "", desc: "", keywords: "" });
+
 
   const toggleCat = (id: string) => {
     const next = new Set(catIds);
@@ -268,6 +270,21 @@ function BulkUpdate({ ids, onClose }: { ids: string[]; onClose: () => void }) {
     toast.success(`${ids.length} ürün varyasyon olarak bağlandı`);
   };
 
+  const applySeo = async () => {
+    if (!seo.title.trim() && !seo.desc.trim() && !seo.keywords.trim()) return toast.error("En az bir SEO alanı doldurun");
+    const { data } = await supabase.from("products").select("id, urun_adi").in("id", ids);
+    for (const row of data ?? []) {
+      const fill = (t: string) => t.replace(/\{ad\}/g, row.urun_adi as string).trim();
+      const payload: { seo_title?: string; seo_description?: string; seo_keywords?: string } = {};
+      if (seo.title.trim()) payload.seo_title = fill(seo.title).slice(0, 70);
+      if (seo.desc.trim()) payload.seo_description = fill(seo.desc).slice(0, 300);
+      if (seo.keywords.trim()) payload.seo_keywords = fill(seo.keywords);
+      await supabase.from("products").update(payload).eq("id", row.id);
+
+    }
+    toast.success(`${ids.length} ürünün meta etiketleri güncellendi`);
+  };
+
   const apply = async () => {
     setBusy(true);
     try {
@@ -275,7 +292,10 @@ function BulkUpdate({ ids, onClose }: { ids: string[]; onClose: () => void }) {
         await applyCategories();
       } else if (mode === "variant") {
         await applyVariantGroup();
+      } else if (mode === "seo") {
+        await applySeo();
       } else {
+
         const num = Number(val);
         if (Number.isNaN(num) || val === "") return toast.error("Geçerli sayı girin");
         if (mode === "stock") {
@@ -308,7 +328,7 @@ function BulkUpdate({ ids, onClose }: { ids: string[]; onClose: () => void }) {
           <div className="flex gap-2 flex-wrap">
             {([
               ["price", "Fiyat"], ["stock", "Stok"], ["discount", "İndirim %"],
-              ["category", "Kategoriye Ekle"], ["variant", "Varyasyon Bağla"],
+              ["category", "Kategoriye Ekle"], ["variant", "Varyasyon Bağla"], ["seo", "SEO / Meta"],
             ] as const).map(([k, label]) => (
               <button key={k} onClick={() => setMode(k)} className={`px-3 py-2 rounded-full text-sm border ${mode === k ? "bg-brand-ink text-white border-brand-ink" : ""}`}>{label}</button>
             ))}
@@ -334,7 +354,26 @@ function BulkUpdate({ ids, onClose }: { ids: string[]; onClose: () => void }) {
             <p className="text-sm text-muted-foreground">
               Seçili {ids.length} ürün aynı varyasyon grubuna bağlanır (farklı renk / model). Ürün sayfasında birbirlerine geçiş seçenekleri olarak görünürler.
             </p>
+          ) : mode === "seo" ? (
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground">
+                <strong>{"{ad}"}</strong> yazdığınız yere ürün adı otomatik yerleşir. Boş bıraktığınız alanlar değiştirilmez.
+              </p>
+              <label className="block">
+                <span className="text-xs uppercase tracking-widest text-muted-foreground">Meta Başlık</span>
+                <input value={seo.title} onChange={(e) => setSeo({ ...seo, title: e.target.value })} placeholder="{ad} Klipsli Güneş Gözlüğü | Alpottica Istanbul" className="w-full border rounded-xl px-3 py-2 mt-1 text-sm" />
+              </label>
+              <label className="block">
+                <span className="text-xs uppercase tracking-widest text-muted-foreground">Meta Açıklama</span>
+                <textarea rows={3} value={seo.desc} onChange={(e) => setSeo({ ...seo, desc: e.target.value })} placeholder="{ad} modelini Alpottica Istanbul güvencesiyle kapıda ödeme ile sipariş verin." className="w-full border rounded-xl px-3 py-2 mt-1 text-sm" />
+              </label>
+              <label className="block">
+                <span className="text-xs uppercase tracking-widest text-muted-foreground">Anahtar Kelimeler</span>
+                <input value={seo.keywords} onChange={(e) => setSeo({ ...seo, keywords: e.target.value })} placeholder="klipsli güneş gözlüğü, alpottica, {ad}" className="w-full border rounded-xl px-3 py-2 mt-1 text-sm" />
+              </label>
+            </div>
           ) : (
+
             <label className="block">
               <span className="text-xs uppercase tracking-widest text-muted-foreground">
                 {mode === "price" ? "Yeni Satış Fiyatı (TL)" : mode === "stock" ? "Yeni Stok Adedi" : "İndirim Oranı (%)"}
@@ -385,7 +424,7 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
   const { data: attrs = [] } = useAttributes();
   const qc = useQueryClient();
 
-  const [tab, setTab] = useState<TabKey>("attrs");
+  const [tab, setTab] = useState<TabKey>(TABS[0].key);
   const [form, setForm] = useState({
     stok_kodu: product?.stok_kodu ?? "",
     urun_adi: product?.urun_adi ?? "",
@@ -651,11 +690,16 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
               </div>
             )}
 
-            {["discount","showcase","links","notify","orders","moves","shelves","reviews"].includes(tab) && (
+            {tab === "moves" && <StockMovesTab productId={product?.id ?? null} />}
+
+            {tab === "orders" && <ProductOrdersTab productId={product?.id ?? null} />}
+
+            {["discount","showcase","links","notify","shelves","reviews"].includes(tab) && (
               <div className="text-sm text-muted-foreground italic border rounded-xl p-8 text-center">
                 Bu sekme yakında aktif olacak.
               </div>
             )}
+
           </div>
         </div>
       </div>
@@ -900,6 +944,170 @@ function VariantsTab({ productId, groupId, onGroupIdChange }: { productId: strin
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+type Move = { id: string; tip: string; miktar: number; onceki: number; sonraki: number; aciklama: string | null; created_at: string };
+
+const MOVE_LABEL: Record<string, string> = { giris: "Giriş", cikis: "Çıkış", guncelleme: "Güncelleme" };
+
+function StockMovesTab({ productId }: { productId: string | null }) {
+  const [tip, setTip] = useState<"all" | "giris" | "cikis">("all");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [minQty, setMinQty] = useState("");
+
+  const { data: moves = [], isLoading } = useQuery({
+    queryKey: ["stock-moves", productId],
+    enabled: !!productId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("stock_movements")
+        .select("id,tip,miktar,onceki,sonraki,aciklama,created_at")
+        .eq("product_id", productId!)
+        .order("created_at", { ascending: false })
+        .limit(500);
+      if (error) throw error;
+      return (data ?? []) as Move[];
+    },
+  });
+
+  const rows = useMemo(() => {
+    const min = minQty === "" ? null : Number(minQty);
+    return moves.filter((m) => {
+      if (tip !== "all" && m.tip !== tip) return false;
+      if (from && new Date(m.created_at) < new Date(`${from}T00:00:00`)) return false;
+      if (to) { const end = new Date(`${to}T00:00:00`); end.setDate(end.getDate() + 1); if (new Date(m.created_at) >= end) return false; }
+      if (min != null && Math.abs(m.miktar) < min) return false;
+      return true;
+    });
+  }, [moves, tip, from, to, minQty]);
+
+  if (!productId) return <p className="text-sm text-muted-foreground italic">Stok hareketleri ürün kaydedildikten sonra görünür.</p>;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2 items-center">
+        <select value={tip} onChange={(e) => setTip(e.target.value as typeof tip)} className="border rounded-full px-3 py-2 text-sm bg-white">
+          <option value="all">Tüm İşlemler</option>
+          <option value="giris">Stok Girişi</option>
+          <option value="cikis">Stok Çıkışı</option>
+        </select>
+        <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="border rounded-full px-3 py-2 text-sm" />
+        <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="border rounded-full px-3 py-2 text-sm" />
+        <input type="number" min={0} placeholder="Min. miktar" value={minQty} onChange={(e) => setMinQty(e.target.value)} className="border rounded-full px-3 py-2 text-sm w-32" />
+        <button onClick={() => { setTip("all"); setFrom(""); setTo(""); setMinQty(""); }} className="text-xs underline text-brand-cta">Temizle</button>
+      </div>
+
+      <div className="border rounded-xl overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-brand-sand/40 text-xs uppercase tracking-widest text-muted-foreground text-left">
+            <tr><th className="p-3">Tarih</th><th>İşlem</th><th className="text-right">Değişim</th><th className="text-right">Önceki</th><th className="text-right">Sonraki</th><th>Açıklama</th></tr>
+          </thead>
+          <tbody>
+            {isLoading && <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">Yükleniyor…</td></tr>}
+            {!isLoading && rows.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-muted-foreground italic">Kayıt bulunamadı.</td></tr>}
+            {rows.map((m) => (
+              <tr key={m.id} className="border-t">
+                <td className="p-3 whitespace-nowrap">{new Date(m.created_at).toLocaleString("tr-TR")}</td>
+                <td>
+                  <span className={`px-2 py-1 rounded-full text-xs ${m.miktar >= 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                    {MOVE_LABEL[m.tip] ?? m.tip}
+                  </span>
+                </td>
+                <td className={`text-right font-semibold ${m.miktar >= 0 ? "text-green-700" : "text-red-600"}`}>{m.miktar > 0 ? `+${m.miktar}` : m.miktar}</td>
+                <td className="text-right">{m.onceki}</td>
+                <td className="text-right">{m.sonraki}</td>
+                <td className="text-muted-foreground">{m.aciklama ?? "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-xs text-muted-foreground">{rows.length} kayıt gösteriliyor.</p>
+    </div>
+  );
+}
+
+type OrderRow = { id: string; adet: number; birim_fiyat: number; order: { id: string; durum: string; created_at: string; ad_soyad: string; toplam: number } | null };
+
+function ProductOrdersTab({ productId }: { productId: string | null }) {
+  const [durum, setDurum] = useState("all");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [no, setNo] = useState("");
+
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ["product-orders", productId],
+    enabled: !!productId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("order_items")
+        .select("id,adet,birim_fiyat,order:orders(id,durum,created_at,ad_soyad,toplam)")
+        .eq("product_id", productId!)
+        .limit(500);
+      if (error) throw error;
+      return (data ?? []) as unknown as OrderRow[];
+    },
+  });
+
+  const statuses = useMemo(() => Array.from(new Set(items.map((i) => i.order?.durum).filter(Boolean) as string[])), [items]);
+
+  const rows = useMemo(() => {
+    const q = no.trim().toLowerCase();
+    return items
+      .filter((i) => {
+        const o = i.order;
+        if (!o) return false;
+        if (durum !== "all" && o.durum !== durum) return false;
+        if (q && !o.id.toLowerCase().includes(q)) return false;
+        if (from && new Date(o.created_at) < new Date(`${from}T00:00:00`)) return false;
+        if (to) { const end = new Date(`${to}T00:00:00`); end.setDate(end.getDate() + 1); if (new Date(o.created_at) >= end) return false; }
+        return true;
+      })
+      .sort((a, b) => new Date(b.order!.created_at).getTime() - new Date(a.order!.created_at).getTime());
+  }, [items, durum, from, to, no]);
+
+  const totalQty = rows.reduce((s, r) => s + r.adet, 0);
+
+  if (!productId) return <p className="text-sm text-muted-foreground italic">Siparişler ürün kaydedildikten sonra görünür.</p>;
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-2 items-center">
+        <select value={durum} onChange={(e) => setDurum(e.target.value)} className="border rounded-full px-3 py-2 text-sm bg-white">
+          <option value="all">Tüm Durumlar</option>
+          {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="border rounded-full px-3 py-2 text-sm" />
+        <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="border rounded-full px-3 py-2 text-sm" />
+        <input placeholder="Sipariş no" value={no} onChange={(e) => setNo(e.target.value)} className="border rounded-full px-3 py-2 text-sm w-40" />
+        <button onClick={() => { setDurum("all"); setFrom(""); setTo(""); setNo(""); }} className="text-xs underline text-brand-cta">Temizle</button>
+      </div>
+
+      <div className="border rounded-xl overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-brand-sand/40 text-xs uppercase tracking-widest text-muted-foreground text-left">
+            <tr><th className="p-3">Sipariş No</th><th>Tarih</th><th>Müşteri</th><th>Durum</th><th className="text-right">Adet</th><th className="text-right">Birim Fiyat</th></tr>
+          </thead>
+          <tbody>
+            {isLoading && <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">Yükleniyor…</td></tr>}
+            {!isLoading && rows.length === 0 && <tr><td colSpan={6} className="p-6 text-center text-muted-foreground italic">Bu ürün henüz siparişe girmemiş.</td></tr>}
+            {rows.map((r) => (
+              <tr key={r.id} className="border-t">
+                <td className="p-3 font-mono text-xs">#{r.order!.id.slice(0, 8)}</td>
+                <td className="whitespace-nowrap">{new Date(r.order!.created_at).toLocaleDateString("tr-TR")}</td>
+                <td>{r.order!.ad_soyad}</td>
+                <td><span className="px-2 py-1 bg-brand-sand rounded-full text-xs">{r.order!.durum}</span></td>
+                <td className="text-right">{r.adet}</td>
+                <td className="text-right">{formatTL(Number(r.birim_fiyat))}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="text-xs text-muted-foreground">{rows.length} sipariş · toplam {totalQty} adet satıldı.</p>
     </div>
   );
 }
