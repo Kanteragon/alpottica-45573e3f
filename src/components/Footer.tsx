@@ -91,9 +91,10 @@ export function Footer() {
       <div className="border-t border-white/10">
         <div className="max-w-[1600px] mx-auto px-6 lg:px-10 py-5 text-xs text-white/50 flex flex-wrap items-center justify-between gap-2">
           <span>© {new Date().getFullYear()} Alpottica Istanbul. Tüm hakları saklıdır.</span>
-          <span>Made with care in İstanbul</span>
+          <MadeBy />
         </div>
       </div>
     </footer>
   );
 }
+
