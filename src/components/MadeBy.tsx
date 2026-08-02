@@ -4,8 +4,8 @@ import { X, Instagram, Linkedin, Github, MessageCircle } from "lucide-react";
 const LINKS = [
   {
     label: "WhatsApp",
-    value: "+90 546 646 02 44",
-    href: "https://wa.me/905466460244",
+    value: "+90 551 158 87 84",
+    href: "https://wa.me/905511588784",
     icon: MessageCircle,
     tone: "bg-emerald-500/15 text-emerald-400",
   },
@@ -45,10 +45,7 @@ export function MadeBy() {
       </button>
 
       {open && (
-        <div
-          className="fixed inset-0 z-[120] flex items-center justify-center p-4"
-          onClick={() => setOpen(false)}
-        >
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4" onClick={() => setOpen(false)}>
           <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
           <div
             onClick={(e) => e.stopPropagation()}
@@ -67,9 +64,7 @@ export function MadeBy() {
                 MD
               </div>
               <p className="mt-4 font-display text-2xl tracking-wide">Mehmet Akif Demirel</p>
-              <p className="text-xs tracking-[0.25em] text-white/40 mt-1 uppercase">
-                Yazılım Geliştirici
-              </p>
+              <p className="text-xs tracking-[0.25em] text-white/40 mt-1 uppercase">Yazılım Geliştirici</p>
             </div>
 
             <div className="px-5 pb-6 space-y-2">
