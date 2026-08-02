@@ -2,6 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { Instagram, Phone, MapPin, Mail } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { MadeBy } from "@/components/MadeBy";
+
 
 export function Footer() {
   const [mail, setMail] = useState("");
