@@ -651,11 +651,16 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
               </div>
             )}
 
-            {["discount","showcase","links","notify","orders","moves","shelves","reviews"].includes(tab) && (
+            {tab === "moves" && <StockMovesTab productId={product?.id ?? null} />}
+
+            {tab === "orders" && <ProductOrdersTab productId={product?.id ?? null} />}
+
+            {["discount","showcase","links","notify","shelves","reviews"].includes(tab) && (
               <div className="text-sm text-muted-foreground italic border rounded-xl p-8 text-center">
                 Bu sekme yakında aktif olacak.
               </div>
             )}
+
           </div>
         </div>
       </div>
