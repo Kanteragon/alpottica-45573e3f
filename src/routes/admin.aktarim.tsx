@@ -122,9 +122,10 @@ function Import() {
             etiketler: String(r.Etiketler ?? "").split(/[,;]/).map((s) => s.trim()).filter(Boolean),
             aktif: r.Aktif === false || String(r.Aktif).toLowerCase() === "hayır" || String(r.Aktif).toLowerCase() === "no" ? false : true,
             slug: slugify(String(r.StokKodu) + "-" + name).slice(0, 80),
-            seo_title: r.SEOBaslik ? String(r.SEOBaslik).trim() : null,
-            seo_description: r.SEOAciklama ? String(r.SEOAciklama).trim() : null,
-            seo_keywords: r.SEOAnahtarKelimeler ? String(r.SEOAnahtarKelimeler).trim() : null,
+            ...(r.SEOBaslik ? { seo_title: String(r.SEOBaslik).trim() } : {}),
+            ...(r.SEOAciklama ? { seo_description: String(r.SEOAciklama).trim() } : {}),
+            ...(r.SEOAnahtarKelimeler ? { seo_keywords: String(r.SEOAnahtarKelimeler).trim() } : {}),
+
           },
         });
       }
