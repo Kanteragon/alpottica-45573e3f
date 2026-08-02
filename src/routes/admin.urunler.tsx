@@ -328,7 +328,7 @@ function BulkUpdate({ ids, onClose }: { ids: string[]; onClose: () => void }) {
           <div className="flex gap-2 flex-wrap">
             {([
               ["price", "Fiyat"], ["stock", "Stok"], ["discount", "İndirim %"],
-              ["category", "Kategoriye Ekle"], ["variant", "Varyasyon Bağla"],
+              ["category", "Kategoriye Ekle"], ["variant", "Varyasyon Bağla"], ["seo", "SEO / Meta"],
             ] as const).map(([k, label]) => (
               <button key={k} onClick={() => setMode(k)} className={`px-3 py-2 rounded-full text-sm border ${mode === k ? "bg-brand-ink text-white border-brand-ink" : ""}`}>{label}</button>
             ))}
@@ -354,7 +354,26 @@ function BulkUpdate({ ids, onClose }: { ids: string[]; onClose: () => void }) {
             <p className="text-sm text-muted-foreground">
               Seçili {ids.length} ürün aynı varyasyon grubuna bağlanır (farklı renk / model). Ürün sayfasında birbirlerine geçiş seçenekleri olarak görünürler.
             </p>
+          ) : mode === "seo" ? (
+            <div className="space-y-3">
+              <p className="text-xs text-muted-foreground">
+                <strong>{"{ad}"}</strong> yazdığınız yere ürün adı otomatik yerleşir. Boş bıraktığınız alanlar değiştirilmez.
+              </p>
+              <label className="block">
+                <span className="text-xs uppercase tracking-widest text-muted-foreground">Meta Başlık</span>
+                <input value={seo.title} onChange={(e) => setSeo({ ...seo, title: e.target.value })} placeholder="{ad} Klipsli Güneş Gözlüğü | Alpottica Istanbul" className="w-full border rounded-xl px-3 py-2 mt-1 text-sm" />
+              </label>
+              <label className="block">
+                <span className="text-xs uppercase tracking-widest text-muted-foreground">Meta Açıklama</span>
+                <textarea rows={3} value={seo.desc} onChange={(e) => setSeo({ ...seo, desc: e.target.value })} placeholder="{ad} modelini Alpottica Istanbul güvencesiyle kapıda ödeme ile sipariş verin." className="w-full border rounded-xl px-3 py-2 mt-1 text-sm" />
+              </label>
+              <label className="block">
+                <span className="text-xs uppercase tracking-widest text-muted-foreground">Anahtar Kelimeler</span>
+                <input value={seo.keywords} onChange={(e) => setSeo({ ...seo, keywords: e.target.value })} placeholder="klipsli güneş gözlüğü, alpottica, {ad}" className="w-full border rounded-xl px-3 py-2 mt-1 text-sm" />
+              </label>
+            </div>
           ) : (
+
             <label className="block">
               <span className="text-xs uppercase tracking-widest text-muted-foreground">
                 {mode === "price" ? "Yeni Satış Fiyatı (TL)" : mode === "stock" ? "Yeni Stok Adedi" : "İndirim Oranı (%)"}
