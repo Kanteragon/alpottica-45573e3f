@@ -385,7 +385,7 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
   const { data: attrs = [] } = useAttributes();
   const qc = useQueryClient();
 
-  const [tab, setTab] = useState<TabKey>("attrs");
+  const [tab, setTab] = useState<TabKey>(TABS[0].key);
   const [form, setForm] = useState({
     stok_kodu: product?.stok_kodu ?? "",
     urun_adi: product?.urun_adi ?? "",
