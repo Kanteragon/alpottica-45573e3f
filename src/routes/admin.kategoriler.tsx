@@ -193,6 +193,11 @@ function CategoryProducts({ cat, onClose }: { cat: Cat; onClose: () => void }) {
 
   const assignedIds = useMemo(() => new Set(assigned.map((a) => a.id)), [assigned]);
 
+  const [localOrder, setLocalOrder] = useState<Row[] | null>(null);
+  const [pDrag, setPDrag] = useState<number | null>(null);
+  useEffect(() => { setLocalOrder(null); }, [assigned]);
+  const rowsList = localOrder ?? assigned;
+
   const toggle = (id: string) => {
     const next = new Set(sel);
     next.has(id) ? next.delete(id) : next.add(id);
