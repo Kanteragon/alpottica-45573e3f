@@ -4,9 +4,11 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { MadeBy } from "@/components/MadeBy";
 import { supabase } from "@/integrations/supabase/client";
+import { useBrandName } from "@/lib/settings";
 
 
 export function Footer() {
+  const brand = useBrandName();
   const [mail, setMail] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -100,7 +102,7 @@ export function Footer() {
 
       <div className="border-t border-white/10">
         <div className="max-w-[1600px] mx-auto px-6 lg:px-10 py-5 text-xs text-white/50 flex flex-wrap items-center justify-between gap-2">
-          <span>© {new Date().getFullYear()} Alpottica Istanbul. Tüm hakları saklıdır.</span>
+          <span>© {new Date().getFullYear()} {brand}. Tüm hakları saklıdır.</span>
           <MadeBy />
         </div>
       </div>
