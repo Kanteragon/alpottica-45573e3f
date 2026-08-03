@@ -45,7 +45,15 @@ export async function fetchProducts(filter: ProductFilter = {}): Promise<Product
     if (ids.length) parts.push(`id.in.(${ids.join(",")})`);
     q = q.or(parts.join(","));
   }
+  let shuffleResult = false;
   if (filter.kategori_id) {
+    const { data: catRow } = await supabase
+      .from("categories")
+      .select("rastgele_sirala")
+      .eq("id", filter.kategori_id)
+      .maybeSingle();
+    shuffleResult = Boolean((catRow as { rastgele_sirala?: boolean } | null)?.rastgele_sirala);
+
     const { data: pcs } = await supabase
       .from("product_categories")
       .select("product_id,sira")
