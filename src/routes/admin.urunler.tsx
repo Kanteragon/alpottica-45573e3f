@@ -545,13 +545,13 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-2 sm:p-4">
-      <div className="bg-brand-sand/30 rounded-2xl w-full max-w-6xl max-h-[95vh] flex flex-col overflow-hidden">
-        <div className="flex items-center justify-between p-4 border-b bg-white">
+      <div className="bg-brand-sand/30 rounded-2xl w-full max-w-6xl h-[95vh] max-h-[95vh] flex flex-col overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 sm:p-4 border-b bg-white">
           <div>
             <p className="text-[11px] tracking-widest text-muted-foreground uppercase">Katalog · Ürünler</p>
             <h2 className="font-display text-2xl text-brand-ink">{isNew ? "Yeni Ürün" : form.urun_adi || "Ürün Düzenle"}</h2>
           </div>
-          <div className="flex flex-wrap gap-2 justify-end">
+          <div className="flex flex-wrap gap-2 sm:justify-end">
             {product && (
               <a href={`/urun/${product.slug}`} target="_blank" rel="noreferrer" className="admin-btn-outline"><ExternalLink className="w-3.5 h-3.5" /> Ön İzleme</a>
             )}
@@ -565,14 +565,14 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
           </div>
         </div>
 
-        <div className="flex flex-1 overflow-hidden">
-          <aside className="w-60 shrink-0 bg-white border-r overflow-y-auto">
-            <nav className="py-2">
+        <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
+          <aside className="w-full lg:w-60 shrink-0 bg-white border-b lg:border-b-0 lg:border-r overflow-x-auto lg:overflow-y-auto no-scrollbar">
+            <nav className="flex lg:block py-1 lg:py-2">
               {TABS.map((t) => (
                 <button
                   key={t.key}
                   onClick={() => setTab(t.key)}
-                  className={`w-full text-left px-4 py-2.5 text-sm border-l-4 transition ${
+                  className={`w-full whitespace-nowrap text-left px-4 py-2.5 text-sm border-b-4 lg:border-b-0 lg:border-l-4 transition ${
                     tab === t.key
                       ? "border-brand-cta bg-brand-sand/40 text-brand-ink font-semibold"
                       : "border-transparent text-muted-foreground hover:bg-brand-sand/20"
@@ -584,30 +584,30 @@ function ProductForm({ product, onClose }: { product: P | null; onClose: () => v
             </nav>
           </aside>
 
-          <div className="flex-1 overflow-y-auto p-6 bg-white">
+          <div className="flex-1 min-w-0 overflow-y-auto p-4 sm:p-6 bg-white">
             {tab === "info" && (
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <F label="Stok Kodu"><input value={form.stok_kodu} onChange={(e) => setForm({ ...form, stok_kodu: e.target.value })} className="input" /></F>
                 <F label="Model Kodu"><input value={form.model_kodu} onChange={(e) => setForm({ ...form, model_kodu: e.target.value })} className="input" /></F>
                 <F label="Barkod"><input value={form.barkod} onChange={(e) => setForm({ ...form, barkod: e.target.value })} className="input" /></F>
                 <F label="Slug"><input value={form.slug} onChange={(e) => setForm({ ...form, slug: e.target.value })} className="input" /></F>
-                <F label="Ürün Adı" className="col-span-2"><input value={form.urun_adi} onChange={(e) => setForm({ ...form, urun_adi: e.target.value })} className="input" /></F>
-                <F label="Açıklama" className="col-span-2"><textarea rows={5} value={form.aciklama} onChange={(e) => setForm({ ...form, aciklama: e.target.value })} className="input" /></F>
-                <F label="Etiketler (virgülle)" className="col-span-2"><input value={form.etiketler} onChange={(e) => setForm({ ...form, etiketler: e.target.value })} className="input" /></F>
-                <F label="Durum" className="col-span-2">
+                <F label="Ürün Adı" className="sm:col-span-2"><input value={form.urun_adi} onChange={(e) => setForm({ ...form, urun_adi: e.target.value })} className="input" /></F>
+                <F label="Açıklama" className="sm:col-span-2"><textarea rows={5} value={form.aciklama} onChange={(e) => setForm({ ...form, aciklama: e.target.value })} className="input" /></F>
+                <F label="Etiketler (virgülle)" className="sm:col-span-2"><input value={form.etiketler} onChange={(e) => setForm({ ...form, etiketler: e.target.value })} className="input" /></F>
+                <F label="Durum" className="sm:col-span-2">
                   <label className="inline-flex items-center gap-2"><input type="checkbox" checked={form.aktif} onChange={(e) => setForm({ ...form, aktif: e.target.checked })} /> Aktif</label>
                 </F>
               </div>
             )}
 
             {tab === "stock" && (
-              <div className="grid grid-cols-2 gap-4 max-w-md">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-md">
                 <F label="Stok Adedi"><input type="number" value={form.stok_adedi} onChange={(e) => setForm({ ...form, stok_adedi: Number(e.target.value) })} className="input" /></F>
               </div>
             )}
 
             {tab === "price" && (
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <F label="Alış Fiyatı"><input type="number" step="0.01" value={form.alis_fiyati} onChange={(e) => setForm({ ...form, alis_fiyati: Number(e.target.value) })} className="input" /></F>
                 <F label="Liste Fiyatı"><input type="number" step="0.01" value={form.liste_fiyati} onChange={(e) => setForm({ ...form, liste_fiyati: Number(e.target.value) })} className="input" /></F>
                 <F label="Satış Fiyatı"><input type="number" step="0.01" value={form.satis_fiyati} onChange={(e) => setForm({ ...form, satis_fiyati: Number(e.target.value) })} className="input" /></F>

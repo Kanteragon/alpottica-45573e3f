@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatTL } from "@/lib/products";
@@ -30,7 +30,7 @@ function StatusSelect({ value, onChange }: { value: string; onChange: (v: string
   const current = STATUS[value] ?? STATUS.yeni;
   const Icon = current.icon;
   return (
-    <div className="relative">
+    <div className={`relative ${open ? "z-[100]" : ""}`}>
       <button
         onClick={() => setOpen((o) => !o)}
         onBlur={() => setTimeout(() => setOpen(false), 150)}
@@ -42,7 +42,7 @@ function StatusSelect({ value, onChange }: { value: string; onChange: (v: string
         <ChevronDown className="w-3.5 h-3.5 opacity-60" />
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-1 z-30 bg-white rounded-xl shadow-lg border overflow-hidden min-w-[180px]">
+        <div className="absolute right-0 top-full mt-1 z-[100] bg-white rounded-xl shadow-lg border overflow-hidden min-w-[180px]">
           {Object.entries(STATUS).map(([key, s]) => {
             const I = s.icon;
             return (
@@ -67,6 +67,11 @@ function Orders() {
   const qc = useQueryClient();
   const [expanded, setExpanded] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>("all");
+  const [q, setQ] = useState("");
+  const [pay, setPay] = useState("all");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [sort, setSort] = useState("new");
 
   const { data: orders = [] } = useQuery({
     queryKey: ["admin-orders"],
@@ -87,7 +92,29 @@ function Orders() {
     qc.invalidateQueries({ queryKey: ["admin-orders"] });
   };
 
-  const shown = filter === "all" ? orders : orders.filter((o) => o.durum === filter);
+  const shown = useMemo(() => {
+    const term = q.trim().toLocaleLowerCase("tr");
+    let list = orders.filter((o) => {
+      if (filter !== "all" && o.durum !== filter) return false;
+      if (pay !== "all" && o.odeme_tipi !== pay) return false;
+      if (from && new Date(o.created_at) < new Date(`${from}T00:00:00`)) return false;
+      if (to && new Date(o.created_at) > new Date(`${to}T23:59:59`)) return false;
+      if (term) {
+        const hay = `${o.ad_soyad} ${o.telefon} ${o.email ?? ""} ${o.id} ${o.sehir ?? ""} ${o.ilce ?? ""}`.toLocaleLowerCase("tr");
+        if (!hay.includes(term)) return false;
+      }
+      return true;
+    });
+    list = [...list].sort((a, b) => {
+      if (sort === "old") return +new Date(a.created_at) - +new Date(b.created_at);
+      if (sort === "high") return Number(b.toplam) - Number(a.toplam);
+      if (sort === "low") return Number(a.toplam) - Number(b.toplam);
+      return +new Date(b.created_at) - +new Date(a.created_at);
+    });
+    return list;
+  }, [orders, filter, pay, from, to, q, sort]);
+
+  const totalSum = shown.filter((o) => o.durum !== "iptal").reduce((s, o) => s + Number(o.toplam || 0), 0);
 
   return (
     <div>
@@ -103,6 +130,32 @@ function Orders() {
               </button>
             );
           })}
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl border p-4 grid gap-3 md:grid-cols-5 mb-4">
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ad, telefon, e-posta, sipariş no…" className="border rounded-xl px-3 py-2 text-sm md:col-span-2" />
+        <select value={pay} onChange={(e) => setPay(e.target.value)} className="border rounded-xl px-3 py-2 text-sm">
+          <option value="all">Tüm ödeme tipleri</option>
+          <option value="nakit">Kapıda Nakit</option>
+          <option value="kart">Kapıda Kart</option>
+        </select>
+        <label className="text-xs text-muted-foreground">Başlangıç
+          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm text-brand-ink" />
+        </label>
+        <label className="text-xs text-muted-foreground">Bitiş
+          <input type="date" value={to} onChange={(e) => setTo(e.target.value)} className="w-full border rounded-xl px-3 py-2 text-sm text-brand-ink" />
+        </label>
+        <select value={sort} onChange={(e) => setSort(e.target.value)} className="border rounded-xl px-3 py-2 text-sm">
+          <option value="new">En yeni</option>
+          <option value="old">En eski</option>
+          <option value="high">Tutar (yüksek)</option>
+          <option value="low">Tutar (düşük)</option>
+        </select>
+        <div className="md:col-span-4 flex items-center gap-3 text-sm">
+          <span className="text-muted-foreground">Toplam ciro (iptaller hariç):</span>
+          <strong>{formatTL(totalSum)}</strong>
+          <button onClick={() => { setQ(""); setPay("all"); setFrom(""); setTo(""); setFilter("all"); setSort("new"); }} className="ml-auto underline text-brand-cta text-sm">Filtreleri temizle</button>
         </div>
       </div>
 

@@ -658,6 +658,7 @@ export type Database = {
         Row: {
           address: string | null
           created_at: string
+          email: string | null
           full_name: string | null
           id: string
           phone: string | null
@@ -666,6 +667,7 @@ export type Database = {
         Insert: {
           address?: string | null
           created_at?: string
+          email?: string | null
           full_name?: string | null
           id: string
           phone?: string | null
@@ -674,6 +676,7 @@ export type Database = {
         Update: {
           address?: string | null
           created_at?: string
+          email?: string | null
           full_name?: string | null
           id?: string
           phone?: string | null
@@ -766,6 +769,7 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          brand_name: string
           favicon_url: string | null
           id: number
           logo_max_width: number
@@ -776,6 +780,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          brand_name?: string
           favicon_url?: string | null
           id?: number
           logo_max_width?: number
@@ -786,6 +791,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          brand_name?: string
           favicon_url?: string | null
           id?: number
           logo_max_width?: number
