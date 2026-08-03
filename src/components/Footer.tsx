@@ -69,8 +69,8 @@ export function Footer() {
                 className="w-full pl-9 pr-3 py-2.5 rounded-full bg-white/10 border border-white/20 text-sm text-white placeholder-white/40 focus:outline-none focus:border-white/60"
               />
             </div>
-            <button type="submit" className="rounded-full bg-white text-brand-ink text-xs tracking-widest font-semibold py-2.5 hover:opacity-90 transition">
-              ABONE OL
+            <button type="submit" disabled={busy} className="rounded-full bg-white text-brand-ink text-xs tracking-widest font-semibold py-2.5 hover:opacity-90 transition disabled:opacity-60">
+              {busy ? "KAYDEDİLİYOR..." : "ABONE OL"}
             </button>
           </form>
         </div>
