@@ -43,6 +43,7 @@ export function Navbar() {
     { id: "3", label: "TÜM MODELLER", url: "/urunler" },
   ];
 
+  const brand = settings?.brand_name || "Alpottica";
   const logoSrc = settings?.logo_url ?? null;
   const logoMax = settings?.logo_max_width ?? 260;
 
@@ -62,16 +63,16 @@ export function Navbar() {
             >
               {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
-            <Link to="/" className="flex items-center shrink-0" aria-label="Alpottica">
+            <Link to="/" className="flex items-center shrink-0" aria-label={brand}>
               {logoSrc ? (
                 <img
                   src={logoSrc}
-                  alt="Alpottica Istanbul"
+                  alt={brand}
                   style={{ maxWidth: `${logoMax}px` }}
                   className={`h-10 sm:h-12 lg:h-14 w-auto object-contain transition-all duration-500 border-0 outline-none ${solid ? "invert" : "invert-0"}`}
                 />
               ) : (
-                <span className={`font-display tracking-widest text-xl sm:text-2xl ${solid ? "text-brand-ink" : "text-white"}`}>ALPOTTICA</span>
+                <span className={`font-display tracking-widest text-xl sm:text-2xl ${solid ? "text-brand-ink" : "text-white"}`}>{brand.toUpperCase()}</span>
               )}
             </Link>
           </div>
@@ -91,7 +92,7 @@ export function Navbar() {
             ))}
           </nav>
 
-          <div className={`flex items-center justify-end gap-1 sm:gap-2 transition-colors ${solid ? "text-brand-ink" : "text-white"}`}>
+          <div className={`flex items-center justify-end gap-0.5 sm:gap-1 transition-colors ${solid ? "text-brand-ink" : "text-white"}`}>
             <SearchBox solid={solid} />
             <Link
               to={user ? "/hesabim" : "/giris"}
@@ -135,7 +136,7 @@ export function Navbar() {
           }`}
         >
           <div className="h-20 px-5 flex items-center justify-between border-b border-border shrink-0">
-            <span className="font-display text-2xl tracking-widest text-brand-ink">ALPOTTICA</span>
+            <span className="font-display text-2xl tracking-widest text-brand-ink">{brand.toUpperCase()}</span>
             <button
               onClick={() => setMenuOpen(false)}
               aria-label="Kapat"

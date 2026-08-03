@@ -17,6 +17,7 @@ function SettingsPage() {
   const [logoUrl, setLogoUrl] = useState<string>("");
   const [faviconUrl, setFaviconUrl] = useState<string>("");
   const [maxWidth, setMaxWidth] = useState<number>(260);
+  const [brandName, setBrandName] = useState<string>("Alpottica");
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -24,6 +25,7 @@ function SettingsPage() {
       setLogoUrl(settings.logo_url ?? "");
       setFaviconUrl(settings.favicon_url ?? "");
       setMaxWidth(settings.logo_max_width);
+      setBrandName(settings.brand_name);
     }
   }, [settings]);
 
@@ -35,6 +37,7 @@ function SettingsPage() {
         logo_url: logoUrl || null,
         favicon_url: faviconUrl || null,
         logo_max_width: Math.max(40, Math.min(600, Number(maxWidth) || 260)),
+        brand_name: brandName.trim() || "Alpottica",
         updated_at: new Date().toISOString(),
       });
       if (error) throw error;
@@ -53,6 +56,17 @@ function SettingsPage() {
       <p className="text-sm text-muted-foreground mb-8">Mağaza logosu, favicon ve header ayarları.</p>
 
       <div className="bg-white rounded-2xl border p-6 space-y-8">
+        <div>
+          <label className="block text-sm font-semibold text-brand-ink mb-2">Marka İsmi</label>
+          <input
+            value={brandName}
+            onChange={(e) => setBrandName(e.target.value)}
+            placeholder="Alpottica"
+            className="w-full border border-border rounded-lg px-3 py-2 text-sm"
+          />
+          <p className="text-xs text-muted-foreground mt-2">Site genelindeki marka yazıları bu isme göre güncellenir.</p>
+        </div>
+
         <div>
           <label className="block text-sm font-semibold text-brand-ink mb-3">Mağaza Logosu</label>
           <ImageUploader
