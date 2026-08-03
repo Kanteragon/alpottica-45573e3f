@@ -1,4 +1,4 @@
-import { createFileRoute, redirect, notFound, Link } from "@tanstack/react-router";
+import { createFileRoute, redirect, Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 
 /**
@@ -43,5 +43,3 @@ export const Route = createFileRoute("/$slug")({
     </div>
   ),
 });
-
-void notFound;
