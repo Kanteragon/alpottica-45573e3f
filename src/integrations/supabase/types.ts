@@ -208,6 +208,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          rastgele_sirala: boolean
           seo_description: string | null
           seo_title: string | null
           slug: string
@@ -218,6 +219,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          rastgele_sirala?: boolean
           seo_description?: string | null
           seo_title?: string | null
           slug: string
@@ -228,6 +230,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          rastgele_sirala?: boolean
           seo_description?: string | null
           seo_title?: string | null
           slug?: string
@@ -318,6 +321,27 @@ export type Database = {
           label?: string
           sira?: number
           url?: string
+        }
+        Relationships: []
+      }
+      newsletter_subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          kaynak: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          kaynak?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          kaynak?: string
         }
         Relationships: []
       }
