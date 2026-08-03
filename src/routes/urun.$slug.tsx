@@ -94,6 +94,10 @@ function ProductDetail() {
   const { add } = useCart();
   const { isFavorite: isFav, toggle: toggleFav } = useFavorites();
   const [idx, setIdx] = useState(0);
+  const [touchX, setTouchX] = useState<number | null>(null);
+
+  // Varyasyon / ürün değişince galeriyi ilk fotoğrafa al
+  useEffect(() => { setIdx(0); }, [slug]);
 
   // Dynamic <title> per product
   useEffect(() => {
