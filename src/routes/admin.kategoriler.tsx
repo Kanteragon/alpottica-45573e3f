@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/kategoriler")({ component: Cats });
 
-type Cat = { id: string; name: string; slug: string; sort: number | null };
+type Cat = { id: string; name: string; slug: string; sort: number | null; rastgele_sirala?: boolean | null };
 
 function Cats() {
   const qc = useQueryClient();
