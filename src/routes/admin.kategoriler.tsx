@@ -65,6 +65,17 @@ function Cats() {
     toast.success("Kategoriler rastgele sıralandı");
   };
 
+  const toggleRandom = async (c: Cat) => {
+    const next = !c.rastgele_sirala;
+    setOrder((list) => list.map((x) => (x.id === c.id ? { ...x, rastgele_sirala: next } : x)));
+    const { error } = await supabase.from("categories").update({ rastgele_sirala: next }).eq("id", c.id);
+    if (error) return toast.error(error.message);
+    toast.success(next ? "Rastgele sıralama açıldı" : "Rastgele sıralama kapatıldı");
+    qc.invalidateQueries({ queryKey: ["admin-cats"] });
+    qc.invalidateQueries({ queryKey: ["categories"] });
+    qc.invalidateQueries({ queryKey: ["products"] });
+  };
+
   const saveEdit = async () => {
     if (!edit) return;
     const slug = edit.slug.trim().replace(/^\/+/, "");
