@@ -80,7 +80,9 @@ export async function fetchProducts(filter: ProductFilter = {}): Promise<Product
   let list = (data as unknown as DbProduct[]).map(mapDbProduct);
   if (filter.color) list = list.filter((p) => p.color.toLowerCase() === filter.color!.toLowerCase());
   if (filter.size) list = list.filter((p) => String(p.size) === String(filter.size));
-  if (orderMap) {
+  if (shuffleResult) {
+    list = [...list].sort(() => Math.random() - 0.5);
+  } else if (orderMap) {
     const om = orderMap;
     list = [...list].sort((a, b) => (om[a.id] ?? 9999) - (om[b.id] ?? 9999));
   }
