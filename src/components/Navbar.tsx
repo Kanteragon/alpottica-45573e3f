@@ -122,9 +122,6 @@ export function Navbar() {
 
       {/* Mobile menu drawer */}
       <div
-        className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
-      {/* Mobile menu drawer */}
-      <div
         className={`fixed inset-0 z-[60] lg:hidden ${menuOpen ? "pointer-events-auto" : "pointer-events-none"}`}
         aria-hidden={!menuOpen}
       >
