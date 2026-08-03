@@ -102,17 +102,20 @@ function injectRaw(id: string, raw: string): HTMLElement[] {
         if (wrap) wrap.style.opacity = "1";
         skeleton.remove();
       };
-      let pending = externals.length;
-      if (pending === 0) setTimeout(reveal, 250);
-      else {
-        const done = () => { if (--pending <= 0) setTimeout(reveal, 120); };
-        externals.forEach((s) => { s.addEventListener("load", done); s.addEventListener("error", done); });
-        setTimeout(reveal, 4000); // güvenlik ağı
-      }
-    }
 
-    // Execute scripts (in original order)
-    scriptNodes.forEach((s) => { created.push(execScript(s, id)); });
+      // Execute scripts (in original order) and wait for external ones
+      let pending = externals.length;
+      const done = () => { if (--pending <= 0) setTimeout(reveal, 120); };
+      scriptNodes.forEach((s) => {
+        const clone = execScript(s, id);
+        if (s.src) { clone.addEventListener("load", done); clone.addEventListener("error", done); }
+        created.push(clone);
+      });
+      if (pending === 0) setTimeout(reveal, 250);
+      else setTimeout(reveal, 4000); // güvenlik ağı
+    } else {
+      scriptNodes.forEach((s) => { created.push(execScript(s, id)); });
+    }
   } else {
     // No HTML tags → treat as raw JavaScript
     const s = document.createElement("script");
