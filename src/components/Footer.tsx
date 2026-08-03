@@ -3,14 +3,22 @@ import { Instagram, Phone, MapPin, Mail } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { MadeBy } from "@/components/MadeBy";
+import { supabase } from "@/integrations/supabase/client";
 
 
 export function Footer() {
   const [mail, setMail] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  const subscribe = (e: React.FormEvent) => {
+  const subscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!/^\S+@\S+\.\S+$/.test(mail)) return toast.error("Geçerli e-posta girin");
+    setBusy(true);
+    const { error } = await supabase
+      .from("newsletter_subscribers")
+      .insert({ email: mail.trim().toLowerCase(), kaynak: "footer" });
+    setBusy(false);
+    if (error && !/duplicate|unique/i.test(error.message)) return toast.error("Kayıt yapılamadı, tekrar deneyin");
     toast.success("Bültenimize kaydoldunuz!");
     setMail("");
   };
