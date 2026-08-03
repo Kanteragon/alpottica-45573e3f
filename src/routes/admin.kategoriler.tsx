@@ -215,12 +215,8 @@ function CategoryProducts({ cat, onClose }: { cat: Cat; onClose: () => void }) {
     qc.invalidateQueries({ queryKey: ["products"] });
   };
 
-  const move = async (index: number, dir: -1 | 1) => {
-    const next = index + dir;
-    if (next < 0 || next >= assigned.length) return;
-    const reordered = [...assigned];
-    const [item] = reordered.splice(index, 1);
-    reordered.splice(next, 0, item);
+  const persistOrder = async (reordered: Row[]) => {
+    setLocalOrder(reordered);
     await Promise.all(
       reordered.map((r, i) =>
         supabase.from("product_categories").update({ sira: i }).eq("category_id", cat.id).eq("product_id", r.id)
@@ -228,6 +224,25 @@ function CategoryProducts({ cat, onClose }: { cat: Cat; onClose: () => void }) {
     );
     refetch();
     qc.invalidateQueries({ queryKey: ["products"] });
+  };
+
+  const move = async (index: number, dir: -1 | 1) => {
+    const next = index + dir;
+    if (next < 0 || next >= rowsList.length) return;
+    const reordered = [...rowsList];
+    const [item] = reordered.splice(index, 1);
+    reordered.splice(next, 0, item);
+    await persistOrder(reordered);
+  };
+
+  const onRowDrop = async (target: number) => {
+    if (pDrag === null || pDrag === target) return setPDrag(null);
+    const reordered = [...rowsList];
+    const [item] = reordered.splice(pDrag, 1);
+    reordered.splice(target, 0, item);
+    setPDrag(null);
+    await persistOrder(reordered);
+    toast.success("Sıralama güncellendi");
   };
 
   const remove = async (pid: string) => {
