@@ -25,6 +25,8 @@ function BulkUpdate() {
   const [q, setQ] = useState("");
   const [kategori, setKategori] = useState("");
   const [marka, setMarka] = useState("");
+  const [fAttrKey, setFAttrKey] = useState("");
+  const [fAttrVal, setFAttrVal] = useState("");
   const [attrKey, setAttrKey] = useState("");
   const [attrVal, setAttrVal] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -55,7 +57,7 @@ function BulkUpdate() {
     },
   });
 
-  const { data: rows = [], isFetching, refetch } = useQuery({
+  const { data: allRows = [], isFetching, refetch } = useQuery({
     queryKey: ["bulk-products", q, kategori, marka],
     queryFn: async () => {
       let sel = supabase
@@ -71,6 +73,19 @@ function BulkUpdate() {
       return (data ?? []) as unknown as Row[];
     },
   });
+
+  const fAttr = useMemo(() => attrs.find((a) => a.slug === fAttrKey), [attrs, fAttrKey]);
+
+  const rows = useMemo(() => {
+    if (!fAttrKey) return allRows;
+    const keys = [norm(fAttrKey), norm(fAttr?.ad ?? "")];
+    return allRows.filter((r) => {
+      const entry = Object.entries(r.ozellikler ?? {}).find(([k]) => keys.includes(norm(k)));
+      if (!entry) return false;
+      if (!fAttrVal) return true;
+      return norm(String(entry[1])) === norm(fAttrVal);
+    });
+  }, [allRows, fAttrKey, fAttrVal, fAttr]);
 
   const selectedAttr = useMemo(() => attrs.find((a) => a.slug === attrKey), [attrs, attrKey]);
 
@@ -105,6 +120,28 @@ function BulkUpdate() {
     }
     setBusy(false);
     toast.success(`${ok} ürün güncellendi`);
+    setSelected(new Set());
+    refetch();
+  };
+
+  const removeAttr = async () => {
+    const key = attrKey.trim();
+    if (!key) return toast.error("Özellik seç");
+    const targets = rows.filter((r) => selected.has(r.id));
+    if (!targets.length) return toast.error("Ürün seçilmedi");
+    if (!confirm(`${targets.length} üründen "${selectedAttr?.ad ?? key}" özelliği silinecek. Onaylıyor musun?`)) return;
+    setBusy(true);
+    let ok = 0;
+    for (const t of targets) {
+      const oz: Record<string, string> = { ...(t.ozellikler ?? {}) };
+      for (const k of Object.keys(oz)) {
+        if (norm(k) === norm(key) || (selectedAttr && norm(k) === norm(selectedAttr.ad))) delete oz[k];
+      }
+      const { error } = await supabase.from("products").update({ ozellikler: oz }).eq("id", t.id);
+      if (!error) ok++;
+    }
+    setBusy(false);
+    toast.success(`${ok} üründen özellik kaldırıldı`);
     setSelected(new Set());
     refetch();
   };
@@ -145,6 +182,21 @@ function BulkUpdate() {
           <option value="">Tüm markalar</option>
           {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
         </select>
+        <select value={fAttrKey} onChange={(e) => { setFAttrKey(e.target.value); setFAttrVal(""); }} className="border rounded-xl px-3 py-2 text-sm md:col-span-2">
+          <option value="">Özelliğe göre filtrele</option>
+          {attrs.map((a) => <option key={a.id} value={a.slug}>{a.ad}</option>)}
+        </select>
+        <input
+          list="filter-attr-values"
+          value={fAttrVal}
+          onChange={(e) => setFAttrVal(e.target.value)}
+          disabled={!fAttrKey}
+          placeholder="Mevcut değer (boş = hepsi)"
+          className="border rounded-xl px-3 py-2 text-sm md:col-span-2 disabled:opacity-50"
+        />
+        <datalist id="filter-attr-values">
+          {(fAttr?.degerler ?? []).map((d) => <option key={d} value={d} />)}
+        </datalist>
       </div>
 
       <div className="bg-white rounded-2xl border p-4 mb-4 grid gap-3 md:grid-cols-4 items-end">
@@ -178,6 +230,13 @@ function BulkUpdate() {
           className="bg-brand-ink text-white rounded-full px-5 py-2 text-sm disabled:opacity-60"
         >
           {busy ? "Uygulanıyor..." : `Seçili ${selected.size} ürüne uygula`}
+        </button>
+        <button
+          disabled={busy}
+          onClick={removeAttr}
+          className="border border-red-300 text-red-700 rounded-full px-5 py-2 text-sm disabled:opacity-60"
+        >
+          Özelliği kaldır
         </button>
         <label className="block">
           <span className="block text-xs uppercase tracking-widest mb-1">Kategoriye ekle</span>
