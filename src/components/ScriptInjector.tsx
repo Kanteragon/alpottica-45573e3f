@@ -145,8 +145,10 @@ export function ScriptInjector() {
     staleTime: 60_000,
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (typeof document === "undefined") return;
+    // Sayfa değişiminde kalan tüm eski enjekte düğümlerini temizle
+    document.querySelectorAll("[data-injected-by]").forEach((n) => n.remove());
     // Do not inject any custom scripts inside the admin panel.
     if (path.startsWith("/admin")) return;
     const active = scripts.filter((s) => matches(s.konum, path));
@@ -156,6 +158,7 @@ export function ScriptInjector() {
       created.forEach((n) => n.remove());
     };
   }, [scripts, path]);
+
 
   return null;
 }
