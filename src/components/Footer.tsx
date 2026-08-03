@@ -3,14 +3,22 @@ import { Instagram, Phone, MapPin, Mail } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { MadeBy } from "@/components/MadeBy";
+import { supabase } from "@/integrations/supabase/client";
 
 
 export function Footer() {
   const [mail, setMail] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  const subscribe = (e: React.FormEvent) => {
+  const subscribe = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!/^\S+@\S+\.\S+$/.test(mail)) return toast.error("Geçerli e-posta girin");
+    setBusy(true);
+    const { error } = await supabase
+      .from("newsletter_subscribers")
+      .insert({ email: mail.trim().toLowerCase(), kaynak: "footer" });
+    setBusy(false);
+    if (error && !/duplicate|unique/i.test(error.message)) return toast.error("Kayıt yapılamadı, tekrar deneyin");
     toast.success("Bültenimize kaydoldunuz!");
     setMail("");
   };
@@ -61,8 +69,8 @@ export function Footer() {
                 className="w-full pl-9 pr-3 py-2.5 rounded-full bg-white/10 border border-white/20 text-sm text-white placeholder-white/40 focus:outline-none focus:border-white/60"
               />
             </div>
-            <button type="submit" className="rounded-full bg-white text-brand-ink text-xs tracking-widest font-semibold py-2.5 hover:opacity-90 transition">
-              ABONE OL
+            <button type="submit" disabled={busy} className="rounded-full bg-white text-brand-ink text-xs tracking-widest font-semibold py-2.5 hover:opacity-90 transition disabled:opacity-60">
+              {busy ? "KAYDEDİLİYOR..." : "ABONE OL"}
             </button>
           </form>
         </div>

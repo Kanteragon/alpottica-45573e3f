@@ -91,24 +91,27 @@ export function Navbar() {
             ))}
           </nav>
 
-          <div className={`flex items-center gap-3 sm:gap-5 transition-colors ${solid ? "text-brand-ink" : "text-white"}`}>
+          <div className={`flex items-center justify-end gap-1 sm:gap-2 transition-colors ${solid ? "text-brand-ink" : "text-white"}`}>
             <SearchBox solid={solid} />
-            {user ? (
-              <Link to="/hesabim" aria-label="Hesabım" className="hover:opacity-70 hidden sm:block">
-                <User className="w-5 h-5" />
-              </Link>
-            ) : (
-              <Link to="/giris" aria-label="Giriş" className="hover:opacity-70 hidden sm:block">
-                <User className="w-5 h-5" />
-              </Link>
-            )}
-            <Link to="/hesabim" search={{ tab: "favorites" }} aria-label="Favoriler" className="hover:opacity-70 hidden sm:block">
-              <Heart className="w-5 h-5" />
+            <Link
+              to={user ? "/hesabim" : "/giris"}
+              aria-label={user ? "Hesabım" : "Giriş"}
+              className="w-10 h-10 hidden sm:flex items-center justify-center rounded-full hover:bg-current/10 transition"
+            >
+              <User className="w-[22px] h-[22px]" strokeWidth={1.6} />
             </Link>
-            <Link to="/sepet" aria-label="Sepet" className="hover:opacity-70 relative">
-              <ShoppingCart className="w-5 h-5" />
+            <Link
+              to="/hesabim"
+              search={{ tab: "favorites" }}
+              aria-label="Favoriler"
+              className="w-10 h-10 hidden sm:flex items-center justify-center rounded-full hover:bg-current/10 transition"
+            >
+              <Heart className="w-[22px] h-[22px]" strokeWidth={1.6} />
+            </Link>
+            <Link to="/sepet" aria-label="Sepet" className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-current/10 transition">
+              <ShoppingCart className="w-[22px] h-[22px]" strokeWidth={1.6} />
               {count > 0 && (
-                <span className="absolute -top-2 -right-2 bg-brand-cta text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+                <span className="absolute top-1 right-0.5 bg-brand-cta text-white text-[10px] leading-none rounded-full min-w-[17px] h-[17px] px-1 flex items-center justify-center">
                   {count}
                 </span>
               )}
@@ -119,39 +122,65 @@ export function Navbar() {
 
       {/* Mobile menu drawer */}
       <div
-        className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${menuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"}`}
-        onClick={() => setMenuOpen(false)}
+        className={`fixed inset-0 z-[60] lg:hidden ${menuOpen ? "pointer-events-auto" : "pointer-events-none"}`}
+        aria-hidden={!menuOpen}
       >
-        <div className="absolute inset-0 bg-black/40" />
+        <div
+          onClick={() => setMenuOpen(false)}
+          className={`absolute inset-0 bg-black/50 transition-opacity duration-300 ${menuOpen ? "opacity-100" : "opacity-0"}`}
+        />
         <aside
-          onClick={(e) => e.stopPropagation()}
-          className={`absolute top-20 left-0 right-0 bg-white shadow-xl transition-transform duration-300 origin-top ${menuOpen ? "translate-y-0" : "-translate-y-4"}`}
+          className={`absolute inset-y-0 left-0 w-[86%] max-w-[340px] bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-out ${
+            menuOpen ? "translate-x-0" : "-translate-x-full"
+          }`}
         >
-          <nav className="flex flex-col divide-y divide-border">
+          <div className="h-20 px-5 flex items-center justify-between border-b border-border shrink-0">
+            <span className="font-display text-2xl tracking-widest text-brand-ink">ALPOTTICA</span>
+            <button
+              onClick={() => setMenuOpen(false)}
+              aria-label="Kapat"
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-brand-sand/40 text-brand-ink"
+            >
+              <X className="w-6 h-6" strokeWidth={1.6} />
+            </button>
+          </div>
+
+          <nav className="flex-1 overflow-y-auto py-2">
+            <p className="px-5 pt-3 pb-2 text-[10px] tracking-[0.3em] text-muted-foreground">KOLEKSİYON</p>
             {items.map((item) => (
-              <a key={item.id} href={item.url} className="px-6 py-4 text-brand-ink text-sm tracking-[0.15em] font-medium hover:bg-brand-sand/30 flex items-center justify-between">
+              <a
+                key={item.id}
+                href={item.url}
+                className="px-5 py-4 text-brand-ink text-[15px] tracking-[0.12em] font-medium hover:bg-brand-sand/30 flex items-center justify-between border-b border-border/60"
+              >
                 <span>{item.label}</span>
                 <span className="text-brand-cta">→</span>
               </a>
             ))}
-            <div className="grid grid-cols-3 divide-x divide-border">
-              {user ? (
-                <Link to="/hesabim" className="flex flex-col items-center gap-1 py-4 text-xs text-brand-ink">
-                  <User className="w-5 h-5" />Hesabım
-                </Link>
-              ) : (
-                <Link to="/giris" className="flex flex-col items-center gap-1 py-4 text-xs text-brand-ink">
-                  <User className="w-5 h-5" />Giriş
-                </Link>
-              )}
-              <Link to="/hesabim" search={{ tab: "favorites" }} className="flex flex-col items-center gap-1 py-4 text-xs text-brand-ink">
-                <Heart className="w-5 h-5" />Favoriler
-              </Link>
-              <Link to="/sepet" className="flex flex-col items-center gap-1 py-4 text-xs text-brand-ink">
-                <ShoppingCart className="w-5 h-5" />Sepet
-              </Link>
-            </div>
+
+            <p className="px-5 pt-5 pb-2 text-[10px] tracking-[0.3em] text-muted-foreground">HESABIM</p>
+            <Link to={user ? "/hesabim" : "/giris"} className="px-5 py-3.5 text-brand-ink text-sm flex items-center gap-3 hover:bg-brand-sand/30">
+              <User className="w-5 h-5" strokeWidth={1.6} /> {user ? "Hesabım" : "Giriş Yap"}
+            </Link>
+            <Link to="/hesabim" search={{ tab: "favorites" }} className="px-5 py-3.5 text-brand-ink text-sm flex items-center gap-3 hover:bg-brand-sand/30">
+              <Heart className="w-5 h-5" strokeWidth={1.6} /> Favorilerim
+            </Link>
+            <Link to="/hesabim" search={{ tab: "orders" }} className="px-5 py-3.5 text-brand-ink text-sm flex items-center gap-3 hover:bg-brand-sand/30">
+              <User className="w-5 h-5" strokeWidth={1.6} /> Siparişlerim
+            </Link>
           </nav>
+
+          <div className="p-4 border-t border-border shrink-0 pb-[calc(env(safe-area-inset-bottom,0)+1rem)]">
+            <Link
+              to="/sepet"
+              className="w-full flex items-center justify-center gap-2 bg-brand-ink text-white rounded-full py-3.5 text-sm tracking-widest font-semibold"
+            >
+              <ShoppingCart className="w-4 h-4" strokeWidth={1.8} /> SEPETİM {count > 0 ? `(${count})` : ""}
+            </Link>
+            <a href="tel:+905466460244" className="mt-2 block text-center text-xs text-muted-foreground">
+              0546 646 02 44
+            </a>
+          </div>
         </aside>
       </div>
     </>

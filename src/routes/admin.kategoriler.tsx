@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/kategoriler")({ component: Cats });
 
-type Cat = { id: string; name: string; slug: string; sort: number | null };
+type Cat = { id: string; name: string; slug: string; sort: number | null; rastgele_sirala?: boolean | null };
 
 function Cats() {
   const qc = useQueryClient();
@@ -65,6 +65,17 @@ function Cats() {
     toast.success("Kategoriler rastgele sıralandı");
   };
 
+  const toggleRandom = async (c: Cat) => {
+    const next = !c.rastgele_sirala;
+    setOrder((list) => list.map((x) => (x.id === c.id ? { ...x, rastgele_sirala: next } : x)));
+    const { error } = await supabase.from("categories").update({ rastgele_sirala: next }).eq("id", c.id);
+    if (error) return toast.error(error.message);
+    toast.success(next ? "Rastgele sıralama açıldı" : "Rastgele sıralama kapatıldı");
+    qc.invalidateQueries({ queryKey: ["admin-cats"] });
+    qc.invalidateQueries({ queryKey: ["categories"] });
+    qc.invalidateQueries({ queryKey: ["products"] });
+  };
+
   const saveEdit = async () => {
     if (!edit) return;
     const slug = edit.slug.trim().replace(/^\/+/, "");
@@ -117,6 +128,17 @@ function Cats() {
                   <p className="font-medium truncate">{c.name}</p>
                   <p className="text-xs text-muted-foreground truncate">/{c.slug} · sıra {c.sort}</p>
                 </div>
+                <button
+                  onClick={() => toggleRandom(c)}
+                  title="Bu kategori sayfası her açılışta ürünleri rastgele sıralasın"
+                  className={`shrink-0 flex items-center gap-2 text-xs rounded-full border px-3 py-2 transition ${c.rastgele_sirala ? "bg-brand-ink text-white border-brand-ink" : "hover:border-brand-ink"}`}
+                >
+                  <Shuffle className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Rastgele</span>
+                  <span className={`w-8 h-4 rounded-full relative transition ${c.rastgele_sirala ? "bg-white/30" : "bg-border"}`}>
+                    <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-current transition-all ${c.rastgele_sirala ? "left-[18px]" : "left-0.5"}`} />
+                  </span>
+                </button>
                 <button onClick={() => setEdit({ id: c.id, name: c.name, slug: c.slug })} className="shrink-0 p-2 hover:bg-brand-sand rounded"><Pencil className="w-4 h-4" /></button>
                 <button onClick={() => setPicker(c)} className="shrink-0 flex items-center gap-2 text-sm border rounded-full px-3 py-2 hover:border-brand-ink transition">
                   <PackagePlus className="w-4 h-4" /> <span className="hidden sm:inline">Ürün Ekle</span>
@@ -171,6 +193,11 @@ function CategoryProducts({ cat, onClose }: { cat: Cat; onClose: () => void }) {
 
   const assignedIds = useMemo(() => new Set(assigned.map((a) => a.id)), [assigned]);
 
+  const [localOrder, setLocalOrder] = useState<Row[] | null>(null);
+  const [pDrag, setPDrag] = useState<number | null>(null);
+  useEffect(() => { setLocalOrder(null); }, [assigned]);
+  const rowsList = localOrder ?? assigned;
+
   const toggle = (id: string) => {
     const next = new Set(sel);
     next.has(id) ? next.delete(id) : next.add(id);
@@ -193,12 +220,8 @@ function CategoryProducts({ cat, onClose }: { cat: Cat; onClose: () => void }) {
     qc.invalidateQueries({ queryKey: ["products"] });
   };
 
-  const move = async (index: number, dir: -1 | 1) => {
-    const next = index + dir;
-    if (next < 0 || next >= assigned.length) return;
-    const reordered = [...assigned];
-    const [item] = reordered.splice(index, 1);
-    reordered.splice(next, 0, item);
+  const persistOrder = async (reordered: Row[]) => {
+    setLocalOrder(reordered);
     await Promise.all(
       reordered.map((r, i) =>
         supabase.from("product_categories").update({ sira: i }).eq("category_id", cat.id).eq("product_id", r.id)
@@ -206,6 +229,25 @@ function CategoryProducts({ cat, onClose }: { cat: Cat; onClose: () => void }) {
     );
     refetch();
     qc.invalidateQueries({ queryKey: ["products"] });
+  };
+
+  const move = async (index: number, dir: -1 | 1) => {
+    const next = index + dir;
+    if (next < 0 || next >= rowsList.length) return;
+    const reordered = [...rowsList];
+    const [item] = reordered.splice(index, 1);
+    reordered.splice(next, 0, item);
+    await persistOrder(reordered);
+  };
+
+  const onRowDrop = async (target: number) => {
+    if (pDrag === null || pDrag === target) return setPDrag(null);
+    const reordered = [...rowsList];
+    const [item] = reordered.splice(pDrag, 1);
+    reordered.splice(target, 0, item);
+    setPDrag(null);
+    await persistOrder(reordered);
+    toast.success("Sıralama güncellendi");
   };
 
   const remove = async (pid: string) => {
@@ -261,21 +303,30 @@ function CategoryProducts({ cat, onClose }: { cat: Cat; onClose: () => void }) {
             </div>
           </div>
 
-          {assigned.length > 0 && (
+          {rowsList.length > 0 && (
             <div>
               <p className="text-[11px] tracking-widest uppercase text-muted-foreground mb-2">
-                Kategorideki Ürünler — sıralama sitede de bu şekilde görünür
+                Kategorideki Ürünler — sürükleyip bırakarak sıralayın, sitede de bu sırayla görünür
               </p>
               <div className="space-y-2">
-                {assigned.map((r, i) => (
-                  <div key={r.id} className="flex items-center gap-3 border rounded-xl p-2.5">
+                {rowsList.map((r, i) => (
+                  <div
+                    key={r.id}
+                    draggable
+                    onDragStart={() => setPDrag(i)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => onRowDrop(i)}
+                    onDragEnd={() => setPDrag(null)}
+                    className={`flex items-center gap-3 border rounded-xl p-2.5 bg-white ${pDrag === i ? "opacity-40" : ""}`}
+                  >
+                    <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab shrink-0" />
                     <span className="text-xs text-muted-foreground w-5 text-center">{i + 1}</span>
                     <span className="w-10 h-10 rounded-lg bg-brand-sand/40 overflow-hidden shrink-0">
                       {r.resimler?.[0] && <img src={r.resimler[0]} alt="" className="w-full h-full object-contain" />}
                     </span>
                     <span className="min-w-0 flex-1 text-sm truncate">{r.urun_adi}</span>
                     <button onClick={() => move(i, -1)} disabled={i === 0} className="p-2 rounded hover:bg-brand-sand disabled:opacity-30"><ArrowUp className="w-4 h-4" /></button>
-                    <button onClick={() => move(i, 1)} disabled={i === assigned.length - 1} className="p-2 rounded hover:bg-brand-sand disabled:opacity-30"><ArrowDown className="w-4 h-4" /></button>
+                    <button onClick={() => move(i, 1)} disabled={i === rowsList.length - 1} className="p-2 rounded hover:bg-brand-sand disabled:opacity-30"><ArrowDown className="w-4 h-4" /></button>
                     <button onClick={() => remove(r.id)} className="p-2 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 ))}

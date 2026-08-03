@@ -64,13 +64,10 @@ function injectRaw(id: string, raw: string): HTMLElement[] {
     tmpl.innerHTML = trimmed;
     const frag = tmpl.content;
 
-    // Extract & execute scripts (in original order)
-    frag.querySelectorAll("script").forEach((s) => {
-      created.push(execScript(s as HTMLScriptElement, id));
-      s.remove();
-    });
+    const scriptNodes = Array.from(frag.querySelectorAll("script")) as HTMLScriptElement[];
+    const externals = scriptNodes.filter((s) => !!s.src);
 
-    // Move styles into <head>
+    // Move styles into <head> first so markup is styled as soon as it appears
     frag.querySelectorAll("style").forEach((st) => {
       const el = document.createElement("style");
       el.textContent = st.textContent;
@@ -80,13 +77,44 @@ function injectRaw(id: string, raw: string): HTMLElement[] {
       st.remove();
     });
 
-    // Remaining markup → append container to body
+    scriptNodes.forEach((s) => s.remove());
+
+    // Remaining markup → append container to body, hidden until scripts/styles settle
+    let wrap: HTMLDivElement | null = null;
     if (frag.childNodes.length) {
-      const wrap = document.createElement("div");
+      wrap = document.createElement("div");
       wrap.dataset.injectedBy = id;
+      wrap.style.opacity = "0";
+      wrap.style.transition = "opacity .2s ease";
+      wrap.style.minHeight = "60px";
       wrap.appendChild(frag);
+
+      const skeleton = document.createElement("div");
+      skeleton.dataset.injectedBy = id;
+      skeleton.style.cssText =
+        "min-height:60px;display:flex;align-items:center;justify-content:center;color:#9a9a9a;font-size:13px;";
+      skeleton.textContent = "Yükleniyor...";
+      document.body.appendChild(skeleton);
       document.body.appendChild(wrap);
-      created.push(wrap);
+      created.push(skeleton, wrap);
+
+      const reveal = () => {
+        if (wrap) wrap.style.opacity = "1";
+        skeleton.remove();
+      };
+
+      // Execute scripts (in original order) and wait for external ones
+      let pending = externals.length;
+      const done = () => { if (--pending <= 0) setTimeout(reveal, 120); };
+      scriptNodes.forEach((s) => {
+        const clone = execScript(s, id);
+        if (s.src) { clone.addEventListener("load", done); clone.addEventListener("error", done); }
+        created.push(clone);
+      });
+      if (pending === 0) setTimeout(reveal, 250);
+      else setTimeout(reveal, 4000); // güvenlik ağı
+    } else {
+      scriptNodes.forEach((s) => { created.push(execScript(s, id)); });
     }
   } else {
     // No HTML tags → treat as raw JavaScript

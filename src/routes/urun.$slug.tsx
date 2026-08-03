@@ -94,6 +94,10 @@ function ProductDetail() {
   const { add } = useCart();
   const { isFavorite: isFav, toggle: toggleFav } = useFavorites();
   const [idx, setIdx] = useState(0);
+  const [touchX, setTouchX] = useState<number | null>(null);
+
+  // Varyasyon / ürün değişince galeriyi ilk fotoğrafa al
+  useEffect(() => { setIdx(0); }, [slug]);
 
   // Dynamic <title> per product
   useEffect(() => {
@@ -205,14 +209,23 @@ function ProductDetail() {
 
       <section className="max-w-[1600px] mx-auto px-6 lg:px-10 py-12 grid lg:grid-cols-2 gap-12">
         <div>
-          <div className="relative aspect-square bg-brand-sand/30 rounded-3xl overflow-hidden mb-4 flex items-center justify-center group">
-            {currentImage && <img src={currentImage} alt={product.name} className="w-full h-full object-contain p-6" />}
+          <div
+            className="relative aspect-square bg-brand-sand/30 rounded-3xl overflow-hidden mb-4 flex items-center justify-center group touch-pan-y select-none"
+            onTouchStart={(e) => setTouchX(e.touches[0].clientX)}
+            onTouchEnd={(e) => {
+              if (touchX === null) return;
+              const dx = e.changedTouches[0].clientX - touchX;
+              if (Math.abs(dx) > 40 && gallery.length > 1) nav(dx > 0 ? -1 : 1);
+              setTouchX(null);
+            }}
+          >
+            {currentImage && <img src={currentImage} alt={product.name} draggable={false} className="w-full h-full object-contain p-6" />}
             {gallery.length > 1 && (
               <>
-                <button onClick={() => nav(-1)} aria-label="Önceki" className="absolute left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/95 text-brand-ink flex items-center justify-center shadow-lg hover:bg-white transition opacity-0 group-hover:opacity-100">
+                <button onClick={() => nav(-1)} aria-label="Önceki" className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/95 text-brand-ink flex items-center justify-center shadow-lg hover:bg-white transition opacity-100 md:opacity-0 md:group-hover:opacity-100">
                   <ChevronLeft className="w-5 h-5" />
                 </button>
-                <button onClick={() => nav(1)} aria-label="Sonraki" className="absolute right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/95 text-brand-ink flex items-center justify-center shadow-lg hover:bg-white transition opacity-0 group-hover:opacity-100">
+                <button onClick={() => nav(1)} aria-label="Sonraki" className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/95 text-brand-ink flex items-center justify-center shadow-lg hover:bg-white transition opacity-100 md:opacity-0 md:group-hover:opacity-100">
                   <ChevronRight className="w-5 h-5" />
                 </button>
                 <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5">

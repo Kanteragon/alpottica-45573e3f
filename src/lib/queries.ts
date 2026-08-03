@@ -45,7 +45,15 @@ export async function fetchProducts(filter: ProductFilter = {}): Promise<Product
     if (ids.length) parts.push(`id.in.(${ids.join(",")})`);
     q = q.or(parts.join(","));
   }
+  let shuffleResult = false;
   if (filter.kategori_id) {
+    const { data: catRow } = await supabase
+      .from("categories")
+      .select("rastgele_sirala")
+      .eq("id", filter.kategori_id)
+      .maybeSingle();
+    shuffleResult = Boolean((catRow as { rastgele_sirala?: boolean } | null)?.rastgele_sirala);
+
     const { data: pcs } = await supabase
       .from("product_categories")
       .select("product_id,sira")
@@ -72,7 +80,9 @@ export async function fetchProducts(filter: ProductFilter = {}): Promise<Product
   let list = (data as unknown as DbProduct[]).map(mapDbProduct);
   if (filter.color) list = list.filter((p) => p.color.toLowerCase() === filter.color!.toLowerCase());
   if (filter.size) list = list.filter((p) => String(p.size) === String(filter.size));
-  if (orderMap) {
+  if (shuffleResult) {
+    list = [...list].sort(() => Math.random() - 0.5);
+  } else if (orderMap) {
     const om = orderMap;
     list = [...list].sort((a, b) => (om[a.id] ?? 9999) - (om[b.id] ?? 9999));
   }
@@ -110,7 +120,7 @@ export function useCategories() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("categories")
-        .select("id,name,slug,sort")
+        .select("id,name,slug,sort,rastgele_sirala")
         .order("sort");
       if (error) throw error;
       return data;
