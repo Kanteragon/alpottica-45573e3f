@@ -79,17 +79,32 @@ function Dashboard() {
           .gte("created_at", range.startIso)
           .lt("created_at", range.endIso);
 
-      const [visits, carts, signups, orders, revenue] = await Promise.all([
-        inRange(supabase.from("site_events").select("session_id").eq("tip", "visit")) as Promise<{ data: { session_id: string | null }[] | null }>,
+      const [views, carts, signups, orders, revenue] = await Promise.all([
+        inRange(supabase.from("site_events").select("id", { count: "exact", head: true }).eq("tip", "visit")) as Promise<{ count: number | null }>,
         inRange(supabase.from("site_events").select("id", { count: "exact", head: true }).eq("tip", "add_to_cart")) as Promise<{ count: number | null }>,
         inRange(supabase.from("profiles").select("id", { count: "exact", head: true })) as Promise<{ count: number | null }>,
         inRange(supabase.from("orders").select("id", { count: "exact", head: true })) as Promise<{ count: number | null }>,
         inRange(supabase.from("orders").select("toplam").neq("durum", "iptal")) as Promise<{ data: { toplam: number | string }[] | null }>,
       ]);
-      const uniq = new Set((visits.data ?? []).map((v) => v.session_id ?? ""));
+
+      // Tekil ziyaretçi: session_id'leri sayfalayarak topla (1000 satır limitini aşmak için)
+      const uniq = new Set<string>();
+      const pageSize = 1000;
+      for (let page = 0; page < 30; page++) {
+        const { data } = await supabase
+          .from("site_events")
+          .select("session_id")
+          .eq("tip", "visit")
+          .gte("created_at", range.startIso)
+          .lt("created_at", range.endIso)
+          .range(page * pageSize, page * pageSize + pageSize - 1);
+        (data ?? []).forEach((v) => uniq.add(v.session_id ?? ""));
+        if (!data || data.length < pageSize) break;
+      }
+
       return {
         visitors: uniq.size,
-        pageviews: visits.data?.length ?? 0,
+        pageviews: views.count ?? 0,
         carts: carts.count ?? 0,
         signups: signups.count ?? 0,
         orders: orders.count ?? 0,
