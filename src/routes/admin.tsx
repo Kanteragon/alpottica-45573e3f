@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/lib/auth";
+import { useBrandName } from "@/lib/settings";
 import {
   LayoutDashboard, Package, ShoppingBag, Images, Menu as MenuIcon, Star, Users,
   Upload, Tag, LogOut, Store, Sliders, Settings, Code2, ChevronDown, ChevronRight,
@@ -49,6 +50,7 @@ const NAV: Entry[] = [
 
 function AdminLayout() {
   const { user, isAdmin, loading, signOut } = useAuth();
+  const brand = useBrandName();
   const nav = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
   const [open, setOpen] = useState<Record<string, boolean>>({ icerik: true, katalog: true });
@@ -71,14 +73,14 @@ function AdminLayout() {
     <>
       <div className="p-6 border-b border-white/10 flex items-center justify-between">
         <div>
-          <p className="font-display text-2xl">ALPOTTICA</p>
+          <p className="font-display text-2xl">{brand.toUpperCase()}</p>
           <p className="text-xs tracking-widest text-white/60">ADMİN PANEL</p>
         </div>
         <button onClick={() => setNavOpen(false)} aria-label="Menüyü kapat" className="lg:hidden p-2 rounded-lg hover:bg-white/10">
           <X className="w-5 h-5" />
         </button>
       </div>
-      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+      <nav className="flex-1 min-h-0 p-3 space-y-1 overflow-y-auto">
         {NAV.map((e) => {
           if (isItem(e)) {
             const active = linkActive(e);
@@ -116,7 +118,7 @@ function AdminLayout() {
           );
         })}
       </nav>
-      <div className="p-3 border-t border-white/10 space-y-1">
+      <div className="shrink-0 p-3 border-t border-white/10 space-y-1 bg-brand-ink">
         <Link to="/" className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/80 hover:bg-white/10">
           <Store className="w-4 h-4" /> Siteyi Görüntüle
         </Link>
@@ -133,7 +135,7 @@ function AdminLayout() {
   return (
     <div className="min-h-screen bg-brand-sand/20 lg:flex">
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex w-64 shrink-0 bg-brand-ink text-white flex-col">{sidebar}</aside>
+      <aside className="hidden lg:flex w-64 shrink-0 bg-brand-ink text-white flex-col sticky top-0 h-screen">{sidebar}</aside>
 
       {/* Mobile drawer */}
       {navOpen && (
@@ -147,11 +149,11 @@ function AdminLayout() {
 
       <div className="flex-1 min-w-0">
         {/* Mobile top bar */}
-        <header className="lg:hidden sticky top-0 z-40 bg-brand-ink text-white flex items-center gap-3 px-4 h-14">
-          <button onClick={() => setNavOpen(true)} aria-label="Menü" className="p-2 -ml-2 rounded-lg hover:bg-white/10">
+        <header className="lg:hidden sticky top-0 z-40 bg-white text-brand-ink border-b border-border shadow-sm flex items-center gap-3 px-4 h-14">
+          <button onClick={() => setNavOpen(true)} aria-label="Menü" className="p-2 -ml-2 rounded-lg hover:bg-brand-sand/50">
             <MenuIcon className="w-5 h-5" />
           </button>
-          <p className="font-display text-xl">ALPOTTICA</p>
+          <p className="font-display text-xl">{brand.toUpperCase()}</p>
         </header>
         <main className="p-4 sm:p-6 lg:p-8 min-w-0 overflow-x-hidden">
           <Outlet />
