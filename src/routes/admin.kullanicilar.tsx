@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatTL } from "@/lib/products";
@@ -142,8 +142,8 @@ function Users() {
                 const isA = u.roles.includes("admin");
                 const open = expanded === u.id;
                 return (
-                  <>
-                    <tr key={u.id} className="border-b last:border-0">
+                  <Fragment key={u.id}>
+                    <tr className="border-b last:border-0">
                       <td className="p-3">{u.full_name ?? "—"}</td>
                       <td className="break-all">{(u as { email?: string | null }).email ?? "—"}</td>
                       <td>{u.phone ?? "—"}</td>
@@ -172,7 +172,7 @@ function Users() {
                       </td>
                     </tr>
                     {open && (
-                      <tr key={`${u.id}-d`} className="border-b bg-brand-sand/10">
+                      <tr className="border-b bg-brand-sand/10">
                         <td colSpan={8} className="p-4">
                           {u.orders.length === 0 ? (
                             <p className="text-muted-foreground text-sm">Bu kullanıcının siparişi yok.</p>
@@ -191,7 +191,7 @@ function Users() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
             </tbody>
