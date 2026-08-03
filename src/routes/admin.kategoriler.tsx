@@ -303,21 +303,30 @@ function CategoryProducts({ cat, onClose }: { cat: Cat; onClose: () => void }) {
             </div>
           </div>
 
-          {assigned.length > 0 && (
+          {rowsList.length > 0 && (
             <div>
               <p className="text-[11px] tracking-widest uppercase text-muted-foreground mb-2">
-                Kategorideki Ürünler — sıralama sitede de bu şekilde görünür
+                Kategorideki Ürünler — sürükleyip bırakarak sıralayın, sitede de bu sırayla görünür
               </p>
               <div className="space-y-2">
-                {assigned.map((r, i) => (
-                  <div key={r.id} className="flex items-center gap-3 border rounded-xl p-2.5">
+                {rowsList.map((r, i) => (
+                  <div
+                    key={r.id}
+                    draggable
+                    onDragStart={() => setPDrag(i)}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => onRowDrop(i)}
+                    onDragEnd={() => setPDrag(null)}
+                    className={`flex items-center gap-3 border rounded-xl p-2.5 bg-white ${pDrag === i ? "opacity-40" : ""}`}
+                  >
+                    <GripVertical className="w-4 h-4 text-muted-foreground cursor-grab shrink-0" />
                     <span className="text-xs text-muted-foreground w-5 text-center">{i + 1}</span>
                     <span className="w-10 h-10 rounded-lg bg-brand-sand/40 overflow-hidden shrink-0">
                       {r.resimler?.[0] && <img src={r.resimler[0]} alt="" className="w-full h-full object-contain" />}
                     </span>
                     <span className="min-w-0 flex-1 text-sm truncate">{r.urun_adi}</span>
                     <button onClick={() => move(i, -1)} disabled={i === 0} className="p-2 rounded hover:bg-brand-sand disabled:opacity-30"><ArrowUp className="w-4 h-4" /></button>
-                    <button onClick={() => move(i, 1)} disabled={i === assigned.length - 1} className="p-2 rounded hover:bg-brand-sand disabled:opacity-30"><ArrowDown className="w-4 h-4" /></button>
+                    <button onClick={() => move(i, 1)} disabled={i === rowsList.length - 1} className="p-2 rounded hover:bg-brand-sand disabled:opacity-30"><ArrowDown className="w-4 h-4" /></button>
                     <button onClick={() => remove(r.id)} className="p-2 text-red-600 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 ))}
