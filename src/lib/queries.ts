@@ -120,7 +120,7 @@ export function useCategories() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("categories")
-        .select("id,name,slug,sort")
+        .select("id,name,slug,sort,rastgele_sirala")
         .order("sort");
       if (error) throw error;
       return data;
