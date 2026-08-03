@@ -80,7 +80,7 @@ export function ProductCard({ product }: { product: Product }) {
       </div>
       <div className="p-2.5 sm:p-5">
         <p className="hidden sm:block text-[11px] tracking-[0.2em] text-muted-foreground mb-2 uppercase">Alpottica</p>
-        <h3 className="text-[15px] sm:text-xl md:text-2xl font-semibold text-brand-ink line-clamp-2 min-h-[2.6rem] sm:min-h-[3.8rem] leading-tight sm:leading-snug">
+        <h3 className="text-[19px] sm:text-xl md:text-2xl font-semibold text-brand-ink line-clamp-2 min-h-[3rem] sm:min-h-[3.8rem] leading-snug">
           {product.name.replace("Alpottica ", "")}
         </h3>
         <div className="mt-1.5 sm:mt-3 flex items-baseline flex-wrap gap-x-2">

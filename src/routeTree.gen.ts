@@ -39,6 +39,7 @@ import { Route as AdminKullanicilarRouteImport } from './routes/admin.kullanicil
 import { Route as AdminKategorilerRouteImport } from './routes/admin.kategoriler'
 import { Route as AdminKargoRouteImport } from './routes/admin.kargo'
 import { Route as AdminKampanyalarRouteImport } from './routes/admin.kampanyalar'
+import { Route as AdminBultenRouteImport } from './routes/admin.bulten'
 import { Route as AdminAyarlarRouteImport } from './routes/admin.ayarlar'
 import { Route as AdminAktarimRouteImport } from './routes/admin.aktarim'
 
@@ -192,6 +193,11 @@ const AdminKampanyalarRoute = AdminKampanyalarRouteImport.update({
   path: '/kampanyalar',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminBultenRoute = AdminBultenRouteImport.update({
+  id: '/bulten',
+  path: '/bulten',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminAyarlarRoute = AdminAyarlarRouteImport.update({
   id: '/ayarlar',
   path: '/ayarlar',
@@ -220,6 +226,7 @@ export interface FileRoutesByFullPath {
   '/uyelik-sozlesmesi': typeof UyelikSozlesmesiRoute
   '/admin/aktarim': typeof AdminAktarimRoute
   '/admin/ayarlar': typeof AdminAyarlarRoute
+  '/admin/bulten': typeof AdminBultenRoute
   '/admin/kampanyalar': typeof AdminKampanyalarRoute
   '/admin/kargo': typeof AdminKargoRoute
   '/admin/kategoriler': typeof AdminKategorilerRoute
@@ -253,6 +260,7 @@ export interface FileRoutesByTo {
   '/uyelik-sozlesmesi': typeof UyelikSozlesmesiRoute
   '/admin/aktarim': typeof AdminAktarimRoute
   '/admin/ayarlar': typeof AdminAyarlarRoute
+  '/admin/bulten': typeof AdminBultenRoute
   '/admin/kampanyalar': typeof AdminKampanyalarRoute
   '/admin/kargo': typeof AdminKargoRoute
   '/admin/kategoriler': typeof AdminKategorilerRoute
@@ -288,6 +296,7 @@ export interface FileRoutesById {
   '/uyelik-sozlesmesi': typeof UyelikSozlesmesiRoute
   '/admin/aktarim': typeof AdminAktarimRoute
   '/admin/ayarlar': typeof AdminAyarlarRoute
+  '/admin/bulten': typeof AdminBultenRoute
   '/admin/kampanyalar': typeof AdminKampanyalarRoute
   '/admin/kargo': typeof AdminKargoRoute
   '/admin/kategoriler': typeof AdminKategorilerRoute
@@ -324,6 +333,7 @@ export interface FileRouteTypes {
     | '/uyelik-sozlesmesi'
     | '/admin/aktarim'
     | '/admin/ayarlar'
+    | '/admin/bulten'
     | '/admin/kampanyalar'
     | '/admin/kargo'
     | '/admin/kategoriler'
@@ -357,6 +367,7 @@ export interface FileRouteTypes {
     | '/uyelik-sozlesmesi'
     | '/admin/aktarim'
     | '/admin/ayarlar'
+    | '/admin/bulten'
     | '/admin/kampanyalar'
     | '/admin/kargo'
     | '/admin/kategoriler'
@@ -391,6 +402,7 @@ export interface FileRouteTypes {
     | '/uyelik-sozlesmesi'
     | '/admin/aktarim'
     | '/admin/ayarlar'
+    | '/admin/bulten'
     | '/admin/kampanyalar'
     | '/admin/kargo'
     | '/admin/kategoriler'
@@ -639,6 +651,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminKampanyalarRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/bulten': {
+      id: '/admin/bulten'
+      path: '/bulten'
+      fullPath: '/admin/bulten'
+      preLoaderRoute: typeof AdminBultenRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/ayarlar': {
       id: '/admin/ayarlar'
       path: '/ayarlar'
@@ -659,6 +678,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminAktarimRoute: typeof AdminAktarimRoute
   AdminAyarlarRoute: typeof AdminAyarlarRoute
+  AdminBultenRoute: typeof AdminBultenRoute
   AdminKampanyalarRoute: typeof AdminKampanyalarRoute
   AdminKargoRoute: typeof AdminKargoRoute
   AdminKategorilerRoute: typeof AdminKategorilerRoute
@@ -679,6 +699,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAktarimRoute: AdminAktarimRoute,
   AdminAyarlarRoute: AdminAyarlarRoute,
+  AdminBultenRoute: AdminBultenRoute,
   AdminKampanyalarRoute: AdminKampanyalarRoute,
   AdminKargoRoute: AdminKargoRoute,
   AdminKategorilerRoute: AdminKategorilerRoute,
@@ -718,13 +739,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

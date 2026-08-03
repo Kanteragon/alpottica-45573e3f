@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useLayoutEffect } from "react";
 import { useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -79,6 +79,23 @@ function injectRaw(id: string, raw: string): HTMLElement[] {
 
     scriptNodes.forEach((s) => s.remove());
 
+    // Move external stylesheets to <head> and wait for them (prevents unstyled flash)
+    const linkNodes = Array.from(frag.querySelectorAll("link")) as HTMLLinkElement[];
+    const cssPromises: Promise<void>[] = [];
+    linkNodes.forEach((ln) => {
+      const el = document.createElement("link");
+      for (const a of Array.from(ln.attributes)) { try { el.setAttribute(a.name, a.value); } catch { /* ignore */ } }
+      el.dataset.injectedBy = id;
+      cssPromises.push(new Promise<void>((res) => {
+        el.addEventListener("load", () => res());
+        el.addEventListener("error", () => res());
+        setTimeout(res, 3000);
+      }));
+      document.head.appendChild(el);
+      created.push(el);
+      ln.remove();
+    });
+
     // Remaining markup → append container to body, hidden until scripts/styles settle
     let wrap: HTMLDivElement | null = null;
     if (frag.childNodes.length) {
@@ -86,36 +103,26 @@ function injectRaw(id: string, raw: string): HTMLElement[] {
       wrap.dataset.injectedBy = id;
       wrap.style.opacity = "0";
       wrap.style.transition = "opacity .2s ease";
-      wrap.style.minHeight = "60px";
       wrap.appendChild(frag);
-
-      const skeleton = document.createElement("div");
-      skeleton.dataset.injectedBy = id;
-      skeleton.style.cssText =
-        "min-height:60px;display:flex;align-items:center;justify-content:center;color:#9a9a9a;font-size:13px;";
-      skeleton.textContent = "Yükleniyor...";
-      document.body.appendChild(skeleton);
       document.body.appendChild(wrap);
-      created.push(skeleton, wrap);
+      created.push(wrap);
 
-      const reveal = () => {
-        if (wrap) wrap.style.opacity = "1";
-        skeleton.remove();
-      };
+      const reveal = () => { if (wrap) wrap.style.opacity = "1"; };
 
       // Execute scripts (in original order) and wait for external ones
       let pending = externals.length;
-      const done = () => { if (--pending <= 0) setTimeout(reveal, 120); };
+      const done = () => { if (--pending <= 0) Promise.all(cssPromises).then(reveal); };
       scriptNodes.forEach((s) => {
         const clone = execScript(s, id);
         if (s.src) { clone.addEventListener("load", done); clone.addEventListener("error", done); }
         created.push(clone);
       });
-      if (pending === 0) setTimeout(reveal, 250);
+      if (pending === 0) Promise.all(cssPromises).then(reveal);
       else setTimeout(reveal, 4000); // güvenlik ağı
     } else {
       scriptNodes.forEach((s) => { created.push(execScript(s, id)); });
     }
+
   } else {
     // No HTML tags → treat as raw JavaScript
     const s = document.createElement("script");
@@ -138,8 +145,10 @@ export function ScriptInjector() {
     staleTime: 60_000,
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (typeof document === "undefined") return;
+    // Sayfa değişiminde kalan tüm eski enjekte düğümlerini temizle
+    document.querySelectorAll("[data-injected-by]").forEach((n) => n.remove());
     // Do not inject any custom scripts inside the admin panel.
     if (path.startsWith("/admin")) return;
     const active = scripts.filter((s) => matches(s.konum, path));
@@ -149,6 +158,7 @@ export function ScriptInjector() {
       created.forEach((n) => n.remove());
     };
   }, [scripts, path]);
+
 
   return null;
 }

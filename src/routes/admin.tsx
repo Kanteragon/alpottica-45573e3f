@@ -40,6 +40,8 @@ const NAV: Entry[] = [
   { to: "/admin/kampanyalar", label: "Kampanyalar", icon: Megaphone },
 
   { to: "/admin/kullanicilar", label: "Kullanıcılar", icon: Users },
+  { to: "/admin/bulten", label: "Bülten Aboneleri", icon: Megaphone },
+
   { to: "/admin/aktarim", label: "Excel Aktarım", icon: Upload },
   { to: "/admin/scriptler", label: "Script Yönetimi", icon: Code2 },
   { to: "/admin/ayarlar", label: "Genel Ayarlar", icon: Settings },
