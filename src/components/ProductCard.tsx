@@ -80,13 +80,13 @@ export function ProductCard({ product }: { product: Product }) {
       </div>
       <div className="p-2.5 sm:p-5">
         <p className="hidden sm:block text-[11px] tracking-[0.2em] text-muted-foreground mb-2 uppercase">Alpottica</p>
-        <h3 className="text-[13px] sm:text-lg md:text-xl font-semibold text-brand-ink line-clamp-2 min-h-[2.2rem] sm:min-h-[3.5rem] leading-tight sm:leading-snug">
+        <h3 className="text-[15px] sm:text-xl md:text-2xl font-semibold text-brand-ink line-clamp-2 min-h-[2.6rem] sm:min-h-[3.8rem] leading-tight sm:leading-snug">
           {product.name.replace("Alpottica ", "")}
         </h3>
-        <div className="mt-1 sm:mt-3 flex items-baseline flex-wrap gap-x-2">
-          <span className="text-[15px] sm:text-xl font-bold text-brand-ink">{formatTL(product.price)}</span>
+        <div className="mt-1.5 sm:mt-3 flex items-baseline flex-wrap gap-x-2">
+          <span className="text-[17px] sm:text-2xl font-bold text-brand-ink">{formatTL(product.price)}</span>
           {disc && (
-            <span className="text-[11px] sm:text-base text-muted-foreground line-through">{formatTL(product.listPrice)}</span>
+            <span className="text-[12px] sm:text-base text-muted-foreground line-through">{formatTL(product.listPrice)}</span>
           )}
         </div>
         <button
