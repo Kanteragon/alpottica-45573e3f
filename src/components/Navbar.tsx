@@ -91,24 +91,27 @@ export function Navbar() {
             ))}
           </nav>
 
-          <div className={`flex items-center gap-3 sm:gap-5 transition-colors ${solid ? "text-brand-ink" : "text-white"}`}>
+          <div className={`flex items-center justify-end gap-1 sm:gap-2 transition-colors ${solid ? "text-brand-ink" : "text-white"}`}>
             <SearchBox solid={solid} />
-            {user ? (
-              <Link to="/hesabim" aria-label="Hesabım" className="hover:opacity-70 hidden sm:block">
-                <User className="w-5 h-5" />
-              </Link>
-            ) : (
-              <Link to="/giris" aria-label="Giriş" className="hover:opacity-70 hidden sm:block">
-                <User className="w-5 h-5" />
-              </Link>
-            )}
-            <Link to="/hesabim" search={{ tab: "favorites" }} aria-label="Favoriler" className="hover:opacity-70 hidden sm:block">
-              <Heart className="w-5 h-5" />
+            <Link
+              to={user ? "/hesabim" : "/giris"}
+              aria-label={user ? "Hesabım" : "Giriş"}
+              className="w-10 h-10 hidden sm:flex items-center justify-center rounded-full hover:bg-current/10 transition"
+            >
+              <User className="w-[22px] h-[22px]" strokeWidth={1.6} />
             </Link>
-            <Link to="/sepet" aria-label="Sepet" className="hover:opacity-70 relative">
-              <ShoppingCart className="w-5 h-5" />
+            <Link
+              to="/hesabim"
+              search={{ tab: "favorites" }}
+              aria-label="Favoriler"
+              className="w-10 h-10 hidden sm:flex items-center justify-center rounded-full hover:bg-current/10 transition"
+            >
+              <Heart className="w-[22px] h-[22px]" strokeWidth={1.6} />
+            </Link>
+            <Link to="/sepet" aria-label="Sepet" className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-current/10 transition">
+              <ShoppingCart className="w-[22px] h-[22px]" strokeWidth={1.6} />
               {count > 0 && (
-                <span className="absolute -top-2 -right-2 bg-brand-cta text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
+                <span className="absolute top-1 right-0.5 bg-brand-cta text-white text-[10px] leading-none rounded-full min-w-[17px] h-[17px] px-1 flex items-center justify-center">
                   {count}
                 </span>
               )}
