@@ -128,6 +128,17 @@ function Cats() {
                   <p className="font-medium truncate">{c.name}</p>
                   <p className="text-xs text-muted-foreground truncate">/{c.slug} · sıra {c.sort}</p>
                 </div>
+                <button
+                  onClick={() => toggleRandom(c)}
+                  title="Bu kategori sayfası her açılışta ürünleri rastgele sıralasın"
+                  className={`shrink-0 flex items-center gap-2 text-xs rounded-full border px-3 py-2 transition ${c.rastgele_sirala ? "bg-brand-ink text-white border-brand-ink" : "hover:border-brand-ink"}`}
+                >
+                  <Shuffle className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Rastgele</span>
+                  <span className={`w-8 h-4 rounded-full relative transition ${c.rastgele_sirala ? "bg-white/30" : "bg-border"}`}>
+                    <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-current transition-all ${c.rastgele_sirala ? "left-[18px]" : "left-0.5"}`} />
+                  </span>
+                </button>
                 <button onClick={() => setEdit({ id: c.id, name: c.name, slug: c.slug })} className="shrink-0 p-2 hover:bg-brand-sand rounded"><Pencil className="w-4 h-4" /></button>
                 <button onClick={() => setPicker(c)} className="shrink-0 flex items-center gap-2 text-sm border rounded-full px-3 py-2 hover:border-brand-ink transition">
                   <PackagePlus className="w-4 h-4" /> <span className="hidden sm:inline">Ürün Ekle</span>
