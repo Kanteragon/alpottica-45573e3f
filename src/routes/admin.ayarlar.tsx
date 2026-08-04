@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ImageUploader } from "@/components/ImageUploader";
-import { useSiteSettings } from "@/lib/settings";
+import { useSiteSettings, SETTINGS_DEFAULTS } from "@/lib/settings";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/admin/ayarlar")({
