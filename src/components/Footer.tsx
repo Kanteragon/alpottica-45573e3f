@@ -4,11 +4,16 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { MadeBy } from "@/components/MadeBy";
 import { supabase } from "@/integrations/supabase/client";
-import { useBrandName } from "@/lib/settings";
+import { useSiteSettings } from "@/lib/settings";
 
 
 export function Footer() {
-  const brand = useBrandName();
+  const { data: settings } = useSiteSettings();
+  const brand = settings?.brand_name || "Alpottica";
+  const phone = settings?.phone || "0546 646 02 44";
+  const email = settings?.email || "";
+  const address = settings?.address || "İstanbul, Türkiye";
+  const instagram = settings?.instagram || "alpottica";
   const [mail, setMail] = useState("");
   const [busy, setBusy] = useState(false);
 
