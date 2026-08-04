@@ -148,6 +148,7 @@ function RootComponent() {
       <AuthProvider>
         <CartProvider>
           <DynamicFavicon />
+          <ThemeVars />
           <VisitTracker />
           <ScriptInjector />
           <Outlet />
