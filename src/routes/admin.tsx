@@ -147,7 +147,7 @@ function AdminLayout() {
         </div>
       )}
 
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 lg:h-screen lg:overflow-y-auto lg:no-scrollbar">
         {/* Mobile top bar */}
         <header className="lg:hidden sticky top-0 z-40 bg-white text-brand-ink border-b border-border shadow-sm flex items-center gap-3 px-4 h-14">
           <button onClick={() => setNavOpen(true)} aria-label="Menü" className="p-2 -ml-2 rounded-lg hover:bg-brand-sand/50">
