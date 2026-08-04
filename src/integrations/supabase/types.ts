@@ -769,37 +769,64 @@ export type Database = {
       }
       site_settings: {
         Row: {
+          address: string | null
           brand_name: string
+          color_danger: string | null
+          color_primary: string | null
+          color_secondary: string | null
+          color_success: string | null
+          email: string | null
           favicon_url: string | null
           id: number
+          instagram: string | null
           logo_max_width: number
           logo_url: string | null
+          phone: string | null
           seo_description: string | null
           seo_keywords: string | null
           seo_title: string | null
           updated_at: string
+          whatsapp: string | null
         }
         Insert: {
+          address?: string | null
           brand_name?: string
+          color_danger?: string | null
+          color_primary?: string | null
+          color_secondary?: string | null
+          color_success?: string | null
+          email?: string | null
           favicon_url?: string | null
           id?: number
+          instagram?: string | null
           logo_max_width?: number
           logo_url?: string | null
+          phone?: string | null
           seo_description?: string | null
           seo_keywords?: string | null
           seo_title?: string | null
           updated_at?: string
+          whatsapp?: string | null
         }
         Update: {
+          address?: string | null
           brand_name?: string
+          color_danger?: string | null
+          color_primary?: string | null
+          color_secondary?: string | null
+          color_success?: string | null
+          email?: string | null
           favicon_url?: string | null
           id?: number
+          instagram?: string | null
           logo_max_width?: number
           logo_url?: string | null
+          phone?: string | null
           seo_description?: string | null
           seo_keywords?: string | null
           seo_title?: string | null
           updated_at?: string
+          whatsapp?: string | null
         }
         Relationships: []
       }
