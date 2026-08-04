@@ -135,7 +135,7 @@ function AdminLayout() {
   return (
     <div className="min-h-screen bg-brand-sand/20 lg:flex">
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex w-64 shrink-0 bg-brand-ink text-white flex-col sticky top-0 h-screen">{sidebar}</aside>
+      <aside className="hidden lg:flex w-64 shrink-0 bg-brand-ink text-white flex-col sticky top-0 h-screen overflow-hidden">{sidebar}</aside>
 
       {/* Mobile drawer */}
       {navOpen && (
