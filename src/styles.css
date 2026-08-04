@@ -43,6 +43,8 @@
   --brand-sand: oklch(0.89 0.03 75);
   --brand-ink: oklch(0.18 0.01 60);
   --brand-cta: oklch(0.28 0.08 265);
+  --success: #16a34a;
+  --danger: #dc2626;
 
   --background: oklch(1 0 0);
   --foreground: oklch(0.15 0.01 60);
