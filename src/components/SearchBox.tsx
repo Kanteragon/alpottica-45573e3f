@@ -4,7 +4,7 @@ import { Search, X } from "lucide-react";
 import { useProducts } from "@/lib/queries";
 import { formatTL } from "@/lib/products";
 
-export function SearchBox({ solid }: { solid: boolean }) {
+export function SearchBox(_props: { solid?: boolean }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [debounced, setDebounced] = useState("");
