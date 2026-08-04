@@ -178,8 +178,8 @@ export function Navbar() {
             >
               <ShoppingCart className="w-4 h-4" strokeWidth={1.8} /> SEPETİM {count > 0 ? `(${count})` : ""}
             </Link>
-            <a href="tel:+905466460244" className="mt-2 block text-center text-xs text-muted-foreground">
-              0546 646 02 44
+            <a href={`tel:${(settings?.phone || "0546 646 02 44").replace(/\s/g, "")}`} className="mt-2 block text-center text-xs text-muted-foreground">
+              {settings?.phone || "0546 646 02 44"}
             </a>
           </div>
         </aside>
