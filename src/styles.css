@@ -31,6 +31,8 @@
   --color-brand-sand: var(--brand-sand);
   --color-brand-ink: var(--brand-ink);
   --color-brand-cta: var(--brand-cta);
+  --color-success: var(--success);
+  --color-danger: var(--danger);
   --font-display: "Bebas Neue", "Arial Narrow", sans-serif;
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
@@ -41,6 +43,8 @@
   --brand-sand: oklch(0.89 0.03 75);
   --brand-ink: oklch(0.18 0.01 60);
   --brand-cta: oklch(0.28 0.08 265);
+  --success: #16a34a;
+  --danger: #dc2626;
 
   --background: oklch(1 0 0);
   --foreground: oklch(0.15 0.01 60);

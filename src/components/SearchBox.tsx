@@ -4,7 +4,7 @@ import { Search, X } from "lucide-react";
 import { useProducts } from "@/lib/queries";
 import { formatTL } from "@/lib/products";
 
-export function SearchBox({ solid }: { solid: boolean }) {
+export function SearchBox(_props: { solid?: boolean }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [debounced, setDebounced] = useState("");
@@ -46,7 +46,7 @@ export function SearchBox({ solid }: { solid: boolean }) {
       <button
         aria-label="Ara"
         onClick={() => setOpen(true)}
-        className={`w-10 h-10 flex items-center justify-center rounded-full hover:bg-current/10 transition ${solid ? "text-brand-ink" : "text-white"}`}
+        className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-current/10 transition-[background-color] text-current"
       >
         <Search className="w-[22px] h-[22px]" strokeWidth={1.6} />
       </button>

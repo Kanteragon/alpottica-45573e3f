@@ -80,7 +80,7 @@ function AdminLayout() {
           <X className="w-5 h-5" />
         </button>
       </div>
-      <nav className="flex-1 min-h-0 p-3 space-y-1 overflow-y-auto">
+      <nav className="flex-1 min-h-0 p-3 space-y-1 overflow-y-auto no-scrollbar overscroll-contain">
         {NAV.map((e) => {
           if (isItem(e)) {
             const active = linkActive(e);
@@ -135,7 +135,7 @@ function AdminLayout() {
   return (
     <div className="min-h-screen bg-brand-sand/20 lg:flex">
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex w-64 shrink-0 bg-brand-ink text-white flex-col sticky top-0 h-screen">{sidebar}</aside>
+      <aside className="hidden lg:flex w-64 shrink-0 bg-brand-ink text-white flex-col sticky top-0 h-screen overflow-hidden">{sidebar}</aside>
 
       {/* Mobile drawer */}
       {navOpen && (
@@ -147,7 +147,7 @@ function AdminLayout() {
         </div>
       )}
 
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 lg:h-screen lg:overflow-y-auto lg:no-scrollbar">
         {/* Mobile top bar */}
         <header className="lg:hidden sticky top-0 z-40 bg-white text-brand-ink border-b border-border shadow-sm flex items-center gap-3 px-4 h-14">
           <button onClick={() => setNavOpen(true)} aria-label="Menü" className="p-2 -ml-2 rounded-lg hover:bg-brand-sand/50">

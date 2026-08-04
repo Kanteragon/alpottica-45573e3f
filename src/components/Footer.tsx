@@ -4,11 +4,16 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { MadeBy } from "@/components/MadeBy";
 import { supabase } from "@/integrations/supabase/client";
-import { useBrandName } from "@/lib/settings";
+import { useSiteSettings } from "@/lib/settings";
 
 
 export function Footer() {
-  const brand = useBrandName();
+  const { data: settings } = useSiteSettings();
+  const brand = settings?.brand_name || "Alpottica";
+  const phone = settings?.phone || "0546 646 02 44";
+  const email = settings?.email || "";
+  const address = settings?.address || "İstanbul, Türkiye";
+  const instagram = settings?.instagram || "alpottica";
   const [mail, setMail] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -82,15 +87,21 @@ export function Footer() {
           <ul className="space-y-3 text-sm">
             <li className="flex items-start gap-2">
               <Phone className="w-4 h-4 mt-0.5 shrink-0" />
-              <a href="tel:+905466460244" className="hover:text-white transition">0546 646 02 44</a>
+              <a href={`tel:${phone.replace(/\s/g, "")}`} className="hover:text-white transition">{phone}</a>
             </li>
+            {email && (
+              <li className="flex items-start gap-2">
+                <Mail className="w-4 h-4 mt-0.5 shrink-0" />
+                <a href={`mailto:${email}`} className="hover:text-white transition">{email}</a>
+              </li>
+            )}
             <li className="flex items-start gap-2">
               <Instagram className="w-4 h-4 mt-0.5 shrink-0" />
-              <a href="https://instagram.com/alpottica" target="_blank" rel="noreferrer" className="hover:text-white transition">@alpottica</a>
+              <a href={`https://instagram.com/${instagram.replace("@", "")}`} target="_blank" rel="noreferrer" className="hover:text-white transition">@{instagram.replace("@", "")}</a>
             </li>
             <li className="flex items-start gap-2">
               <MapPin className="w-4 h-4 mt-0.5 shrink-0" />
-              <span>İstanbul, Türkiye</span>
+              <span>{address}</span>
             </li>
           </ul>
           <div className="mt-5 pt-5 border-t border-white/10">
