@@ -160,13 +160,13 @@ export function Navbar() {
             ))}
 
             <p className="px-5 pt-5 pb-2 text-[10px] tracking-[0.3em] text-muted-foreground">HESABIM</p>
-            <Link to={user ? "/hesabim" : "/giris"} className="px-5 py-3.5 text-brand-ink text-sm flex items-center gap-3 hover:bg-brand-sand/30">
+            <Link to={user ? "/hesabim" : "/giris"} onClick={() => setMenuOpen(false)} className="px-5 py-3.5 text-brand-ink text-sm flex items-center gap-3 hover:bg-brand-sand/30">
               <User className="w-5 h-5" strokeWidth={1.6} /> {user ? "Hesabım" : "Giriş Yap"}
             </Link>
-            <Link to="/hesabim" search={{ tab: "favorites" }} className="px-5 py-3.5 text-brand-ink text-sm flex items-center gap-3 hover:bg-brand-sand/30">
+            <Link to="/hesabim" search={{ tab: "favorites" }} onClick={() => setMenuOpen(false)} className="px-5 py-3.5 text-brand-ink text-sm flex items-center gap-3 hover:bg-brand-sand/30">
               <Heart className="w-5 h-5" strokeWidth={1.6} /> Favorilerim
             </Link>
-            <Link to="/hesabim" search={{ tab: "orders" }} className="px-5 py-3.5 text-brand-ink text-sm flex items-center gap-3 hover:bg-brand-sand/30">
+            <Link to="/hesabim" search={{ tab: "orders" }} onClick={() => setMenuOpen(false)} className="px-5 py-3.5 text-brand-ink text-sm flex items-center gap-3 hover:bg-brand-sand/30">
               <User className="w-5 h-5" strokeWidth={1.6} /> Siparişlerim
             </Link>
           </nav>
