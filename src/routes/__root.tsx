@@ -16,6 +16,7 @@ import { CartProvider } from "@/lib/cart";
 import { AuthProvider } from "@/lib/auth";
 import { ScriptInjector } from "@/components/ScriptInjector";
 import { DynamicFavicon } from "@/components/DynamicFavicon";
+import { ThemeVars } from "@/components/ThemeVars";
 import { VisitTracker } from "@/lib/analytics";
 
 function NotFoundComponent() {
