@@ -80,7 +80,7 @@ function AdminLayout() {
           <X className="w-5 h-5" />
         </button>
       </div>
-      <nav className="flex-1 min-h-0 p-3 space-y-1 overflow-y-auto">
+      <nav className="flex-1 min-h-0 p-3 space-y-1 overflow-y-auto no-scrollbar overscroll-contain">
         {NAV.map((e) => {
           if (isItem(e)) {
             const active = linkActive(e);
