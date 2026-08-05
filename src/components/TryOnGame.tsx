@@ -1,3 +1,4 @@
+/*
 import { useMemo, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Sparkles, ArrowRight } from "lucide-react";
@@ -264,3 +265,4 @@ function Chip({
     </button>
   );
 }
+*/
