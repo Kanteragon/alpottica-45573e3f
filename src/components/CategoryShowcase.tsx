@@ -24,12 +24,12 @@ const CATS = [
 
 export function CategoryShowcase() {
   return (
-    <section className="bg-background py-24">
+    <section className="bg-background py-10 sm:py-14">
       <div className="max-w-[1600px] mx-auto px-6 lg:px-10">
-        <div className="flex items-end justify-between mb-12">
+        <div className="flex items-end justify-between mb-6 sm:mb-8">
           <div>
-            <p className="text-xs tracking-[0.4em] text-muted-foreground mb-3">KOLEKSİYON</p>
-            <h2 className="font-display text-5xl md:text-6xl text-brand-ink">Öne Çıkan Seriler</h2>
+            <p className="text-[11px] tracking-[0.4em] text-muted-foreground mb-2">KOLEKSİYON</p>
+            <h2 className="font-display text-3xl sm:text-4xl md:text-5xl text-brand-ink">Öne Çıkan Seriler</h2>
           </div>
           <a
             href="/urunler"
