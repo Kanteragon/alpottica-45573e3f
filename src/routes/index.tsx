@@ -56,6 +56,8 @@ function Index() {
       <FeatureStrip />
       <CategoryShowcase />
       <FeaturedProducts />
+      <TryOnGame />
+
 
       <Footer />
     </div>
