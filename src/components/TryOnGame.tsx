@@ -7,7 +7,7 @@ type Shape = {
   id: string;
   label: string;
   hint: string;
-  /** left lens path drawn in a 100x40 viewBox coordinate space */
+  // left lens path drawn in a 100x40 viewBox coordinate space
   lens: (x: number) => React.ReactNode;
 };
 
