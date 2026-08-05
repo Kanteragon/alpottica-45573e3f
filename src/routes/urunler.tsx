@@ -238,6 +238,14 @@ function Products() {
     (search.max ? 1 : 0) +
     Object.values(activeAttrFilters).reduce((n, v) => n + v.length, 0);
 
+  const pageTitle = useMemo(() => {
+    if (search.q?.trim()) return `"${search.q.trim()}" için sonuçlar`;
+    if (search.kategori) return cats?.find((c) => c.id === search.kategori)?.name ?? "Modeller";
+    if (search.marka) return brands?.find((b) => b.id === search.marka)?.name ?? "Modeller";
+    if (search.tag) return search.tag.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    return "Tüm Modeller";
+  }, [search.q, search.kategori, search.marka, search.tag, cats, brands]);
+
   useEffect(() => {
     if (typeof document === "undefined") return;
     document.body.style.overflow = drawerOpen ? "hidden" : "";
