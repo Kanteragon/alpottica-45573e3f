@@ -57,7 +57,7 @@ function Index() {
       <FeatureStrip />
       <CategoryShowcase />
       <FeaturedProducts />
-      <TryOnGame />
+      {/* <TryOnGame /> */}
 
 
       <Footer />
