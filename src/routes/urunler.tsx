@@ -238,6 +238,14 @@ function Products() {
     (search.max ? 1 : 0) +
     Object.values(activeAttrFilters).reduce((n, v) => n + v.length, 0);
 
+  const pageTitle = useMemo(() => {
+    if (search.q?.trim()) return `"${search.q.trim()}" için sonuçlar`;
+    if (search.kategori) return cats?.find((c) => c.id === search.kategori)?.name ?? "Modeller";
+    if (search.marka) return brands?.find((b) => b.id === search.marka)?.name ?? "Modeller";
+    if (search.tag) return search.tag.replace(/[-_]/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+    return "Tüm Modeller";
+  }, [search.q, search.kategori, search.marka, search.tag, cats, brands]);
+
   useEffect(() => {
     if (typeof document === "undefined") return;
     document.body.style.overflow = drawerOpen ? "hidden" : "";
@@ -250,14 +258,14 @@ function Products() {
       <div className="h-20" />
 
       <section className="bg-brand-sand/40 border-b border-border">
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-8 sm:py-14">
-          <p className="text-xs tracking-[0.4em] text-muted-foreground mb-2 sm:mb-3">KOLEKSİYON</p>
-          <h1 className="font-display text-4xl sm:text-5xl md:text-7xl text-brand-ink mb-3 sm:mb-6">Alpottica Modelleri</h1>
-          <p className="text-sm sm:text-base text-muted-foreground max-w-2xl">
-            {isLoading ? "Yükleniyor..." : `${list.length} ürün · Polarize, antifar ve klipsli seçenekler.`}
+        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-5 sm:py-7">
+          <h1 className="font-display text-2xl sm:text-3xl text-brand-ink">{pageTitle}</h1>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+            {isLoading ? "Yükleniyor..." : `${list.length} ürün`}
           </p>
         </div>
       </section>
+
 
       <div className="sticky top-20 z-30 bg-background/95 backdrop-blur border-b border-border">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-3 flex items-center gap-2 sm:gap-3">
