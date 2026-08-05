@@ -242,7 +242,7 @@ function Products() {
     if (search.q?.trim()) return `"${search.q.trim()}" için sonuçlar`;
     if (search.kategori) return cats?.find((c) => c.id === search.kategori)?.name ?? "Modeller";
     if (search.marka) return brands?.find((b) => b.id === search.marka)?.name ?? "Modeller";
-    if (search.tag) return search.tag.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+    if (search.tag) return search.tag.replace(/[-_]/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
     return "Tüm Modeller";
   }, [search.q, search.kategori, search.marka, search.tag, cats, brands]);
 
