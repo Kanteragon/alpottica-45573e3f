@@ -4,6 +4,7 @@ import { HeroSlider } from "@/components/HeroSlider";
 import { FeatureStrip } from "@/components/FeatureStrip";
 import { FeaturedProducts } from "@/components/FeaturedProducts";
 import { CategoryShowcase } from "@/components/CategoryShowcase";
+import { TryOnGame } from "@/components/TryOnGame";
 import { Footer } from "@/components/Footer";
 
 export const Route = createFileRoute("/")({
