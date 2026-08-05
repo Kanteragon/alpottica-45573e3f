@@ -158,19 +158,8 @@ export function TryOnGame() {
                       {shape.lens(20)}
                       {shape.lens(50)}
                     </g>
-                    <path d="M50 20 q0 -3 0 0" stroke={color.hex} strokeWidth="2.4" fill="none" />
-                    <line x1="50" y1="19" x2="50" y2="19" stroke={color.hex} strokeWidth="2.4" />
-                    <path d="M50 19 q0 2 0 2" stroke={color.hex} strokeWidth="2.4" />
-                    <line x1="50" y1="18" x2="50" y2="20" stroke={color.hex} strokeWidth="2.4" />
-                    <line x1="50" y1="19" x2="50" y2="19" stroke={color.hex} strokeWidth="2.4" />
                     {/* bridge */}
-                    <line x1="50" y1="18" x2="50" y2="18" stroke={color.hex} strokeWidth="2.4" />
-                    <path d="M50 18 q0 0 0 0" fill="none" stroke={color.hex} strokeWidth="2.4" />
-                    <line x1="50" y1="18" x2="50" y2="18" stroke={color.hex} strokeWidth="2.4" />
-                    <line x1="50" y1="19" x2="50" y2="19" stroke={color.hex} strokeWidth="2.4" />
-                    <line x1="50" y1="19" x2="50" y2="19" stroke={color.hex} strokeWidth="2.4" />
-                    <path d="M50 18 h0" stroke={color.hex} strokeWidth="2.4" />
-                    <line x1="49" y1="19" x2="51" y2="19" stroke={color.hex} strokeWidth="2.6" />
+                    <path d="M46 16 q4 -4 8 0" fill="none" stroke={color.hex} strokeWidth="2.4" strokeLinecap="round" />
                     {/* temples */}
                     <line x1="20" y1="17" x2="10" y2="20" stroke={color.hex} strokeWidth="2.4" strokeLinecap="round" />
                     <line x1="80" y1="17" x2="90" y2="20" stroke={color.hex} strokeWidth="2.4" strokeLinecap="round" />
