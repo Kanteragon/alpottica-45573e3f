@@ -6,6 +6,7 @@ type AuthCtx = {
   user: User | null;
   session: Session | null;
   isAdmin: boolean;
+  roleReady: boolean;
   loading: boolean;
   signOut: () => Promise<void>;
 };
@@ -16,6 +17,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [roleReady, setRoleReady] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -23,6 +25,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
+        setRoleReady(false);
         setTimeout(async () => {
           const { data } = await supabase
             .from("user_roles")
@@ -31,9 +34,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             .eq("role", "admin")
             .maybeSingle();
           setIsAdmin(!!data);
+          setRoleReady(true);
         }, 0);
       } else {
         setIsAdmin(false);
+        setRoleReady(true);
       }
     });
     supabase.auth.getSession().then(async ({ data }) => {
@@ -48,6 +53,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           .maybeSingle();
         setIsAdmin(!!r);
       }
+      setRoleReady(true);
       setLoading(false);
     });
     return () => sub.subscription.unsubscribe();
@@ -58,7 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <Ctx.Provider value={{ user, session, isAdmin, loading, signOut }}>{children}</Ctx.Provider>
+    <Ctx.Provider value={{ user, session, isAdmin, roleReady, loading, signOut }}>{children}</Ctx.Provider>
   );
 }
 
