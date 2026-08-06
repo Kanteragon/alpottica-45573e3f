@@ -23,7 +23,7 @@ const ADMIN_EMAIL = "adminalpottica@alpottica.com";
 
 function Login() {
   const nav = useNavigate();
-  const { user, isAdmin } = useAuth();
+  const { user, isAdmin, roleReady } = useAuth();
   const bootstrapAdmin = useServerFn(ensureAdminUser);
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
@@ -35,8 +35,8 @@ function Login() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (user) nav({ to: isAdmin ? "/admin" : "/hesabim" });
-  }, [user, isAdmin, nav]);
+    if (user && roleReady) nav({ to: isAdmin ? "/admin" : "/hesabim" });
+  }, [user, isAdmin, roleReady, nav]);
 
   const resolveEmail = (input: string) => {
     const v = input.trim();
