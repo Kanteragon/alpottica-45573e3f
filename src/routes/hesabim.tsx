@@ -251,6 +251,14 @@ function AddressesTab({ userId }: { userId: string }) {
   );
 }
 
+const ORDER_STATUS: Record<string, { label: string; cls: string }> = {
+  yeni: { label: "Yeni", cls: "bg-blue-50 text-blue-700" },
+  hazirlaniyor: { label: "Hazırlanıyor", cls: "bg-amber-50 text-amber-700" },
+  kargoda: { label: "Kargoda", cls: "bg-indigo-50 text-indigo-700" },
+  teslim: { label: "Teslim Edildi", cls: "bg-emerald-50 text-emerald-700" },
+  iptal: { label: "İptal", cls: "bg-rose-50 text-rose-700" },
+};
+
 function OrdersTab() {
   const { data: orders } = useQuery({
     queryKey: ["my-orders"],
