@@ -49,7 +49,7 @@ const NAV: Entry[] = [
 ];
 
 function AdminLayout() {
-  const { user, isAdmin, loading, signOut } = useAuth();
+  const { user, isAdmin, loading, roleReady, signOut } = useAuth();
   const brand = useBrandName();
   const nav = useNavigate();
   const path = useRouterState({ select: (s) => s.location.pathname });
@@ -57,12 +57,12 @@ function AdminLayout() {
   const [navOpen, setNavOpen] = useState(false);
 
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) nav({ to: "/giris" });
-  }, [loading, user, isAdmin, nav]);
+    if (!loading && roleReady && (!user || !isAdmin)) nav({ to: "/giris" });
+  }, [loading, roleReady, user, isAdmin, nav]);
 
   useEffect(() => { setNavOpen(false); }, [path]);
 
-  if (loading || !user || !isAdmin) {
+  if (loading || !roleReady || !user || !isAdmin) {
     return <div className="min-h-screen flex items-center justify-center text-muted-foreground">Yükleniyor...</div>;
   }
 
