@@ -286,7 +286,7 @@ function OrdersTab() {
                   <p className="font-mono text-xs text-muted-foreground">#{o.id.slice(0, 8)}</p>
                   <p className="text-sm">{new Date(o.created_at).toLocaleString("tr-TR")}</p>
                 </div>
-                <span className="px-3 py-1 rounded-full bg-brand-sand text-xs tracking-widest uppercase">{o.durum}</span>
+                <span className={`px-3 py-1 rounded-full text-xs tracking-widest uppercase ${ORDER_STATUS[o.durum]?.cls ?? "bg-brand-sand"}`}>{ORDER_STATUS[o.durum]?.label ?? o.durum}</span>
               </div>
               <div className="text-sm text-muted-foreground space-y-1 mb-3">
                 {o.order_items?.map((it, idx: number) => (
