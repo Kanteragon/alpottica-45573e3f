@@ -81,6 +81,8 @@ function Checkout() {
     if (!form.ilce) return toast.error("İlçe seçin");
     if (form.address.trim().length < 10) return toast.error("Adres zorunlu");
     if (!user && form.createAccount && form.password.length < 6) return toast.error("Şifre en az 6 karakter olmalıdır");
+    if (!user && form.createAccount && !form.kvkk)
+      return toast.error("Üyelik sözleşmesi ve KVKK metnini onaylamanız gerekiyor");
 
     setBusy(true);
     try {
