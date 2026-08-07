@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { formatTL, discountPct, mapDbProduct, type DbProduct } from "@/lib/products";
-import { useProduct, useProducts, useAttributes, fetchProductBySlug } from "@/lib/queries";
+import { useProduct, useAttributes, fetchProductBySlug } from "@/lib/queries";
 import { ProductCard } from "@/components/ProductCard";
 import { ShoppingCart, Heart, ShieldCheck, Truck, RefreshCcw, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "@/lib/cart";
