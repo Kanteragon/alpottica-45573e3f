@@ -89,10 +89,11 @@ export async function fetchProducts(filter: ProductFilter = {}): Promise<Product
   return list;
 }
 
-export function useProducts(filter: ProductFilter = {}) {
+export function useProducts(filter: ProductFilter = {}, options: { enabled?: boolean } = {}) {
   return useQuery({
     queryKey: ["products", filter],
     queryFn: () => fetchProducts(filter),
+    enabled: options.enabled ?? true,
   });
 }
 

@@ -36,17 +36,19 @@ export function SearchBox(_props: { solid?: boolean }) {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  const active = open && debounced.length >= 2;
   const { data: results = [], isFetching } = useProducts(
-    debounced.length >= 2 ? { q: debounced } : {},
+    active ? { q: debounced } : {},
+    { enabled: active },
   );
-  const list = debounced.length >= 2 ? results.filter((p) => p.stock > 0).slice(0, 8) : [];
+  const list = active ? results.filter((p) => p.stock > 0).slice(0, 8) : [];
 
   return (
     <>
       <button
         aria-label="Ara"
         onClick={() => setOpen(true)}
-        className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-current/10 transition-[background-color] text-current"
+        className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-current/10 transition-colors duration-500"
       >
         <Search className="w-[22px] h-[22px]" strokeWidth={1.6} />
       </button>
@@ -77,13 +79,13 @@ export function SearchBox(_props: { solid?: boolean }) {
               </div>
 
               <div className="max-h-[70vh] overflow-y-auto mt-4">
-                {debounced.length < 2 && (
+                {!active && (
                   <p className="text-sm text-muted-foreground py-6 text-center">En az 2 karakter yazın.</p>
                 )}
-                {debounced.length >= 2 && isFetching && list.length === 0 && (
+                {active && isFetching && list.length === 0 && (
                   <p className="text-sm text-muted-foreground py-6 text-center">Aranıyor…</p>
                 )}
-                {debounced.length >= 2 && !isFetching && list.length === 0 && (
+                {active && !isFetching && list.length === 0 && (
                   <p className="text-sm text-muted-foreground py-6 text-center">Sonuç bulunamadı.</p>
                 )}
 

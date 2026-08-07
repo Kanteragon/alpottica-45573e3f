@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { formatTL, discountPct, mapDbProduct, type DbProduct } from "@/lib/products";
-import { useProduct, useProducts, useAttributes, fetchProductBySlug } from "@/lib/queries";
+import { useProduct, useAttributes, fetchProductBySlug } from "@/lib/queries";
 import { ProductCard } from "@/components/ProductCard";
 import { ShoppingCart, Heart, ShieldCheck, Truck, RefreshCcw, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "@/lib/cart";
@@ -89,7 +89,7 @@ export const Route = createFileRoute("/urun/$slug")({
 function ProductDetail() {
   const { slug } = Route.useParams();
   const { data: product, isLoading } = useProduct(slug);
-  const { data: allProducts = [] } = useProducts();
+  
   const { data: attrs = [] } = useAttributes();
   const { add } = useCart();
   const { isFavorite: isFav, toggle: toggleFav } = useFavorites();
@@ -164,7 +164,7 @@ function ProductDetail() {
   const disc = discountPct(product);
   const gallery = product.images.length ? product.images : [product.image].filter(Boolean);
   const currentImage = gallery[idx] || "";
-  const relatedPool = relatedRaw.length ? relatedRaw : allProducts.filter((p) => p.id !== product.id && p.stock > 0);
+  const relatedPool = relatedRaw;
   const related = relatedPool.slice(0, 4);
 
   const rawOz = (product as unknown as { ozellikler?: Record<string, string> }).ozellikler ?? {};

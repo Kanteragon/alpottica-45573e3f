@@ -48,6 +48,16 @@ export const Route = createFileRoute("/urunler")({
 const norm = (s: string) =>
   s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
 
+/** Türkçe uyumlu büyük harf (i → İ, ı → I) */
+const trUpper = (s: string) => s.replace(/i/g, "İ").replace(/ı/g, "I").toUpperCase();
+
+const TAG_LABELS: Record<string, string> = {
+  tumu: "Tüm Modeller",
+  tümü: "Tüm Modeller",
+  klipsli: "Klipsli Modeller",
+  outlet: "Outlet Modeller",
+};
+
 type AttrFilters = Record<string, string[]>;
 
 function decodeAttrs(raw?: string): AttrFilters {
@@ -94,7 +104,7 @@ function Products() {
   // Products scoped by category/brand/price (not by attributes) — used for filter option pools
   const { data: products = [], isLoading } = useProducts({
     tag: search.tag,
-    q: query,
+    q: search.q,
     kategori_id: search.kategori,
     marka_id: search.marka,
     minPrice: search.min,
@@ -240,10 +250,23 @@ function Products() {
 
   const pageTitle = useMemo(() => {
     if (search.q?.trim()) return `"${search.q.trim()}" için sonuçlar`;
-    if (search.kategori) return cats?.find((c) => c.id === search.kategori)?.name ?? "Modeller";
-    if (search.marka) return brands?.find((b) => b.id === search.marka)?.name ?? "Modeller";
-    if (search.tag) return search.tag.replace(/[-_]/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
-    return "Tüm Modeller";
+    if (search.kategori) {
+      const name = cats?.find((c) => c.id === search.kategori)?.name;
+      return name ? trUpper(name) : "MODELLER";
+    }
+    if (search.marka) {
+      const name = brands?.find((b) => b.id === search.marka)?.name;
+      return name ? trUpper(name) : "MODELLER";
+    }
+    if (search.tag) {
+      const key = search.tag.toLowerCase();
+      const known = TAG_LABELS[key];
+      if (known) return trUpper(known);
+      const cat = cats?.find((c) => norm(c.slug) === norm(key) || norm(c.name) === norm(key));
+      if (cat) return trUpper(cat.name);
+      return trUpper(search.tag.replace(/[-_]/g, " "));
+    }
+    return "TÜM MODELLER";
   }, [search.q, search.kategori, search.marka, search.tag, cats, brands]);
 
   useEffect(() => {
@@ -252,6 +275,32 @@ function Products() {
     return () => { document.body.style.overflow = ""; };
   }, [drawerOpen]);
 
+  // Sayfadaki arama kutusu URL ile senkron olsun (paylaşılabilir arama linki)
+  useEffect(() => {
+    const term = query.trim();
+    if (term === (search.q ?? "").trim()) return;
+    const t = setTimeout(() => {
+      navigate({
+        search: (prev: Record<string, unknown>) => ({ ...prev, q: term || undefined }),
+        replace: true,
+      });
+    }, 400);
+    return () => clearTimeout(t);
+  }, [query, search.q, navigate]);
+
+  const [copied, setCopied] = useState(false);
+  const copyLink = async () => {
+    if (typeof window === "undefined") return;
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* pano izni yoksa sessiz geç */
+    }
+  };
+
+
   return (
     <div className="bg-background text-foreground min-h-screen">
       <Navbar />
@@ -259,7 +308,15 @@ function Products() {
 
       <section className="bg-brand-sand/40 border-b border-border">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-5 sm:py-7">
-          <h1 className="font-display text-2xl sm:text-3xl text-brand-ink">{pageTitle}</h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="font-display text-2xl sm:text-3xl text-brand-ink">{pageTitle}</h1>
+            <button
+              onClick={copyLink}
+              className="text-[11px] tracking-widest px-3 py-1.5 rounded-full border border-border bg-white text-brand-ink hover:bg-brand-ink hover:text-white transition"
+            >
+              {copied ? "KOPYALANDI" : "BAĞLANTIYI KOPYALA"}
+            </button>
+          </div>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             {isLoading ? "Yükleniyor..." : `${list.length} ürün`}
           </p>
@@ -271,18 +328,19 @@ function Products() {
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-3 flex items-center gap-2 sm:gap-3">
           <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar">
             <div className="flex gap-2 w-max">
-              <a href="/urunler" className={`px-4 py-2 text-[11px] tracking-[0.2em] rounded-full border shrink-0 transition ${!search.tag && !search.kategori ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink bg-white"}`}>TÜM</a>
+              <a href="/urunler" className={`px-4 py-2 text-[11px] tracking-[0.2em] rounded-full border shrink-0 transition ${!search.tag && !search.kategori ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink bg-white"}`}>TÜM MODELLER</a>
               {cats?.slice(0, 4).map((c) => (
                 <a
                   key={c.id}
                   href={`/urunler?kategori=${c.id}`}
-                  className={`px-4 py-2 text-[11px] tracking-[0.2em] rounded-full border shrink-0 transition uppercase ${search.kategori === c.id ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink bg-white"}`}
+                  className={`px-4 py-2 text-[11px] tracking-[0.2em] rounded-full border shrink-0 transition ${search.kategori === c.id ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink bg-white"}`}
                 >
-                  {c.name}
+                  {trUpper(c.name)}
                 </a>
               ))}
             </div>
           </div>
+
 
           <button
             onClick={openDrawer}
