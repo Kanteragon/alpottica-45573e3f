@@ -222,14 +222,24 @@ function Checkout() {
             {!user && (
               <>
                 <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" checked={form.createAccount} onChange={(e) => setForm({ ...form, createAccount: e.target.checked })} />
+                  <input type="checkbox" checked={form.createAccount} onChange={(e) => setForm({ ...form, createAccount: e.target.checked, kvkk: false })} />
                   <span>Hesap oluştur (isteğe bağlı — siparişlerini takip edebilirsin)</span>
                 </label>
                 {form.createAccount && (
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <Input label="E-posta" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
-                    <Input label="Şifre (en az 6 karakter)" type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} />
-                  </div>
+                  <>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <Input label="E-posta" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
+                      <Input label="Şifre (en az 6 karakter)" type="password" value={form.password} onChange={(v) => setForm({ ...form, password: v })} />
+                    </div>
+                    <label className="flex items-start gap-2 text-sm">
+                      <input type="checkbox" className="mt-1" checked={form.kvkk} onChange={(e) => setForm({ ...form, kvkk: e.target.checked })} />
+                      <span className="text-muted-foreground">
+                        <Link to="/uyelik-sozlesmesi" className="underline text-brand-ink">Üyelik sözleşmesi</Link>,{" "}
+                        <Link to="/gizlilik-sozlesmesi" className="underline text-brand-ink">KVKK aydınlatma metni</Link> ve{" "}
+                        <Link to="/kullanim-kosullari" className="underline text-brand-ink">kullanım koşullarını</Link> okudum, onaylıyorum.
+                      </span>
+                    </label>
+                  </>
                 )}
               </>
             )}
