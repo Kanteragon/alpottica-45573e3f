@@ -48,6 +48,16 @@ export const Route = createFileRoute("/urunler")({
 const norm = (s: string) =>
   s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
 
+/** Türkçe uyumlu büyük harf (i → İ, ı → I) */
+const trUpper = (s: string) => s.replace(/i/g, "İ").replace(/ı/g, "I").toUpperCase();
+
+const TAG_LABELS: Record<string, string> = {
+  tumu: "Tüm Modeller",
+  tümü: "Tüm Modeller",
+  klipsli: "Klipsli Modeller",
+  outlet: "Outlet Modeller",
+};
+
 type AttrFilters = Record<string, string[]>;
 
 function decodeAttrs(raw?: string): AttrFilters {
