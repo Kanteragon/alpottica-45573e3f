@@ -164,7 +164,7 @@ function ProductDetail() {
   const disc = discountPct(product);
   const gallery = product.images.length ? product.images : [product.image].filter(Boolean);
   const currentImage = gallery[idx] || "";
-  const relatedPool = relatedRaw.length ? relatedRaw : allProducts.filter((p) => p.id !== product.id && p.stock > 0);
+  const relatedPool = relatedRaw;
   const related = relatedPool.slice(0, 4);
 
   const rawOz = (product as unknown as { ozellikler?: Record<string, string> }).ozellikler ?? {};
