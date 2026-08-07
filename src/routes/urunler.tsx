@@ -250,10 +250,23 @@ function Products() {
 
   const pageTitle = useMemo(() => {
     if (search.q?.trim()) return `"${search.q.trim()}" için sonuçlar`;
-    if (search.kategori) return cats?.find((c) => c.id === search.kategori)?.name ?? "Modeller";
-    if (search.marka) return brands?.find((b) => b.id === search.marka)?.name ?? "Modeller";
-    if (search.tag) return search.tag.replace(/[-_]/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
-    return "Tüm Modeller";
+    if (search.kategori) {
+      const name = cats?.find((c) => c.id === search.kategori)?.name;
+      return name ? trUpper(name) : "MODELLER";
+    }
+    if (search.marka) {
+      const name = brands?.find((b) => b.id === search.marka)?.name;
+      return name ? trUpper(name) : "MODELLER";
+    }
+    if (search.tag) {
+      const key = search.tag.toLowerCase();
+      const known = TAG_LABELS[key];
+      if (known) return trUpper(known);
+      const cat = cats?.find((c) => norm(c.slug) === norm(key) || norm(c.name) === norm(key));
+      if (cat) return trUpper(cat.name);
+      return trUpper(search.tag.replace(/[-_]/g, " "));
+    }
+    return "TÜM MODELLER";
   }, [search.q, search.kategori, search.marka, search.tag, cats, brands]);
 
   useEffect(() => {
