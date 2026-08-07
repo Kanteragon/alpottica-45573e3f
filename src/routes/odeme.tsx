@@ -38,6 +38,7 @@ function Checkout() {
     address: "",
     password: "",
     createAccount: false,
+    kvkk: false,
     payment: "nakit" as "nakit" | "kart",
     notes: "",
   });
