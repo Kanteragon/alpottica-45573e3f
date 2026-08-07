@@ -89,7 +89,7 @@ export const Route = createFileRoute("/urun/$slug")({
 function ProductDetail() {
   const { slug } = Route.useParams();
   const { data: product, isLoading } = useProduct(slug);
-  const { data: allProducts = [] } = useProducts();
+  
   const { data: attrs = [] } = useAttributes();
   const { add } = useCart();
   const { isFavorite: isFav, toggle: toggleFav } = useFavorites();
