@@ -275,6 +275,32 @@ function Products() {
     return () => { document.body.style.overflow = ""; };
   }, [drawerOpen]);
 
+  // Sayfadaki arama kutusu URL ile senkron olsun (paylaşılabilir arama linki)
+  useEffect(() => {
+    const term = query.trim();
+    if (term === (search.q ?? "").trim()) return;
+    const t = setTimeout(() => {
+      navigate({
+        search: (prev: Record<string, unknown>) => ({ ...prev, q: term || undefined }),
+        replace: true,
+      });
+    }, 400);
+    return () => clearTimeout(t);
+  }, [query, search.q, navigate]);
+
+  const [copied, setCopied] = useState(false);
+  const copyLink = async () => {
+    if (typeof window === "undefined") return;
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* pano izni yoksa sessiz geç */
+    }
+  };
+
+
   return (
     <div className="bg-background text-foreground min-h-screen">
       <Navbar />
