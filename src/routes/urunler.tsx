@@ -104,7 +104,7 @@ function Products() {
   // Products scoped by category/brand/price (not by attributes) — used for filter option pools
   const { data: products = [], isLoading } = useProducts({
     tag: search.tag,
-    q: query,
+    q: search.q,
     kategori_id: search.kategori,
     marka_id: search.marka,
     minPrice: search.min,
