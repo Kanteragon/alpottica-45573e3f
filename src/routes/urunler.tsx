@@ -282,7 +282,15 @@ function Products() {
 
       <section className="bg-brand-sand/40 border-b border-border">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-5 sm:py-7">
-          <h1 className="font-display text-2xl sm:text-3xl text-brand-ink">{pageTitle}</h1>
+          <div className="flex items-center gap-3 flex-wrap">
+            <h1 className="font-display text-2xl sm:text-3xl text-brand-ink">{pageTitle}</h1>
+            <button
+              onClick={copyLink}
+              className="text-[11px] tracking-widest px-3 py-1.5 rounded-full border border-border bg-white text-brand-ink hover:bg-brand-ink hover:text-white transition"
+            >
+              {copied ? "KOPYALANDI" : "BAĞLANTIYI KOPYALA"}
+            </button>
+          </div>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             {isLoading ? "Yükleniyor..." : `${list.length} ürün`}
           </p>
@@ -294,18 +302,19 @@ function Products() {
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-10 py-3 flex items-center gap-2 sm:gap-3">
           <div className="flex-1 min-w-0 overflow-x-auto no-scrollbar">
             <div className="flex gap-2 w-max">
-              <a href="/urunler" className={`px-4 py-2 text-[11px] tracking-[0.2em] rounded-full border shrink-0 transition ${!search.tag && !search.kategori ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink bg-white"}`}>TÜM</a>
+              <a href="/urunler" className={`px-4 py-2 text-[11px] tracking-[0.2em] rounded-full border shrink-0 transition ${!search.tag && !search.kategori ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink bg-white"}`}>TÜM MODELLER</a>
               {cats?.slice(0, 4).map((c) => (
                 <a
                   key={c.id}
                   href={`/urunler?kategori=${c.id}`}
-                  className={`px-4 py-2 text-[11px] tracking-[0.2em] rounded-full border shrink-0 transition uppercase ${search.kategori === c.id ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink bg-white"}`}
+                  className={`px-4 py-2 text-[11px] tracking-[0.2em] rounded-full border shrink-0 transition ${search.kategori === c.id ? "bg-brand-ink text-white border-brand-ink" : "border-border text-brand-ink bg-white"}`}
                 >
-                  {c.name}
+                  {trUpper(c.name)}
                 </a>
               ))}
             </div>
           </div>
+
 
           <button
             onClick={openDrawer}
