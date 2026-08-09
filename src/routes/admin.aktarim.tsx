@@ -65,15 +65,33 @@ function Import() {
         klipsId = newCat?.id ?? null;
       }
 
-      const catMap = new Map((cats ?? []).map((c) => [c.name.toLowerCase(), c.id]));
+      // Türkçe uyumlu normalizasyon (İ/ı/ş/ğ vb.) — Excel'de "KLİPSLİ MODELLER" yazılsa da eşleşsin
+      const normCat = (s: string) =>
+        s
+          .replace(/İ/g, "i").replace(/I/g, "i").replace(/ı/g, "i")
+          .replace(/Ş/g, "s").replace(/ş/g, "s")
+          .replace(/Ğ/g, "g").replace(/ğ/g, "g")
+          .replace(/Ü/g, "u").replace(/ü/g, "u")
+          .replace(/Ö/g, "o").replace(/ö/g, "o")
+          .replace(/Ç/g, "c").replace(/ç/g, "c")
+          .toLowerCase()
+          .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, " ")
+          .trim();
+
+      const catMap = new Map<string, string>();
+      for (const c of cats ?? []) {
+        catMap.set(normCat(c.name), c.id);
+        if (c.slug) catMap.set(normCat(c.slug), c.id);
+      }
       const brandMap = new Map((brands ?? []).map((b) => [b.name.toLowerCase(), b.id]));
 
       // helper: resolve or create a category by name
       const resolveCat = async (rawName: string): Promise<string | null> => {
-        const key = rawName.trim().toLowerCase();
+        const key = normCat(rawName);
         if (!key) return null;
         if (catMap.has(key)) return catMap.get(key)!;
-        const slug = key.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+        const slug = key.replace(/\s+/g, "-");
         const { data: created } = await supabase.from("categories").insert({ name: rawName.trim(), slug, sort: 99 }).select("id").single();
         if (created?.id) { catMap.set(key, created.id); return created.id; }
         return null;
@@ -91,15 +109,17 @@ function Import() {
         const model = r.ModelKodu ? String(r.ModelKodu) : null;
 
         // Split multi-category on ; (also support , when no colon)
-        const catParts = catRaw.split(";").map((s) => s.trim()).filter(Boolean);
+        const catParts = catRaw.split(/[;,|]/).map((s) => s.trim()).filter(Boolean);
         const catIds: string[] = [];
         for (const c of catParts) {
           const id = await resolveCat(c);
           if (id) catIds.push(id);
         }
         // Klips rule
-        if ((catIds.length === 0 || isKlips(name, model)) && klipsId && !catIds.includes(klipsId)) {
-          catIds.unshift(klipsId);
+        if (klipsId && !catIds.includes(klipsId) && (catIds.length === 0 || isKlips(name, model))) {
+          // Excel'de kategori verilmişse onu birincil bırak, klipsli ek kategori olarak eklensin
+          if (catIds.length === 0) catIds.unshift(klipsId);
+          else catIds.push(klipsId);
         }
 
         prepared.push({

@@ -8,6 +8,7 @@ import { useProduct, useAttributes, fetchProductBySlug } from "@/lib/queries";
 import { ProductCard } from "@/components/ProductCard";
 import { ShoppingCart, Heart, ShieldCheck, Truck, RefreshCcw, ArrowLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { useCart } from "@/lib/cart";
+import { ImageLightbox } from "@/components/ImageLightbox";
 import { useFavorites } from "@/lib/favorites";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -95,6 +96,7 @@ function ProductDetail() {
   const { isFavorite: isFav, toggle: toggleFav } = useFavorites();
   const [idx, setIdx] = useState(0);
   const [touchX, setTouchX] = useState<number | null>(null);
+  const [lightbox, setLightbox] = useState(false);
 
   // Varyasyon / ürün değişince galeriyi ilk fotoğrafa al
   useEffect(() => { setIdx(0); }, [slug]);
@@ -219,7 +221,15 @@ function ProductDetail() {
               setTouchX(null);
             }}
           >
-            {currentImage && <img src={currentImage} alt={product.name} draggable={false} className="w-full h-full object-contain p-6" />}
+            {currentImage && (
+              <img
+                src={currentImage}
+                alt={product.name}
+                draggable={false}
+                onClick={() => setLightbox(true)}
+                className="w-full h-full object-contain p-6 cursor-zoom-in"
+              />
+            )}
             {gallery.length > 1 && (
               <>
                 <button onClick={() => nav(-1)} aria-label="Önceki" className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-white/95 text-brand-ink flex items-center justify-center shadow-lg hover:bg-white transition opacity-100 md:opacity-0 md:group-hover:opacity-100">
@@ -339,6 +349,16 @@ function ProductDetail() {
             {related.map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
         </section>
+      )}
+
+      {lightbox && (
+        <ImageLightbox
+          images={gallery as string[]}
+          index={idx}
+          onIndexChange={setIdx}
+          onClose={() => setLightbox(false)}
+          alt={product.name}
+        />
       )}
 
       <Footer />
