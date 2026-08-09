@@ -92,7 +92,7 @@ export function Navbar() {
             ))}
           </nav>
 
-          <div className={`flex items-center justify-end gap-0.5 sm:gap-1 transition-colors duration-500 ${solid ? "text-brand-ink" : "text-white"}`}>
+          <div className={`flex items-center justify-end gap-0.5 sm:gap-1 transition-colors ${solid ? "text-brand-ink" : "text-white"}`}>
             <SearchBox solid={solid} />
             <Link
               to={user ? "/hesabim" : "/giris"}
