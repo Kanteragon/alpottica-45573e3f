@@ -48,7 +48,7 @@ export function SearchBox(_props: { solid?: boolean }) {
       <button
         aria-label="Ara"
         onClick={() => setOpen(true)}
-        className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-current/10 transition"
+        className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-current/10 transition-[background-color] duration-200"
       >
         <Search className="w-[22px] h-[22px]" strokeWidth={1.6} />
       </button>
