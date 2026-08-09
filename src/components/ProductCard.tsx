@@ -36,7 +36,7 @@ export function ProductCard({ product }: { product: Product }) {
       params={{ slug: product.slug }}
       onMouseEnter={() => setHovering(true)}
       onMouseLeave={() => { setHovering(false); setIdx(0); }}
-      className="group block rounded-2xl overflow-hidden bg-white border border-border hover:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.15)] hover:-translate-y-1 transition-all duration-300"
+      className="group block rounded-2xl touch-manipulation overflow-hidden bg-white border border-border hover:shadow-[0_20px_50px_-20px_rgba(0,0,0,0.15)] hover:-translate-y-1 transition-all duration-300"
     >
       <div className="relative aspect-[4/5] sm:aspect-square overflow-hidden bg-brand-sand/40">
         {gallery[idx] ? (
@@ -44,7 +44,7 @@ export function ProductCard({ product }: { product: Product }) {
             src={gallery[idx]}
             alt={product.name}
             loading="lazy"
-            className="absolute inset-0 w-full h-full object-contain p-1 sm:p-2 transition-all duration-300"
+            className="absolute inset-0 w-full h-full object-contain p-1 sm:p-2 transition-all duration-300 pointer-events-none"
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-xs">Görsel yok</div>
@@ -57,7 +57,7 @@ export function ProductCard({ product }: { product: Product }) {
         <button
           onClick={(e) => { e.preventDefault(); e.stopPropagation(); toggleFav(product.id); }}
           aria-label="Favori"
-          className={`absolute top-3 right-3 w-9 h-9 rounded-full bg-white/90 backdrop-blur flex items-center justify-center transition ${isFavorite(product.id) ? "text-brand-cta opacity-100" : "text-brand-ink hover:text-brand-cta opacity-0 group-hover:opacity-100"}`}
+          className={`absolute top-3 right-3 w-9 h-9 rounded-full hidden sm:flex bg-white/90 backdrop-blur items-center justify-center transition ${isFavorite(product.id) ? "text-brand-cta opacity-100" : "text-brand-ink hover:text-brand-cta opacity-0 group-hover:opacity-100"}`}
         >
           <Heart className={`w-4 h-4 ${isFavorite(product.id) ? "fill-current" : ""}`} />
         </button>
