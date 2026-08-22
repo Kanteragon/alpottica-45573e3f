@@ -21,7 +21,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
+      // Sekme odağında tetiklenen TOKEN_REFRESHED / INITIAL_SESSION olaylarında
+      // state'e dokunma; yoksa roleReady sıfırlanır ve açık ekranlar (modal, filtreler) kapanır.
+      if (event === "TOKEN_REFRESHED" || event === "INITIAL_SESSION") return;
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
