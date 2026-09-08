@@ -302,10 +302,47 @@ export function useCartCategoryMap(items: CartItem[]) {
   });
 }
 
+/** Giriş yapmış kullanıcının kupon kullanım sayıları */
+export function useCouponUsage() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["coupon-usage", user?.id ?? "anon"],
+    enabled: !!user,
+    staleTime: 60_000,
+    queryFn: async (): Promise<Record<string, number>> => {
+      const { data, error } = await supabase
+        .from("coupon_redemptions")
+        .select("campaign_id")
+        .eq("user_id", user!.id);
+      if (error) throw error;
+      const map: Record<string, number> = {};
+      for (const r of data ?? []) map[r.campaign_id] = (map[r.campaign_id] ?? 0) + 1;
+      return map;
+    },
+  });
+}
+
+export async function recordCouponRedemptions(
+  campaignIds: string[],
+  userId: string,
+  orderId: string | null,
+  kod: string,
+) {
+  if (campaignIds.length === 0) return;
+  await supabase.from("coupon_redemptions").insert(
+    campaignIds.map((campaign_id) => ({ campaign_id, user_id: userId, order_id: orderId, kod })),
+  );
+}
+
 export function useTotals(items: CartItem[]): PriceBreakdown {
   const { data: shipping } = useShipping();
   const { data: campaigns } = useCampaigns();
   const { data: catMap } = useCartCategoryMap(items);
   const { code } = useCoupon();
-  return computeTotals(items, shipping, campaigns, code, catMap ?? {});
+  const { user } = useAuth();
+  const { data: used } = useCouponUsage();
+  return computeTotals(items, shipping, campaigns, code, catMap ?? {}, {
+    userId: user?.id ?? null,
+    used: used ?? {},
+  });
 }
