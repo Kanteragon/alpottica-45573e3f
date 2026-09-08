@@ -277,6 +277,9 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
       kod: f.tip === "kupon" ? f.kod.trim() : null,
       min_adet: Number(f.min_adet) || 2,
       max_indirim: Number(f.max_indirim) || 0,
+      uye_zorunlu: f.tip === "kupon" ? f.uye_zorunlu : false,
+      kullanim_limiti: f.tip === "kupon" ? Math.max(0, Number(f.kullanim_limiti) || 0) : 0,
+      oneri_goster: f.oneri_goster,
       aktif: f.aktif,
     };
     const { error } = isNew
