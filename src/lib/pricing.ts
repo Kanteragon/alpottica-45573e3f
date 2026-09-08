@@ -112,8 +112,16 @@ export type PriceBreakdown = {
   freeShipping: boolean;
   discount: number;
   appliedCampaigns: string[];
+  appliedCouponIds: string[];
   total: number;
   couponError: string | null;
+  couponNeedsLogin: boolean;
+};
+
+export type CouponContext = {
+  userId: string | null;
+  /** campaign_id -> bu hesabın kaç kez kullandığı */
+  used: Record<string, number>;
 };
 
 function capped(amount: number, c: Campaign) {
