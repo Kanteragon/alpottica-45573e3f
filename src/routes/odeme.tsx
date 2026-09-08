@@ -145,10 +145,16 @@ function Checkout() {
       });
       if (oErr) throw oErr;
 
+      const buyerId = userId ?? user?.id ?? null;
+      if (buyerId && t.appliedCouponIds.length > 0) {
+        await recordCouponRedemptions(t.appliedCouponIds, buyerId, String(newOrderId), couponCode);
+      }
+
       clear();
       toast.success("Siparişiniz alındı!");
       if (userId) nav({ to: "/hesabim" });
       else setPlacedCode(String(newOrderId).slice(0, 8).toUpperCase());
+
 
     } catch (err) {
       console.error(err);
