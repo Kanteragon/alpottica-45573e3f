@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { CartSuggestions } from "@/components/CartSuggestions";
 import { useCart } from "@/lib/cart";
 import { formatTL } from "@/lib/products";
 import { useTotals, useCoupon } from "@/lib/pricing";
