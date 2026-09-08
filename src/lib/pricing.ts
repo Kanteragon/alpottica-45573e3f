@@ -259,8 +259,10 @@ export function computeTotals(
     freeShipping: shippingCost === 0,
     discount,
     appliedCampaigns: applied,
+    appliedCouponIds,
     total: Math.max(0, subtotal - discount + shippingCost),
     couponError,
+    couponNeedsLogin,
   };
 }
 
