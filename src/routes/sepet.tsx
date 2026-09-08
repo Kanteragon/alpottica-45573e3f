@@ -62,7 +62,10 @@ function CartPage() {
                   </div>
                 </div>
               ))}
+              </div>
+              <CartSuggestions />
             </div>
+
 
             <aside className="bg-white rounded-2xl border border-border p-6 h-fit sticky top-24">
               <h2 className="font-display text-2xl text-brand-ink mb-4">Özet</h2>
