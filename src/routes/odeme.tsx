@@ -5,7 +5,7 @@ import { Footer } from "@/components/Footer";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 import { formatTL } from "@/lib/products";
-import { useTotals } from "@/lib/pricing";
+import { useTotals, useCoupon, recordCouponRedemptions } from "@/lib/pricing";
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -25,6 +25,7 @@ function Checkout() {
   const nav = useNavigate();
   const { items, clear } = useCart();
   const t = useTotals(items);
+  const { code: couponCode } = useCoupon();
 
   const { user } = useAuth();
   const [form, setForm] = useState({
