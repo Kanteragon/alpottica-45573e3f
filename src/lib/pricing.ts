@@ -161,6 +161,7 @@ export function computeTotals(
   campaigns: Campaign[] | undefined,
   couponCode?: string,
   catMap: CategoryMap = {},
+  couponCtx: CouponContext = { userId: null, used: {} },
 ): PriceBreakdown {
   const subtotal = items.reduce((n, i) => n + i.price * i.qty, 0);
   const baseShipping = shipping?.aktif ? Number(shipping.ucret) || 0 : 0;
@@ -168,10 +169,12 @@ export function computeTotals(
     list.flatMap((i) => Array.from({ length: Math.max(0, i.qty) }, () => i.price)).sort((a, b) => a - b);
   const code = (couponCode ?? "").trim().toLowerCase();
   let couponError: string | null = code ? "Geçersiz indirim kodu" : null;
+  let couponNeedsLogin = false;
 
   let discount = 0;
   let freeShipping = subtotal > 0 && baseShipping === 0;
   const applied: string[] = [];
+  const appliedCouponIds: string[] = [];
 
   for (const c of campaigns ?? []) {
     if (!c.aktif || !inWindow(c) || subtotal <= 0) continue;
