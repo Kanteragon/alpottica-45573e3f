@@ -344,6 +344,25 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
             </div>
           )}
 
+          {f.tip === "kupon" && (
+            <div className="border rounded-2xl p-3 space-y-3 bg-brand-sand/20">
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={f.uye_zorunlu} onChange={(e) => setF({ ...f, uye_zorunlu: e.target.checked })} />
+                Bu kod yalnızca hesap açan / giriş yapan müşteriler için geçerli
+              </label>
+              <label className="block">
+                <span className="block text-xs uppercase tracking-widest mb-1">Hesap başına kullanım hakkı (0 = sınırsız)</span>
+                <input
+                  type="number" min="0" value={f.kullanim_limiti}
+                  onChange={(e) => setF({ ...f, kullanim_limiti: e.target.value })}
+                  className="w-full border rounded-xl px-3 py-2 bg-white"
+                />
+              </label>
+              <p className="text-xs text-muted-foreground">Kullanım sayımı için üyelik zorunlu olmalıdır.</p>
+            </div>
+          )}
+
+
           {f.tip === "kombine_indirim" ? (
             <>
               <ScopePicker label="A Grubu (kategori veya ürünler)" tip={aTip} onTip={setATip} cats={aCats} onCats={setACats} prods={aProds} onProds={setAProds} />
