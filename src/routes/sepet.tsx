@@ -39,7 +39,8 @@ function CartPage() {
           </div>
         ) : (
           <div className="grid lg:grid-cols-[1fr_360px] gap-8">
-            <div className="bg-white rounded-2xl border border-border divide-y">
+            <div>
+              <div className="bg-white rounded-2xl border border-border divide-y">
               {items.map((i) => (
                 <div key={i.product_id} className="p-5 flex gap-4 items-center">
                   <div className="w-24 h-24 rounded-xl bg-brand-sand/30 flex items-center justify-center overflow-hidden">
