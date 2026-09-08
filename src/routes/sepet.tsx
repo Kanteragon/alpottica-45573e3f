@@ -98,6 +98,11 @@ function CartPage() {
                   )}
                 </div>
                 {code && t.couponError && <p className="text-xs text-red-600 mt-2">{t.couponError}</p>}
+                {code && t.couponNeedsLogin && (
+                  <Link to="/giris" className="inline-block mt-2 text-xs font-semibold underline text-brand-ink">
+                    Giriş yap / hesap oluştur
+                  </Link>
+                )}
                 {code && !t.couponError && <p className="text-xs text-brand-cta mt-2">Kod uygulandı.</p>}
               </div>
 
