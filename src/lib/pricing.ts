@@ -90,6 +90,9 @@ export function useCampaigns() {
         kosul_tip: ((c as { kosul_tip?: string }).kosul_tip ?? "tumu"),
         kosul_kategori_ids: ((c as { kosul_kategori_ids?: string[] }).kosul_kategori_ids ?? []),
         kosul_urun_ids: ((c as { kosul_urun_ids?: string[] }).kosul_urun_ids ?? []),
+        uye_zorunlu: ((c as { uye_zorunlu?: boolean }).uye_zorunlu ?? true),
+        kullanim_limiti: Number((c as { kullanim_limiti?: number }).kullanim_limiti ?? 1),
+        oneri_goster: ((c as { oneri_goster?: boolean }).oneri_goster ?? true),
       })) as Campaign[];
     },
   });
