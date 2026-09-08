@@ -412,6 +412,13 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
             </>
           )}
 
+          {(f.tip === "ikinci_urun" || f.tip === "kombine_indirim") && (
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={f.oneri_goster} onChange={(e) => setF({ ...f, oneri_goster: e.target.checked })} />
+              Sepette "şunu da ekle, şu kadar indirim" önerisi göster
+            </label>
+          )}
+
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={f.aktif} onChange={(e) => setF({ ...f, aktif: e.target.checked })} /> Aktif
           </label>
