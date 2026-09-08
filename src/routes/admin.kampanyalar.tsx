@@ -228,6 +228,9 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
     kod: row?.kod ?? "",
     min_adet: String(row?.min_adet ?? 2),
     max_indirim: String(row?.max_indirim ?? 0),
+    uye_zorunlu: row?.uye_zorunlu ?? true,
+    kullanim_limiti: String(row?.kullanim_limiti ?? 1),
+    oneri_goster: row?.oneri_goster ?? true,
     aktif: row?.aktif ?? true,
   });
   const [hedefTip, setHedefTip] = useState(row?.hedef_tip ?? "tumu");
