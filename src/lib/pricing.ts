@@ -30,6 +30,9 @@ export type Campaign = {
   kosul_tip: string;
   kosul_kategori_ids: string[];
   kosul_urun_ids: string[];
+  uye_zorunlu: boolean;
+  kullanim_limiti: number;
+  oneri_goster: boolean;
 };
 
 /** product_id -> kategori id listesi */
