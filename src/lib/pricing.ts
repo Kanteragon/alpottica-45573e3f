@@ -209,6 +209,18 @@ export function computeTotals(
       }
     } else if (c.tip === "kupon") {
       if (!c.kod || !code || c.kod.trim().toLowerCase() !== code) continue;
+      if (c.uye_zorunlu && !couponCtx.userId) {
+        couponNeedsLogin = true;
+        couponError = "Bu indirim kodunu kullanmak için giriş yapmalısınız";
+        continue;
+      }
+      if (c.kullanim_limiti > 0 && couponCtx.userId) {
+        const used = couponCtx.used[c.id] ?? 0;
+        if (used >= c.kullanim_limiti) {
+          couponError = `Bu kodu kullanma hakkınız doldu (hesap başına ${c.kullanim_limiti} kez)`;
+          continue;
+        }
+      }
       if (subtotal < c.esik) {
         couponError = `Bu kod en az ${c.esik} ₺ sepet tutarında geçerli`;
         continue;
@@ -217,6 +229,8 @@ export function computeTotals(
       if (base <= 0) { couponError = "Bu kod sepetinizdeki ürünler için geçerli değil"; continue; }
       const amount = capped(c.indirim_tutar > 0 ? c.indirim_tutar : (base * c.indirim_oran) / 100, c);
       couponError = null;
+      couponNeedsLogin = false;
+      appliedCouponIds.push(c.id);
       if (amount > 0) { discount += amount; applied.push(c.ad); }
       else { freeShipping = true; applied.push(c.ad); }
     } else if (c.tip === "kombine_indirim") {
