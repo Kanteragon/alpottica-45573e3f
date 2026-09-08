@@ -127,12 +127,15 @@ export type Database = {
           kosul_kategori_ids: string[]
           kosul_tip: string
           kosul_urun_ids: string[]
+          kullanim_limiti: number
           max_indirim: number
           min_adet: number
+          oneri_goster: boolean
           tip: string
           updated_at: string
           urun_a: string | null
           urun_b: string | null
+          uye_zorunlu: boolean
         }
         Insert: {
           ad: string
@@ -156,12 +159,15 @@ export type Database = {
           kosul_kategori_ids?: string[]
           kosul_tip?: string
           kosul_urun_ids?: string[]
+          kullanim_limiti?: number
           max_indirim?: number
           min_adet?: number
+          oneri_goster?: boolean
           tip?: string
           updated_at?: string
           urun_a?: string | null
           urun_b?: string | null
+          uye_zorunlu?: boolean
         }
         Update: {
           ad?: string
@@ -185,12 +191,15 @@ export type Database = {
           kosul_kategori_ids?: string[]
           kosul_tip?: string
           kosul_urun_ids?: string[]
+          kullanim_limiti?: number
           max_indirim?: number
           min_adet?: number
+          oneri_goster?: boolean
           tip?: string
           updated_at?: string
           urun_a?: string | null
           urun_b?: string | null
+          uye_zorunlu?: boolean
         }
         Relationships: [
           {
@@ -237,6 +246,48 @@ export type Database = {
           sort?: number
         }
         Relationships: []
+      }
+      coupon_redemptions: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          id: string
+          kod: string | null
+          order_id: string | null
+          user_id: string
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          id?: string
+          kod?: string | null
+          order_id?: string | null
+          user_id: string
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          id?: string
+          kod?: string | null
+          order_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "coupon_redemptions_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "campaigns"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "coupon_redemptions_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       custom_scripts: {
         Row: {
