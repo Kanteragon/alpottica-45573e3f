@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { CartItem } from "@/lib/cart";
+import { useAuth } from "@/lib/auth";
 
 export type Shipping = { firma: string; ucret: number; aktif: boolean };
 
@@ -30,6 +31,9 @@ export type Campaign = {
   kosul_tip: string;
   kosul_kategori_ids: string[];
   kosul_urun_ids: string[];
+  uye_zorunlu: boolean;
+  kullanim_limiti: number;
+  oneri_goster: boolean;
 };
 
 /** product_id -> kategori id listesi */
@@ -87,6 +91,9 @@ export function useCampaigns() {
         kosul_tip: ((c as { kosul_tip?: string }).kosul_tip ?? "tumu"),
         kosul_kategori_ids: ((c as { kosul_kategori_ids?: string[] }).kosul_kategori_ids ?? []),
         kosul_urun_ids: ((c as { kosul_urun_ids?: string[] }).kosul_urun_ids ?? []),
+        uye_zorunlu: ((c as { uye_zorunlu?: boolean }).uye_zorunlu ?? true),
+        kullanim_limiti: Number((c as { kullanim_limiti?: number }).kullanim_limiti ?? 1),
+        oneri_goster: ((c as { oneri_goster?: boolean }).oneri_goster ?? true),
       })) as Campaign[];
     },
   });
@@ -106,8 +113,16 @@ export type PriceBreakdown = {
   freeShipping: boolean;
   discount: number;
   appliedCampaigns: string[];
+  appliedCouponIds: string[];
   total: number;
   couponError: string | null;
+  couponNeedsLogin: boolean;
+};
+
+export type CouponContext = {
+  userId: string | null;
+  /** campaign_id -> bu hesabın kaç kez kullandığı */
+  used: Record<string, number>;
 };
 
 function capped(amount: number, c: Campaign) {
@@ -147,6 +162,7 @@ export function computeTotals(
   campaigns: Campaign[] | undefined,
   couponCode?: string,
   catMap: CategoryMap = {},
+  couponCtx: CouponContext = { userId: null, used: {} },
 ): PriceBreakdown {
   const subtotal = items.reduce((n, i) => n + i.price * i.qty, 0);
   const baseShipping = shipping?.aktif ? Number(shipping.ucret) || 0 : 0;
@@ -154,10 +170,12 @@ export function computeTotals(
     list.flatMap((i) => Array.from({ length: Math.max(0, i.qty) }, () => i.price)).sort((a, b) => a - b);
   const code = (couponCode ?? "").trim().toLowerCase();
   let couponError: string | null = code ? "Geçersiz indirim kodu" : null;
+  let couponNeedsLogin = false;
 
   let discount = 0;
   let freeShipping = subtotal > 0 && baseShipping === 0;
   const applied: string[] = [];
+  const appliedCouponIds: string[] = [];
 
   for (const c of campaigns ?? []) {
     if (!c.aktif || !inWindow(c) || subtotal <= 0) continue;
@@ -192,6 +210,18 @@ export function computeTotals(
       }
     } else if (c.tip === "kupon") {
       if (!c.kod || !code || c.kod.trim().toLowerCase() !== code) continue;
+      if (c.uye_zorunlu && !couponCtx.userId) {
+        couponNeedsLogin = true;
+        couponError = "Bu indirim kodunu kullanmak için giriş yapmalısınız";
+        continue;
+      }
+      if (c.kullanim_limiti > 0 && couponCtx.userId) {
+        const used = couponCtx.used[c.id] ?? 0;
+        if (used >= c.kullanim_limiti) {
+          couponError = `Bu kodu kullanma hakkınız doldu (hesap başına ${c.kullanim_limiti} kez)`;
+          continue;
+        }
+      }
       if (subtotal < c.esik) {
         couponError = `Bu kod en az ${c.esik} ₺ sepet tutarında geçerli`;
         continue;
@@ -200,6 +230,8 @@ export function computeTotals(
       if (base <= 0) { couponError = "Bu kod sepetinizdeki ürünler için geçerli değil"; continue; }
       const amount = capped(c.indirim_tutar > 0 ? c.indirim_tutar : (base * c.indirim_oran) / 100, c);
       couponError = null;
+      couponNeedsLogin = false;
+      appliedCouponIds.push(c.id);
       if (amount > 0) { discount += amount; applied.push(c.ad); }
       else { freeShipping = true; applied.push(c.ad); }
     } else if (c.tip === "kombine_indirim") {
@@ -228,8 +260,10 @@ export function computeTotals(
     freeShipping: shippingCost === 0,
     discount,
     appliedCampaigns: applied,
+    appliedCouponIds,
     total: Math.max(0, subtotal - discount + shippingCost),
     couponError,
+    couponNeedsLogin,
   };
 }
 
@@ -269,10 +303,47 @@ export function useCartCategoryMap(items: CartItem[]) {
   });
 }
 
+/** Giriş yapmış kullanıcının kupon kullanım sayıları */
+export function useCouponUsage() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["coupon-usage", user?.id ?? "anon"],
+    enabled: !!user,
+    staleTime: 60_000,
+    queryFn: async (): Promise<Record<string, number>> => {
+      const { data, error } = await supabase
+        .from("coupon_redemptions")
+        .select("campaign_id")
+        .eq("user_id", user!.id);
+      if (error) throw error;
+      const map: Record<string, number> = {};
+      for (const r of data ?? []) map[r.campaign_id] = (map[r.campaign_id] ?? 0) + 1;
+      return map;
+    },
+  });
+}
+
+export async function recordCouponRedemptions(
+  campaignIds: string[],
+  userId: string,
+  orderId: string | null,
+  kod: string,
+) {
+  if (campaignIds.length === 0) return;
+  await supabase.from("coupon_redemptions").insert(
+    campaignIds.map((campaign_id) => ({ campaign_id, user_id: userId, order_id: orderId, kod })),
+  );
+}
+
 export function useTotals(items: CartItem[]): PriceBreakdown {
   const { data: shipping } = useShipping();
   const { data: campaigns } = useCampaigns();
   const { data: catMap } = useCartCategoryMap(items);
   const { code } = useCoupon();
-  return computeTotals(items, shipping, campaigns, code, catMap ?? {});
+  const { user } = useAuth();
+  const { data: used } = useCouponUsage();
+  return computeTotals(items, shipping, campaigns, code, catMap ?? {}, {
+    userId: user?.id ?? null,
+    used: used ?? {},
+  });
 }

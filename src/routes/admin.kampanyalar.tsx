@@ -228,6 +228,9 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
     kod: row?.kod ?? "",
     min_adet: String(row?.min_adet ?? 2),
     max_indirim: String(row?.max_indirim ?? 0),
+    uye_zorunlu: row?.uye_zorunlu ?? true,
+    kullanim_limiti: String(row?.kullanim_limiti ?? 1),
+    oneri_goster: row?.oneri_goster ?? true,
     aktif: row?.aktif ?? true,
   });
   const [hedefTip, setHedefTip] = useState(row?.hedef_tip ?? "tumu");
@@ -274,6 +277,9 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
       kod: f.tip === "kupon" ? f.kod.trim() : null,
       min_adet: Number(f.min_adet) || 2,
       max_indirim: Number(f.max_indirim) || 0,
+      uye_zorunlu: f.tip === "kupon" ? f.uye_zorunlu : false,
+      kullanim_limiti: f.tip === "kupon" ? Math.max(0, Number(f.kullanim_limiti) || 0) : 0,
+      oneri_goster: f.oneri_goster,
       aktif: f.aktif,
     };
     const { error } = isNew
@@ -338,6 +344,25 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
             </div>
           )}
 
+          {f.tip === "kupon" && (
+            <div className="border rounded-2xl p-3 space-y-3 bg-brand-sand/20">
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={f.uye_zorunlu} onChange={(e) => setF({ ...f, uye_zorunlu: e.target.checked })} />
+                Bu kod yalnızca hesap açan / giriş yapan müşteriler için geçerli
+              </label>
+              <label className="block">
+                <span className="block text-xs uppercase tracking-widest mb-1">Hesap başına kullanım hakkı (0 = sınırsız)</span>
+                <input
+                  type="number" min="0" value={f.kullanim_limiti}
+                  onChange={(e) => setF({ ...f, kullanim_limiti: e.target.value })}
+                  className="w-full border rounded-xl px-3 py-2 bg-white"
+                />
+              </label>
+              <p className="text-xs text-muted-foreground">Kullanım sayımı için üyelik zorunlu olmalıdır.</p>
+            </div>
+          )}
+
+
           {f.tip === "kombine_indirim" ? (
             <>
               <ScopePicker label="A Grubu (kategori veya ürünler)" tip={aTip} onTip={setATip} cats={aCats} onCats={setACats} prods={aProds} onProds={setAProds} />
@@ -385,6 +410,13 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
               </label>
               <p className="text-xs text-muted-foreground">Tutar girilirse oran yok sayılır.</p>
             </>
+          )}
+
+          {(f.tip === "ikinci_urun" || f.tip === "kombine_indirim") && (
+            <label className="flex items-center gap-2 text-sm">
+              <input type="checkbox" checked={f.oneri_goster} onChange={(e) => setF({ ...f, oneri_goster: e.target.checked })} />
+              Sepette "şunu da ekle, şu kadar indirim" önerisi göster
+            </label>
           )}
 
           <label className="flex items-center gap-2 text-sm">

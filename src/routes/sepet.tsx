@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { CartSuggestions } from "@/components/CartSuggestions";
 import { useCart } from "@/lib/cart";
 import { formatTL } from "@/lib/products";
 import { useTotals, useCoupon } from "@/lib/pricing";
@@ -39,7 +40,8 @@ function CartPage() {
           </div>
         ) : (
           <div className="grid lg:grid-cols-[1fr_360px] gap-8">
-            <div className="bg-white rounded-2xl border border-border divide-y">
+            <div>
+              <div className="bg-white rounded-2xl border border-border divide-y">
               {items.map((i) => (
                 <div key={i.product_id} className="p-5 flex gap-4 items-center">
                   <div className="w-24 h-24 rounded-xl bg-brand-sand/30 flex items-center justify-center overflow-hidden">
@@ -62,7 +64,10 @@ function CartPage() {
                   </div>
                 </div>
               ))}
+              </div>
+              <CartSuggestions />
             </div>
+
 
             <aside className="bg-white rounded-2xl border border-border p-6 h-fit sticky top-24">
               <h2 className="font-display text-2xl text-brand-ink mb-4">Özet</h2>
@@ -93,6 +98,11 @@ function CartPage() {
                   )}
                 </div>
                 {code && t.couponError && <p className="text-xs text-red-600 mt-2">{t.couponError}</p>}
+                {code && t.couponNeedsLogin && (
+                  <Link to="/giris" className="inline-block mt-2 text-xs font-semibold underline text-brand-ink">
+                    Giriş yap / hesap oluştur
+                  </Link>
+                )}
                 {code && !t.couponError && <p className="text-xs text-brand-cta mt-2">Kod uygulandı.</p>}
               </div>
 

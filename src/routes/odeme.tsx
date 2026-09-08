@@ -5,7 +5,7 @@ import { Footer } from "@/components/Footer";
 import { useCart } from "@/lib/cart";
 import { useAuth } from "@/lib/auth";
 import { formatTL } from "@/lib/products";
-import { useTotals } from "@/lib/pricing";
+import { useTotals, useCoupon, recordCouponRedemptions } from "@/lib/pricing";
 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -25,6 +25,7 @@ function Checkout() {
   const nav = useNavigate();
   const { items, clear } = useCart();
   const t = useTotals(items);
+  const { code: couponCode } = useCoupon();
 
   const { user } = useAuth();
   const [form, setForm] = useState({
@@ -83,6 +84,8 @@ function Checkout() {
     if (!user && form.createAccount && form.password.length < 6) return toast.error("Şifre en az 6 karakter olmalıdır");
     if (!user && form.createAccount && !form.kvkk)
       return toast.error("Üyelik sözleşmesi ve KVKK metnini onaylamanız gerekiyor");
+    if (t.couponNeedsLogin)
+      return toast.error("İndirim kodunu kullanmak için giriş yapın veya kodu kaldırın");
 
     setBusy(true);
     try {
@@ -145,10 +148,16 @@ function Checkout() {
       });
       if (oErr) throw oErr;
 
+      const buyerId = userId ?? user?.id ?? null;
+      if (buyerId && t.appliedCouponIds.length > 0) {
+        await recordCouponRedemptions(t.appliedCouponIds, buyerId, String(newOrderId), couponCode);
+      }
+
       clear();
       toast.success("Siparişiniz alındı!");
       if (userId) nav({ to: "/hesabim" });
       else setPlacedCode(String(newOrderId).slice(0, 8).toUpperCase());
+
 
     } catch (err) {
       console.error(err);
