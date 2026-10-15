@@ -13,6 +13,10 @@ export const Route = createFileRoute("/giris")({
     meta: [
       { title: "Giriş — Alpottica" },
       { name: "description", content: "Hesabınıza giriş yapın veya kayıt olun." },
+      { property: "og:title", content: "Giriş — Alpottica" },
+      { property: "og:description", content: "Hesabınıza giriş yapın veya kayıt olun." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Login,

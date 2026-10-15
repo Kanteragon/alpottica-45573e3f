@@ -16,6 +16,10 @@ export const Route = createFileRoute("/odeme")({
     meta: [
       { title: "Ödeme — Alpottica" },
       { name: "description", content: "Siparişinizi tamamlayın." },
+      { property: "og:title", content: "Ödeme — Alpottica" },
+      { property: "og:description", content: "Siparişinizi tamamlayın." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Checkout,

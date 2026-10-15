@@ -6,6 +6,8 @@ import { FeaturedProducts } from "@/components/FeaturedProducts";
 import { CategoryShowcase } from "@/components/CategoryShowcase";
 // import { TryOnGame } from "@/components/TryOnGame";
 import { Footer } from "@/components/Footer";
+import { MaintenancePage } from "@/components/MaintenancePage";
+import { useSiteSettings } from "@/lib/settings";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -50,6 +52,8 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
+  const { data: settings } = useSiteSettings();
+  if (settings?.maintenance_mode !== false) return <MaintenancePage />;
   return (
     <div className="bg-background text-foreground">
       <Navbar />

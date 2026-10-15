@@ -8,3 +8,5 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Homepage maintenance uses the shared site setting, defaulting on when unavailable so the notice remains visible during a database outage; disabling the persisted setting restores the original homepage.

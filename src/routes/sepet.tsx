@@ -13,6 +13,10 @@ export const Route = createFileRoute("/sepet")({
     meta: [
       { title: "Sepetim — Alpottica" },
       { name: "description", content: "Alışveriş sepetiniz." },
+      { property: "og:title", content: "Sepetim — Alpottica" },
+      { property: "og:description", content: "Alışveriş sepetiniz." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: CartPage,

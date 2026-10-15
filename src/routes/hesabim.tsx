@@ -20,6 +20,10 @@ export const Route = createFileRoute("/hesabim")({
     meta: [
       { title: "Hesabım — Alpottica" },
       { name: "description", content: "Siparişleriniz, adresleriniz ve hesap bilgileriniz." },
+      { property: "og:title", content: "Hesabım — Alpottica" },
+      { property: "og:description", content: "Siparişleriniz, adresleriniz ve hesap bilgileriniz." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
     ],
   }),
   component: Account,

@@ -45,6 +45,9 @@
   --brand-cta: oklch(0.28 0.08 265);
   --success: #16a34a;
   --danger: #dc2626;
+  --maintenance-shopier: #e95427;
+  --maintenance-instagram: #c13584;
+  --maintenance-whatsapp: #168b52;
 
   --background: oklch(1 0 0);
   --foreground: oklch(0.15 0.01 60);
@@ -123,3 +126,8 @@
 .flex-1.min-w-0.overflow-x-auto.no-scrollbar {
   display: none !important;
 }
+
+.maintenance-page .maintenance-shopier { color: var(--maintenance-shopier); background: color-mix(in srgb, var(--maintenance-shopier) 10%, transparent); }
+.maintenance-page .maintenance-instagram { color: var(--maintenance-instagram); background: color-mix(in srgb, var(--maintenance-instagram) 10%, transparent); }
+.maintenance-page .maintenance-whatsapp { color: var(--maintenance-whatsapp); background: color-mix(in srgb, var(--maintenance-whatsapp) 10%, transparent); }
+.maintenance-page h1 { letter-spacing: 0; }

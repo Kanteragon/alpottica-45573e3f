@@ -5,9 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { ImageUploader } from "@/components/ImageUploader";
 import { useSiteSettings, SETTINGS_DEFAULTS } from "@/lib/settings";
 import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
+import type { Database } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/admin/ayarlar")({
-  head: () => ({ meta: [{ title: "Genel Ayarlar — Admin" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Genel Ayarlar — Alpottica Admin" }, { name: "robots", content: "noindex" }, { name: "description", content: "Alpottica mağaza ve bakım ayarları." }, { property: "og:title", content: "Genel Ayarlar — Alpottica Admin" }, { property: "og:description", content: "Alpottica mağaza ve bakım ayarları." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: SettingsPage,
 });
 
@@ -32,9 +34,11 @@ function SettingsPage() {
     instagram: "",
   });
   const [busy, setBusy] = useState(false);
+  const [maintenanceMode, setMaintenanceMode] = useState(true);
 
   useEffect(() => {
     if (settings) {
+      setMaintenanceMode(settings.maintenance_mode);
       setLogoUrl(settings.logo_url ?? "");
       setFaviconUrl(settings.favicon_url ?? "");
       setMaxWidth(settings.logo_max_width);
@@ -58,8 +62,9 @@ function SettingsPage() {
   const save = async () => {
     setBusy(true);
     try {
-      const { error } = await supabase.from("site_settings").upsert({
+      const payload = {
         id: 1,
+        maintenance_mode: maintenanceMode,
         logo_url: logoUrl || null,
         favicon_url: faviconUrl || null,
         logo_max_width: Math.max(40, Math.min(600, Number(maxWidth) || 260)),
@@ -67,7 +72,10 @@ function SettingsPage() {
         ...colors,
         ...contact,
         updated_at: new Date().toISOString(),
-      });
+      };
+      // Preserve the additive field at runtime until the unavailable database regenerates its types.
+      const persistedPayload: Database["public"]["Tables"]["site_settings"]["Insert"] = payload;
+      const { error } = await supabase.from("site_settings").upsert(persistedPayload);
       if (error) throw error;
       qc.invalidateQueries({ queryKey: ["site_settings"] });
       toast.success("Ayarlar kaydedildi");
@@ -91,6 +99,13 @@ function SettingsPage() {
       <p className="text-sm text-muted-foreground mb-8">Mağaza logosu, favicon, renkler ve iletişim bilgileri.</p>
 
       <div className="bg-white rounded-2xl border p-6 space-y-8">
+        <div className="flex items-center justify-between gap-5 border-b border-border pb-6">
+          <div>
+            <label htmlFor="maintenance-mode" className="block text-sm font-semibold text-brand-ink">Ana Sayfa Bakım Modu</label>
+            <p className="text-xs text-muted-foreground mt-2">Shopier, Instagram ve WhatsApp bağlantılı bakım duyurusu.</p>
+          </div>
+          <Switch id="maintenance-mode" checked={maintenanceMode} onCheckedChange={setMaintenanceMode} />
+        </div>
         <div>
           <label className="block text-sm font-semibold text-brand-ink mb-2">Marka İsmi</label>
           <input
