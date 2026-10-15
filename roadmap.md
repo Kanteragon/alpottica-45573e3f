@@ -1,0 +1,3 @@
+- [ ] Show temporary homepage notice with Shopier, Instagram and WhatsApp links.
+- [ ] Add general-settings maintenance toggle and verify display.
+- [ ] Apply maintenance setting to database (blocked: database connection unavailable).

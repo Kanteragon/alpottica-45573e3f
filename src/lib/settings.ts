@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export type SiteSettings = {
+  maintenance_mode: boolean;
   logo_url: string | null;
   favicon_url: string | null;
   logo_max_width: number;
@@ -36,7 +37,7 @@ export function useSiteSettings() {
       const { data } = await supabase
         .from("site_settings")
         .select(
-          "logo_url,favicon_url,logo_max_width,brand_name,color_primary,color_secondary,color_success,color_danger,phone,whatsapp,email,address,instagram",
+          "*",
         )
         .eq("id", 1)
         .maybeSingle();
@@ -46,6 +47,7 @@ export function useSiteSettings() {
         return typeof v === "string" && v.trim() ? v.trim() : fallback;
       };
       return {
+        maintenance_mode: typeof d?.["maintenance_mode"] === "boolean" ? d["maintenance_mode"] : true,
         logo_url: (d?.["logo_url"] as string | null) ?? null,
         favicon_url: (d?.["favicon_url"] as string | null) ?? null,
         logo_max_width: (d?.["logo_max_width"] as number | null) ?? 260,
