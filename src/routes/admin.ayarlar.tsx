@@ -6,9 +6,10 @@ import { ImageUploader } from "@/components/ImageUploader";
 import { useSiteSettings, SETTINGS_DEFAULTS } from "@/lib/settings";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
+import type { Database } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/admin/ayarlar")({
-  head: () => ({ meta: [{ title: "Genel Ayarlar — Admin" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Genel Ayarlar — Alpottica Admin" }, { name: "robots", content: "noindex" }, { name: "description", content: "Alpottica mağaza ve bakım ayarları." }, { property: "og:title", content: "Genel Ayarlar — Alpottica Admin" }, { property: "og:description", content: "Alpottica mağaza ve bakım ayarları." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: SettingsPage,
 });
 
@@ -72,7 +73,9 @@ function SettingsPage() {
         ...contact,
         updated_at: new Date().toISOString(),
       };
-      const { error } = await supabase.from("site_settings").upsert(payload);
+      // Preserve the additive field at runtime until the unavailable database regenerates its types.
+      const persistedPayload: Database["public"]["Tables"]["site_settings"]["Insert"] = payload;
+      const { error } = await supabase.from("site_settings").upsert(persistedPayload);
       if (error) throw error;
       qc.invalidateQueries({ queryKey: ["site_settings"] });
       toast.success("Ayarlar kaydedildi");
