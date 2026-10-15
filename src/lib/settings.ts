@@ -47,7 +47,7 @@ export function useSiteSettings() {
         return typeof v === "string" && v.trim() ? v.trim() : fallback;
       };
       return {
-        maintenance_mode: d?.["maintenance_mode"] === true,
+        maintenance_mode: typeof d?.["maintenance_mode"] === "boolean" ? d["maintenance_mode"] : true,
         logo_url: (d?.["logo_url"] as string | null) ?? null,
         favicon_url: (d?.["favicon_url"] as string | null) ?? null,
         logo_max_width: (d?.["logo_max_width"] as number | null) ?? 260,
