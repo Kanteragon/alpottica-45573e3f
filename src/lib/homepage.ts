@@ -21,7 +21,7 @@ export type ShowcaseCategory = {
 export const DEFAULT_SECTIONS: HomeSection[] = [
   { key: "hero", label: "Slider (Hero)", sort_order: 1, is_active: true },
   { key: "features", label: "Özellik Şeridi", sort_order: 2, is_active: true },
-  { key: "categories", label: "Kategori Vitrini", sort_order: 3, is_active: true },
+  { key: "categories", label: "Kategori Vitrini", sort_order: 3, is_active: false },
   { key: "products", label: "Öne Çıkan Ürünler", sort_order: 4, is_active: true },
 ];
 
