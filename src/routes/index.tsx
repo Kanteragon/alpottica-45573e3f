@@ -52,8 +52,9 @@ export const Route = createFileRoute("/")({
 });
 
 function Index() {
-  const { data: settings } = useSiteSettings();
-  if (settings?.maintenance_mode !== false) return <MaintenancePage />;
+  const { data: settings, isLoading } = useSiteSettings();
+  if (isLoading) return <div className="min-h-svh bg-background" />;
+  if (settings?.maintenance_mode === true) return <MaintenancePage />;
   return (
     <div className="bg-background text-foreground">
       <Navbar />
