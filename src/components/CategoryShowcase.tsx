@@ -1,28 +1,13 @@
-const CATS = [
-  {
-    title: "Klipsli Modeller",
-    tag: "YENİ SERİ",
-    image:
-      "https://cqcwjcbxpmbntwcetwuo.supabase.co/storage/v1/object/sign/product-images/imports/114c82bc27d44e89_0003516_retro-nero-trio.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNzAxODRhYy0wODRhLTQ5NWYtOTg4MC0xYjZiYTAyODY2M2MiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LWltYWdlcy9pbXBvcnRzLzExNGM4MmJjMjdkNDRlODlfMDAwMzUxNl9yZXRyby1uZXJvLXRyaW8uanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQ3MjY5MTgsImV4cCI6MjEwMDA4NjkxOH0.z13l_z4XpyUZK5h5XKjo9DUwTUDrYdQVeTn4gJpLKkk",
-    href: "/urunler?tag=klipsli",
-  },
-  {
-    title: "Outlet Modeller",
-    tag: "%30'A VARAN İNDİRİM",
-    image:
-      "https://cqcwjcbxpmbntwcetwuo.supabase.co/storage/v1/object/sign/product-images/catalog/7799469a62a26062.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNzAxODRhYy0wODRhLTQ5NWYtOTg4MC0xYjZiYTAyODY2M2MiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LWltYWdlcy9jYXRhbG9nLzc3OTk0NjlhNjJhMjYwNjIuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQ3MjM0MzksImV4cCI6MjEwMDA4MzQzOX0.XUS389ZCsZ3zBVbNQmqthB55pc8Pm6PrnJYRv5WaIKA",
-    href: "/urunler?tag=outlet",
-  },
-  {
-    title: "Tüm Modeller",
-    tag: "HEPSİNİ KEŞFET",
-    image:
-      "https://cqcwjcbxpmbntwcetwuo.supabase.co/storage/v1/object/sign/product-images/catalog/2d342e813f48573f.jpeg?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV9hNzAxODRhYy0wODRhLTQ5NWYtOTg4MC0xYjZiYTAyODY2M2MiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJwcm9kdWN0LWltYWdlcy9jYXRhbG9nLzJkMzQyZTgxM2Y0ODU3M2YuanBlZyIsInNjb3BlIjoiZG93bmxvYWQiLCJpYXQiOjE3ODQ3MjM0MzcsImV4cCI6MjEwMDA4MzQzN30.5_R20vHcDTTN2vHAMFc3irPAlY_3Gp8lrXBp7DgRVhA",
-    href: "/urunler?tag=tumu",
-  },
-];
+import { useShowcaseCategories, DEFAULT_SHOWCASE } from "@/lib/homepage";
+
+const FALLBACK_IMAGES: Record<string, string> = {};
 
 export function CategoryShowcase() {
+  const { data } = useShowcaseCategories();
+  const cats = (data && data.length > 0 ? data : DEFAULT_SHOWCASE.map((c, i) => ({ ...c, id: `d${i}` }))).filter(
+    (c) => c.is_active,
+  );
+
   return (
     <section className="bg-background py-10 sm:py-14">
       <div className="max-w-[1600px] mx-auto px-6 lg:px-10">
@@ -39,18 +24,22 @@ export function CategoryShowcase() {
           </a>
         </div>
         <div className="grid md:grid-cols-3 gap-6">
-          {CATS.map((c) => (
+          {cats.map((c) => (
             <a
-              key={c.title}
+              key={c.id}
               href={c.href}
               className="group relative aspect-[4/5] overflow-hidden rounded-2xl bg-brand-sand"
             >
-              <img
-                src={c.image}
-                alt={c.title}
-                loading="lazy"
-                className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
+              {c.image_url || FALLBACK_IMAGES[c.title] ? (
+                <img
+                  src={c.image_url || FALLBACK_IMAGES[c.title]}
+                  alt={c.title}
+                  loading="lazy"
+                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+              ) : (
+                <div className="absolute inset-0 bg-brand-sand" />
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
               <div className="absolute inset-x-0 bottom-0 p-7 text-white">
                 <p className="text-[11px] tracking-[0.35em] text-white/80 mb-2">{c.tag}</p>
