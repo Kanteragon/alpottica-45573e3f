@@ -9,6 +9,7 @@ export function CategoryShowcase() {
   );
 
   return (
+    <!--This is a comment. Comments are not displayed in the browser
     <section className="bg-background py-10 sm:py-14">
       <div className="max-w-[1600px] mx-auto px-6 lg:px-10">
         <div className="flex items-end justify-between mb-6 sm:mb-8">
@@ -53,5 +54,7 @@ export function CategoryShowcase() {
         </div>
       </div>
     </section>
+      -->
+
   );
 }
