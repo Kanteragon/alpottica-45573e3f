@@ -68,6 +68,8 @@ export function Navbar() {
                 <img
                   src={logoSrc}
                   alt={brand}
+                  loading="lazy"
+                  decoding="async"
                   style={{ maxWidth: `${logoMax}px` }}
                   className={`h-10 sm:h-12 lg:h-14 w-auto object-contain transition-all duration-500 border-0 outline-none ${solid ? "invert" : "invert-0"}`}
                 />
