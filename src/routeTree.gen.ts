@@ -25,6 +25,7 @@ import { Route as UrunlerRouteImport } from './routes/urunler'
 import { Route as UyelikSozlesmesiRouteImport } from './routes/uyelik-sozlesmesi'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminAktarimRouteImport } from './routes/admin.aktarim'
+import { Route as AdminAnasayfaRouteImport } from './routes/admin.anasayfa'
 import { Route as AdminAyarlarRouteImport } from './routes/admin.ayarlar'
 import { Route as AdminBultenRouteImport } from './routes/admin.bulten'
 import { Route as AdminKampanyalarRouteImport } from './routes/admin.kampanyalar'
@@ -121,6 +122,11 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
 const AdminAktarimRoute = AdminAktarimRouteImport.update({
   id: '/aktarim',
   path: '/aktarim',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAnasayfaRoute = AdminAnasayfaRouteImport.update({
+  id: '/anasayfa',
+  path: '/anasayfa',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminAyarlarRoute = AdminAyarlarRouteImport.update({
@@ -225,6 +231,7 @@ export interface FileRoutesByFullPath {
   '/urunler': typeof UrunlerRoute
   '/uyelik-sozlesmesi': typeof UyelikSozlesmesiRoute
   '/admin/aktarim': typeof AdminAktarimRoute
+  '/admin/anasayfa': typeof AdminAnasayfaRoute
   '/admin/ayarlar': typeof AdminAyarlarRoute
   '/admin/bulten': typeof AdminBultenRoute
   '/admin/kampanyalar': typeof AdminKampanyalarRoute
@@ -259,6 +266,7 @@ export interface FileRoutesByTo {
   '/urunler': typeof UrunlerRoute
   '/uyelik-sozlesmesi': typeof UyelikSozlesmesiRoute
   '/admin/aktarim': typeof AdminAktarimRoute
+  '/admin/anasayfa': typeof AdminAnasayfaRoute
   '/admin/ayarlar': typeof AdminAyarlarRoute
   '/admin/bulten': typeof AdminBultenRoute
   '/admin/kampanyalar': typeof AdminKampanyalarRoute
@@ -295,6 +303,7 @@ export interface FileRoutesById {
   '/urunler': typeof UrunlerRoute
   '/uyelik-sozlesmesi': typeof UyelikSozlesmesiRoute
   '/admin/aktarim': typeof AdminAktarimRoute
+  '/admin/anasayfa': typeof AdminAnasayfaRoute
   '/admin/ayarlar': typeof AdminAyarlarRoute
   '/admin/bulten': typeof AdminBultenRoute
   '/admin/kampanyalar': typeof AdminKampanyalarRoute
@@ -332,6 +341,7 @@ export interface FileRouteTypes {
     | '/urunler'
     | '/uyelik-sozlesmesi'
     | '/admin/aktarim'
+    | '/admin/anasayfa'
     | '/admin/ayarlar'
     | '/admin/bulten'
     | '/admin/kampanyalar'
@@ -366,6 +376,7 @@ export interface FileRouteTypes {
     | '/urunler'
     | '/uyelik-sozlesmesi'
     | '/admin/aktarim'
+    | '/admin/anasayfa'
     | '/admin/ayarlar'
     | '/admin/bulten'
     | '/admin/kampanyalar'
@@ -401,6 +412,7 @@ export interface FileRouteTypes {
     | '/urunler'
     | '/uyelik-sozlesmesi'
     | '/admin/aktarim'
+    | '/admin/anasayfa'
     | '/admin/ayarlar'
     | '/admin/bulten'
     | '/admin/kampanyalar'
@@ -553,6 +565,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminAktarimRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/anasayfa': {
+      id: '/admin/anasayfa'
+      path: '/anasayfa'
+      fullPath: '/admin/anasayfa'
+      preLoaderRoute: typeof AdminAnasayfaRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/ayarlar': {
       id: '/admin/ayarlar'
       path: '/ayarlar'
@@ -677,6 +696,7 @@ declare module '@tanstack/react-router' {
 
 interface AdminRouteChildren {
   AdminAktarimRoute: typeof AdminAktarimRoute
+  AdminAnasayfaRoute: typeof AdminAnasayfaRoute
   AdminAyarlarRoute: typeof AdminAyarlarRoute
   AdminBultenRoute: typeof AdminBultenRoute
   AdminKampanyalarRoute: typeof AdminKampanyalarRoute
@@ -698,6 +718,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminAktarimRoute: AdminAktarimRoute,
+  AdminAnasayfaRoute: AdminAnasayfaRoute,
   AdminAyarlarRoute: AdminAyarlarRoute,
   AdminBultenRoute: AdminBultenRoute,
   AdminKampanyalarRoute: AdminKampanyalarRoute,
