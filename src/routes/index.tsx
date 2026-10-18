@@ -8,6 +8,7 @@ import { CategoryShowcase } from "@/components/CategoryShowcase";
 import { Footer } from "@/components/Footer";
 import { MaintenancePage } from "@/components/MaintenancePage";
 import { useSiteSettings } from "@/lib/settings";
+import { useHomepageSections } from "@/lib/homepage";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -53,18 +54,28 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { data: settings, isLoading } = useSiteSettings();
+  const { data: sections } = useHomepageSections();
   if (isLoading) return <div className="min-h-svh bg-background" />;
   if (settings?.maintenance_mode === true) return <MaintenancePage />;
+
+  const SECTION_COMPONENTS: Record<string, React.ComponentType> = {
+    hero: HeroSlider,
+    features: FeatureStrip,
+    categories: CategoryShowcase,
+    products: FeaturedProducts,
+  };
+  const ordered = (sections ?? [])
+    .filter((s) => s.is_active && SECTION_COMPONENTS[s.key])
+    .sort((a, b) => a.sort_order - b.sort_order);
+
   return (
     <div className="bg-background text-foreground">
       <Navbar />
-      <HeroSlider />
-      <FeatureStrip />
-      <CategoryShowcase />
-      <FeaturedProducts />
+      {ordered.map((s) => {
+        const Cmp = SECTION_COMPONENTS[s.key];
+        return <Cmp key={s.key} />;
+      })}
       {/* <TryOnGame /> */}
-
-
       <Footer />
     </div>
   );
