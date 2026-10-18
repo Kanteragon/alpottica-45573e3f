@@ -61,7 +61,7 @@ function Index() {
   const SECTION_COMPONENTS: Record<string, React.ComponentType> = {
     hero: HeroSlider,
     features: FeatureStrip,
-    categories: CategoryShowcase,
+    
     products: FeaturedProducts,
   };
   const ordered = (sections ?? [])
