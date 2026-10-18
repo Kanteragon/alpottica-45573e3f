@@ -21,6 +21,7 @@ const NAV: Entry[] = [
   { to: "/admin", label: "Kontrol Paneli", icon: LayoutDashboard, exact: true },
   {
     key: "icerik", label: "İçerik Yönetimi", icon: FileText, items: [
+      { to: "/admin/anasayfa", label: "Ana Sayfa Yönetimi", icon: LayoutDashboard },
       { to: "/admin/sliderlar", label: "Slider Yönetimi", icon: Images },
       { to: "/admin/menu", label: "Menü Yönetimi", icon: MenuIcon },
       { to: "/admin/vitrin", label: "Vitrin Yönetimi", icon: Star },
