@@ -1,5 +1,9 @@
 import { useRef, useState } from "react";
-import { Upload, X, Loader2, ChevronLeft, ChevronRight, GripVertical } from "lucide-react";
+import { Upload, Loader2 } from "lucide-react";
+import { DndContext, PointerSensor, KeyboardSensor, closestCenter, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
+import { SortableContext, rectSortingStrategy, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { SortableUploadImage } from "@/components/SortableUploadImage";
+import { Button } from "@/components/ui/button";
 import { uploadImages, type UploadBucket } from "@/lib/upload";
 import { toast } from "sonner";
 
@@ -14,7 +18,11 @@ type Props = {
 export function ImageUploader({ bucket, value, onChange, multiple = true, label = "Görsel Yükle" }: Props) {
   const ref = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
-  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+  const ids = value.map((url, index) => `${index}:${url}`);
 
   const handle = async (files: FileList | null) => {
     if (!files || !files.length) return;
@@ -36,22 +44,31 @@ export function ImageUploader({ bucket, value, onChange, multiple = true, label 
     if (to < 0 || to >= value.length || from === to) return;
     const next = value.slice();
     const [item] = next.splice(from, 1);
+    if (item === undefined) return;
     next.splice(to, 0, item);
     onChange(next);
+  };
+
+  const onDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || busy) return;
+    const from = ids.indexOf(String(active.id));
+    const to = ids.indexOf(String(over.id));
+    if (from >= 0 && to >= 0) move(from, to);
   };
 
   return (
     <div>
       <div className="flex items-center gap-3 mb-3">
-        <button
+        <Button
           type="button"
+          variant="outline"
           onClick={() => ref.current?.click()}
           disabled={busy}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-brand-ink text-sm hover:bg-brand-ink hover:text-white transition disabled:opacity-60"
+          className="rounded-full"
         >
           {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
           {busy ? "Yükleniyor..." : label}
-        </button>
+        </Button>
         <input
           ref={ref}
           type="file"
@@ -63,61 +80,15 @@ export function ImageUploader({ bucket, value, onChange, multiple = true, label 
         <span className="text-xs text-muted-foreground">{value.length} görsel · sürükleyip bırakarak sıralayın</span>
       </div>
       {value.length > 0 && (
-        <div className="grid grid-cols-4 gap-2">
-          {value.map((url, i) => (
-            <div
-              key={url + i}
-              draggable
-              onDragStart={() => setDragIdx(i)}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                if (dragIdx !== null) move(dragIdx, i);
-                setDragIdx(null);
-              }}
-              onDragEnd={() => setDragIdx(null)}
-              className={`relative group aspect-square rounded-lg overflow-hidden bg-brand-sand/30 border cursor-move ${dragIdx === i ? "opacity-40" : ""}`}
-            >
-              <img src={url} alt="" className="w-full h-full object-cover pointer-events-none" />
-              <div className="absolute top-1 left-1 bg-black/60 text-white text-[10px] px-1.5 py-0.5 rounded font-semibold">
-                {i + 1}
-              </div>
-              <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition">
-                <button
-                  type="button"
-                  onClick={() => remove(i)}
-                  className="w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center"
-                  title="Sil"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-              {multiple && (
-                <div className="absolute bottom-1 inset-x-1 flex items-center justify-between opacity-0 group-hover:opacity-100 transition">
-                  <button
-                    type="button"
-                    onClick={() => move(i, i - 1)}
-                    disabled={i === 0}
-                    className="w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center disabled:opacity-30"
-                    title="Sola"
-                  >
-                    <ChevronLeft className="w-3.5 h-3.5" />
-                  </button>
-                  <GripVertical className="w-3.5 h-3.5 text-white/80" />
-                  <button
-                    type="button"
-                    onClick={() => move(i, i + 1)}
-                    disabled={i === value.length - 1}
-                    className="w-6 h-6 rounded-full bg-black/60 text-white flex items-center justify-center disabled:opacity-30"
-                    title="Sağa"
-                  >
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              )}
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={onDragEnd}>
+          <SortableContext items={ids} strategy={rectSortingStrategy}>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {value.map((url, i) => (
+                <SortableUploadImage key={ids[i]} id={ids[i]} url={url} index={i} count={value.length} multiple={multiple} disabled={busy} onRemove={() => remove(i)} onMove={(direction) => move(i, i + direction)} />
+              ))}
             </div>
-          ))}
-        </div>
+          </SortableContext>
+        </DndContext>
       )}
     </div>
   );

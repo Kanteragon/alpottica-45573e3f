@@ -10,3 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Homepage maintenance uses the shared site setting, defaulting on when unavailable so the notice remains visible during a database outage; disabling the persisted setting restores the original homepage.
+- Shared image uploaders use dnd-kit pointer and keyboard sorting with separate delete controls so dragging supports touch and cannot intercept deletion clicks.
