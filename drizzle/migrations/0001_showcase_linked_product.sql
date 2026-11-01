@@ -1,0 +1,2 @@
+ALTER TABLE public.showcase_categories ADD COLUMN IF NOT EXISTS product_id uuid REFERENCES public.products(id) ON DELETE SET NULL;
+COMMENT ON COLUMN public.showcase_categories.product_id IS 'Optional product whose first photo supplies the series card; image_url overrides it when manually uploaded.';

@@ -789,6 +789,7 @@ export type Database = {
           id: string
           image_url: string
           is_active: boolean
+          product_id: string | null
           sort_order: number
           tag: string
           title: string
@@ -798,6 +799,7 @@ export type Database = {
           id?: string
           image_url?: string
           is_active?: boolean
+          product_id?: string | null
           sort_order?: number
           tag?: string
           title: string
@@ -807,11 +809,20 @@ export type Database = {
           id?: string
           image_url?: string
           is_active?: boolean
+          product_id?: string | null
           sort_order?: number
           tag?: string
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "showcase_categories_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       showcase_items: {
         Row: {

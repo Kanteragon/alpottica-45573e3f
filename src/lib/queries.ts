@@ -16,7 +16,7 @@ export type ProductFilter = {
   size?: string;
 };
 
-export async function fetchProducts(filter: ProductFilter = {}): Promise<Product[]> {
+export async function fetchProducts(filter: ProductFilter = {}, options: { shuffle?: boolean } = {}): Promise<Product[]> {
   let orderMap: Record<string, number> | null = null;
   let q = supabase.from("products").select(PRODUCT_COLS).order("created_at", { ascending: false });
   if (filter.tag && filter.tag !== "tumu") {
@@ -80,7 +80,7 @@ export async function fetchProducts(filter: ProductFilter = {}): Promise<Product
   let list = (data as unknown as DbProduct[]).map(mapDbProduct);
   if (filter.color) list = list.filter((p) => p.color.toLowerCase() === filter.color!.toLowerCase());
   if (filter.size) list = list.filter((p) => String(p.size) === String(filter.size));
-  if (shuffleResult) {
+  if (shuffleResult && options.shuffle !== false) {
     list = [...list].sort(() => Math.random() - 0.5);
   } else if (orderMap) {
     const om = orderMap;
