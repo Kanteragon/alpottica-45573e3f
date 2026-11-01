@@ -3,7 +3,7 @@ import { Navbar } from "@/components/Navbar";
 import { HeroSlider } from "@/components/HeroSlider";
 import { FeatureStrip } from "@/components/FeatureStrip";
 import { FeaturedProducts } from "@/components/FeaturedProducts";
-//import { CategoryShowcase } from "@/components/CategoryShowcase";
+import { CategoryShowcase } from "@/components/CategoryShowcase";
 // import { TryOnGame } from "@/components/TryOnGame";
 import { Footer } from "@/components/Footer";
 import { MaintenancePage } from "@/components/MaintenancePage";
@@ -61,7 +61,7 @@ function Index() {
   const SECTION_COMPONENTS: Record<string, React.ComponentType> = {
     hero: HeroSlider,
     features: FeatureStrip,
-    
+    categories: CategoryShowcase,
     products: FeaturedProducts,
   };
   const ordered = (sections ?? [])
@@ -76,6 +76,7 @@ function Index() {
         return <Cmp key={s.key} />;
       })}
       {/* <TryOnGame /> */}
+      <div data-homepage-scripts />
       <Footer />
     </div>
   );

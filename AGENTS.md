@@ -11,3 +11,5 @@
 
 - Homepage maintenance uses the shared site setting, defaulting on when unavailable so the notice remains visible during a database outage; disabling the persisted setting restores the original homepage.
 - Shared image uploaders use dnd-kit pointer and keyboard sorting with separate delete controls so dragging supports touch and cannot intercept deletion clicks.
+- Homepage section visibility and ordering come from homepage_sections; category cards come from showcase_categories, with explicit public-read grants and admin-only write policies.
+- Homepage custom-script markup mounts in the homepage before the footer; injection tracks moved nodes so navigation removes them cleanly.

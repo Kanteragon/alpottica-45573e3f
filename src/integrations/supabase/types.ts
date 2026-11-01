@@ -351,6 +351,27 @@ export type Database = {
           },
         ]
       }
+      homepage_sections: {
+        Row: {
+          is_active: boolean
+          key: string
+          label: string
+          sort_order: number
+        }
+        Insert: {
+          is_active?: boolean
+          key: string
+          label: string
+          sort_order?: number
+        }
+        Update: {
+          is_active?: boolean
+          key?: string
+          label?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       menu_items: {
         Row: {
           aktif: boolean
@@ -759,6 +780,36 @@ export type Database = {
           id?: number
           ucret?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      showcase_categories: {
+        Row: {
+          href: string
+          id: string
+          image_url: string
+          is_active: boolean
+          sort_order: number
+          tag: string
+          title: string
+        }
+        Insert: {
+          href?: string
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          sort_order?: number
+          tag?: string
+          title: string
+        }
+        Update: {
+          href?: string
+          id?: string
+          image_url?: string
+          is_active?: boolean
+          sort_order?: number
+          tag?: string
+          title?: string
         }
         Relationships: []
       }
