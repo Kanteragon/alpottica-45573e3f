@@ -1,5 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchProducts } from "@/lib/queries";
+import { mapDbProduct, type DbProduct } from "@/lib/products";
+import { resolveSeriesImage, seriesFilter } from "@/lib/showcase-image";
 
 export type HomeSection = {
   key: string;
@@ -13,6 +16,7 @@ export type ShowcaseCategory = {
   title: string;
   tag: string;
   image_url: string;
+  product_id?: string | null;
   href: string;
   sort_order: number;
   is_active: boolean;
@@ -61,6 +65,30 @@ export function useShowcaseCategories() {
         .order("sort_order", { ascending: true });
       if (error || !data) return [];
       return data as unknown as ShowcaseCategory[];
+    },
+    staleTime: 60_000,
+  });
+}
+
+export function useSeriesImage(card: Pick<ShowcaseCategory, "href" | "image_url" | "product_id">) {
+  return useQuery({
+    queryKey: ["series-image", card.href, card.image_url, card.product_id],
+    queryFn: async () => {
+      if (card.image_url) return resolveSeriesImage(card.image_url, []);
+      if (card.product_id) {
+        const { data, error } = await supabase.from("products").select("*").eq("id", card.product_id).eq("aktif", true).gt("stok_adedi", 0).maybeSingle();
+        if (error) throw error;
+        return resolveSeriesImage("", data ? [mapDbProduct(data as DbProduct)] : [], card.product_id);
+      }
+      const { slug, ...filter } = seriesFilter(card.href);
+      if (slug) {
+        const { data, error } = await supabase.from("categories").select("id").eq("slug", slug).maybeSingle();
+        if (error) throw error;
+        if (!data) return resolveSeriesImage("", []);
+        filter.kategori_id = data.id;
+      }
+      const products = await fetchProducts(filter, { shuffle: false });
+      return resolveSeriesImage("", products);
     },
     staleTime: 60_000,
   });
