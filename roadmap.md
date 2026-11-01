@@ -4,3 +4,4 @@
 - [x] Restore saving homepage section visibility and ordering; admin save persisted after reload.
 - [x] Restore category showcase rendering controlled by the panel; enabled and all three images verified.
 - [x] Verify customer reviews remain in the homepage before the footer; navigation leaves only one instance.
+- [ ] Restore first-product photos for series cards and support panel product selection/manual uploads.
