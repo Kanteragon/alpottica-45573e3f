@@ -1,6 +1,6 @@
 - [x] Show temporary homepage notice with Shopier, Instagram and WhatsApp links; verified in browser.
 - [x] Add general-settings maintenance toggle; saving is blocked until database reconnection and column creation.
 - [ ] Apply maintenance setting to database (blocked: column absent; outside current homepage-management request).
-- [ ] Restore saving homepage section visibility and ordering.
-- [ ] Restore category showcase rendering controlled by the panel.
-- [ ] Verify customer reviews remain in the homepage before the footer.
+- [x] Restore saving homepage section visibility and ordering; admin save persisted after reload.
+- [x] Restore category showcase rendering controlled by the panel; enabled and all three images verified.
+- [x] Verify customer reviews remain in the homepage before the footer; navigation leaves only one instance.
