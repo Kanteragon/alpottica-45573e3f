@@ -36,7 +36,7 @@ export function useHomepageSections() {
     queryKey: ["homepage_sections"],
     queryFn: async (): Promise<HomeSection[]> => {
       const { data, error } = await supabase
-        .from("homepage_sections" as never)
+        .from("homepage_sections")
         .select("*")
         .order("sort_order", { ascending: true });
       if (error || !data || (data as unknown[]).length === 0) return DEFAULT_SECTIONS;
@@ -56,7 +56,7 @@ export function useShowcaseCategories() {
     queryKey: ["showcase_categories"],
     queryFn: async (): Promise<ShowcaseCategory[]> => {
       const { data, error } = await supabase
-        .from("showcase_categories" as never)
+        .from("showcase_categories")
         .select("*")
         .order("sort_order", { ascending: true });
       if (error || !data) return [];

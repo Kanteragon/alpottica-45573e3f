@@ -53,7 +53,7 @@ function execScript(source: HTMLScriptElement, tag: string): HTMLScriptElement {
   return s;
 }
 
-function injectRaw(id: string, raw: string): HTMLElement[] {
+function injectRaw(id: string, raw: string, host?: HTMLElement): HTMLElement[] {
   const created: HTMLElement[] = [];
   const trimmed = raw.trim();
   if (!trimmed) return created;
@@ -103,8 +103,15 @@ function injectRaw(id: string, raw: string): HTMLElement[] {
       wrap.dataset.injectedBy = id;
       wrap.style.opacity = "0";
       wrap.style.transition = "opacity .2s ease";
+      // Track markup separately: custom scripts may move it out of its wrapper.
+      Array.from(frag.children).forEach((node) => {
+        if (node instanceof HTMLElement) {
+          node.dataset.injectedBy = id;
+          created.push(node);
+        }
+      });
       wrap.appendChild(frag);
-      document.body.appendChild(wrap);
+      (host ?? document.body).appendChild(wrap);
       created.push(wrap);
 
       const reveal = () => { if (wrap) wrap.style.opacity = "1"; };
@@ -153,8 +160,20 @@ export function ScriptInjector() {
     if (path.startsWith("/admin")) return;
     const active = scripts.filter((s) => matches(s.konum, path));
     const created: HTMLElement[] = [];
-    for (const s of active) created.push(...injectRaw(s.id, s.icerik));
+    const mount = () => {
+      const host = document.querySelector<HTMLElement>("[data-homepage-scripts]");
+      for (const s of active) {
+        if (created.some((node) => node.dataset.injectedBy === s.id)) continue;
+        // Homepage content waits for the homepage, not the body after the footer.
+        if (s.konum === "home" && !host) continue;
+        created.push(...injectRaw(s.id, s.icerik, s.konum === "home" ? host ?? undefined : undefined));
+      }
+    };
+    mount();
+    const observer = new MutationObserver(mount);
+    observer.observe(document.body, { childList: true, subtree: true });
     return () => {
+      observer.disconnect();
       created.forEach((n) => n.remove());
     };
   }, [scripts, path]);

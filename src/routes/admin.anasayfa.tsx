@@ -21,6 +21,7 @@ export const Route = createFileRoute("/admin/anasayfa")({
       { name: "robots", content: "noindex" },
       { name: "description", content: "Ana sayfa bölüm sıralaması ve kategori vitrini yönetimi." },
       { property: "og:title", content: "Ana Sayfa Yönetimi — Alpottica Admin" },
+      { property: "og:description", content: "Ana sayfa bölüm sıralaması ve kategori vitrini yönetimi." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -58,12 +59,12 @@ function HomepageAdmin() {
     setBusy(true);
     try {
       const rows = sections.map((s, i) => ({ key: s.key, label: s.label, sort_order: i + 1, is_active: s.is_active }));
-      const { error } = await supabase.from("homepage_sections" as never).upsert(rows as never, { onConflict: "key" });
+      const { error } = await supabase.from("homepage_sections").upsert(rows, { onConflict: "key" });
       if (error) throw error;
       qc.invalidateQueries({ queryKey: ["homepage_sections"] });
       toast.success("Bölüm düzeni kaydedildi");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Kaydedilemedi — tablo henüz oluşturulmamış olabilir");
+      toast.error(e && typeof e === "object" && "message" in e ? String(e.message) : "Bölüm düzeni kaydedilemedi");
     } finally {
       setBusy(false);
     }
@@ -81,12 +82,12 @@ function HomepageAdmin() {
         sort_order: i + 1,
         is_active: c.is_active,
       }));
-      const { error } = await supabase.from("showcase_categories" as never).upsert(rows as never);
+      const { error } = await supabase.from("showcase_categories").upsert(rows);
       if (error) throw error;
       qc.invalidateQueries({ queryKey: ["showcase_categories"] });
       toast.success("Kategori vitrini kaydedildi");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Kaydedilemedi — tablo henüz oluşturulmamış olabilir");
+      toast.error(e && typeof e === "object" && "message" in e ? String(e.message) : "Kategori vitrini kaydedilemedi");
     } finally {
       setBusy(false);
     }
@@ -94,7 +95,7 @@ function HomepageAdmin() {
 
   const removeCat = async (c: ShowcaseCategory) => {
     if (!c.id.startsWith("new-")) {
-      const { error } = await supabase.from("showcase_categories" as never).delete().eq("id", c.id);
+      const { error } = await supabase.from("showcase_categories").delete().eq("id", c.id);
       if (error) {
         toast.error(error.message);
         return;
