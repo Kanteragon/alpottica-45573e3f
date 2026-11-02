@@ -20,7 +20,11 @@ export function CartSuggestions() {
             <h3 className="font-semibold text-brand-ink">{g.campaignName}</h3>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            Sepetine <strong className="text-brand-ink">{g.scopeLabel}</strong> arasından bir ürün eklersen{" "}
+            {g.hint ? (
+              <>{g.hint}{" "}</>
+            ) : (
+              <>Sepetine <strong className="text-brand-ink">{g.scopeLabel}</strong> arasından bir ürün eklersen{" "}</>
+            )}
             <span className="text-brand-cta font-semibold">{g.discountLabel}</span> kazanırsın.
           </p>
 

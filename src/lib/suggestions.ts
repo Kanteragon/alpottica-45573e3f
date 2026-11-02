@@ -15,6 +15,8 @@ export type SuggestionGroup = {
   /** "Klipsli Modeller" gibi hedef grubun adı */
   scopeLabel: string;
   discountLabel: string;
+  /** Eşik kampanyalarında hazır açıklama metni */
+  hint?: string;
   products: Product[];
 };
 
@@ -32,6 +34,7 @@ function inScope(productId: string, catMap: CategoryMap, s: Scope) {
 }
 
 function discountLabel(c: Campaign) {
+  if (c.tip === "ucretsiz_kargo") return "ücretsiz kargo";
   if (Number(c.indirim_tutar) > 0) return `${Math.round(Number(c.indirim_tutar))} ₺ indirim`;
   if (Number(c.indirim_oran) > 0) return `%${Math.round(Number(c.indirim_oran))} indirim`;
   return "ekstra indirim";
@@ -52,10 +55,23 @@ export function useCartSuggestions(items: CartItem[], limitPerGroup = 6) {
   const { data: catMap = {} } = useCartCategoryMap(items);
 
   // hangi kampanya için hangi hedef scope önerilecek
-  const targets: { c: Campaign; scope: Scope }[] = [];
+  const targets: { c: Campaign; scope: Scope; gap?: number }[] = [];
+  const subtotal = items.reduce((n, i) => n + i.price * i.qty, 0);
+  const now = Date.now();
+  const live = (c: Campaign) =>
+    (!c.baslangic || new Date(c.baslangic).getTime() <= now) &&
+    (!c.bitis || new Date(c.bitis).getTime() >= now);
   if (items.length > 0) {
     for (const c of campaigns) {
-      if (!c.aktif || c.oneri_goster === false) continue;
+      if (!c.aktif || c.oneri_goster === false || !live(c)) continue;
+      if ((c.tip === "sepet_indirim" || c.tip === "ucretsiz_kargo") && Number(c.esik) > subtotal) {
+        const scope =
+          c.tip === "sepet_indirim"
+            ? scopeOf(c.hedef_tip, c.hedef_kategori_ids, c.hedef_urun_ids)
+            : scopeOf("tumu", null, null);
+        targets.push({ c, scope, gap: Math.ceil(Number(c.esik) - subtotal) });
+        continue;
+      }
       if (c.tip === "ikinci_urun") {
         const kosul = scopeOf(c.kosul_tip, c.kosul_kategori_ids, c.kosul_urun_ids);
         const hedef = scopeOf(c.hedef_tip, c.hedef_kategori_ids, c.hedef_urun_ids);
@@ -83,7 +99,7 @@ export function useCartSuggestions(items: CartItem[], limitPerGroup = 6) {
 
   const inCart = items.map((i) => i.product_id);
   const key = targets
-    .map((t) => `${t.c.id}:${t.scope.tip}:${t.scope.cats.join("|")}:${t.scope.prods.join("|")}`)
+    .map((t) => `${t.c.id}:${t.scope.tip}:${t.scope.cats.join("|")}:${t.scope.prods.join("|")}:${t.gap ?? ""}`)
     .join(";");
 
   return useQuery({
@@ -100,7 +116,7 @@ export function useCartSuggestions(items: CartItem[], limitPerGroup = 6) {
       }
 
       const groups: SuggestionGroup[] = [];
-      for (const { c, scope } of targets) {
+      for (const { c, scope, gap } of targets) {
         let ids: string[] | null = null;
         if (scope.tip === "urun") {
           ids = scope.prods.filter((p) => !inCart.includes(p));
@@ -124,11 +140,14 @@ export function useCartSuggestions(items: CartItem[], limitPerGroup = 6) {
           .eq("aktif", true)
           .gt("stok_adedi", 0)
           .limit(60);
+        // eşiği tek üründe aşan en uygun fiyatlı ürünler
+        if (gap) q = q.gte("satis_fiyati", gap);
         if (ids) q = q.in("id", shuffle(ids).slice(0, 60));
         else q = q.not("id", "in", `(${inCart.join(",") || "00000000-0000-0000-0000-000000000000"})`);
 
-        const { data } = await q;
-        const products = shuffle(((data ?? []) as unknown as DbProduct[]).map(mapDbProduct))
+        const { data } = await (gap ? q.order("satis_fiyati", { ascending: true }) : q);
+        const list = ((data ?? []) as unknown as DbProduct[]).map(mapDbProduct);
+        const products = (gap ? list : shuffle(list))
           .filter((p) => !inCart.includes(p.id))
           .slice(0, limitPerGroup);
         if (products.length === 0) continue;
@@ -145,6 +164,7 @@ export function useCartSuggestions(items: CartItem[], limitPerGroup = 6) {
           campaignName: c.ad,
           scopeLabel: scopeLabel || "Tüm modeller",
           discountLabel: discountLabel(c),
+          hint: gap ? `Sepetine ${gap} ₺ daha eklersen` : undefined,
           products,
         });
       }
