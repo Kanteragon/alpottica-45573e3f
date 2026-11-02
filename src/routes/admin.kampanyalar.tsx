@@ -114,6 +114,8 @@ function ruleText(c: Campaign) {
       return `Sepet ${formatTL(Number(c.esik))} üzerindeyse ${amountText(c)} indirim${scopeText(c)}`;
     case "ikinci_urun":
       return `${Number(c.min_adet) || 2} ürün alana en ucuz ürüne ${amountText(c)} indirim${scopeText(c)}`;
+    case "paket_fiyat":
+      return `${Number(c.min_adet) || 2} adet toplam ${formatTL(Number(c.esik))}${scopeText(c)}`;
     case "kupon":
       return `"${c.kod ?? ""}" kodu ile ${amountText(c)} indirim${Number(c.esik) > 0 ? ` (min ${formatTL(Number(c.esik))})` : ""}`;
     default:
@@ -331,6 +333,20 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
             </label>
           )}
 
+          {f.tip === "paket_fiyat" && (
+            <div className="grid grid-cols-2 gap-3">
+              <label className="block">
+                <span className="block text-xs uppercase tracking-widest mb-1">Adet</span>
+                <input type="number" min="2" value={f.min_adet} onChange={(e) => setF({ ...f, min_adet: e.target.value })} className="w-full border rounded-xl px-3 py-2" />
+              </label>
+              <label className="block">
+                <span className="block text-xs uppercase tracking-widest mb-1">Toplam Paket Fiyatı (₺)</span>
+                <input type="number" min="0" value={f.esik} onChange={(e) => setF({ ...f, esik: e.target.value })} className="w-full border rounded-xl px-3 py-2" />
+              </label>
+              <p className="col-span-2 text-xs text-muted-foreground">Kademeler için aynı ürün grubuyla ayrı kampanyalar açın (ör. 2 adet 700, 3 adet 900). En avantajlı kademe otomatik uygulanır.</p>
+            </div>
+          )}
+
           {f.tip === "kupon" && (
             <div className="grid grid-cols-2 gap-3">
               <label className="block">
@@ -392,7 +408,7 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
             />
           ) : null}
 
-          {f.tip !== "ucretsiz_kargo" && (
+          {f.tip !== "ucretsiz_kargo" && f.tip !== "paket_fiyat" && (
             <>
               <div className="grid grid-cols-2 gap-3">
                 <label className="block">
@@ -412,7 +428,7 @@ function CampaignForm({ row, onClose }: { row: Campaign | null; onClose: () => v
             </>
           )}
 
-          {(f.tip === "ikinci_urun" || f.tip === "kombine_indirim") && (
+          {f.tip !== "kupon" && (
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={f.oneri_goster} onChange={(e) => setF({ ...f, oneri_goster: e.target.checked })} />
               Sepette "şunu da ekle, şu kadar indirim" önerisi göster
