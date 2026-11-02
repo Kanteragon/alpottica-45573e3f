@@ -114,6 +114,8 @@ function ruleText(c: Campaign) {
       return `Sepet ${formatTL(Number(c.esik))} üzerindeyse ${amountText(c)} indirim${scopeText(c)}`;
     case "ikinci_urun":
       return `${Number(c.min_adet) || 2} ürün alana en ucuz ürüne ${amountText(c)} indirim${scopeText(c)}`;
+    case "paket_fiyat":
+      return `${Number(c.min_adet) || 2} adet toplam ${formatTL(Number(c.esik))}${scopeText(c)}`;
     case "kupon":
       return `"${c.kod ?? ""}" kodu ile ${amountText(c)} indirim${Number(c.esik) > 0 ? ` (min ${formatTL(Number(c.esik))})` : ""}`;
     default:
