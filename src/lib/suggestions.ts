@@ -141,11 +141,11 @@ export function useCartSuggestions(items: CartItem[], limitPerGroup = 6) {
           .gt("stok_adedi", 0)
           .limit(60);
         // eşiği tek üründe aşan en uygun fiyatlı ürünler
-        if (gap) q = q.gte("satis_fiyati", gap).order("satis_fiyati", { ascending: true });
+        if (gap) q = q.gte("satis_fiyati", gap);
         if (ids) q = q.in("id", shuffle(ids).slice(0, 60));
         else q = q.not("id", "in", `(${inCart.join(",") || "00000000-0000-0000-0000-000000000000"})`);
 
-        const { data } = await q;
+        const { data } = await (gap ? q.order("satis_fiyati", { ascending: true }) : q);
         const list = ((data ?? []) as unknown as DbProduct[]).map(mapDbProduct);
         const products = (gap ? list : shuffle(list))
           .filter((p) => !inCart.includes(p.id))
