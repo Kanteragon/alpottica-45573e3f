@@ -43,8 +43,8 @@ function CartPage() {
             <Link to="/urunler" className="inline-block px-8 py-3 rounded-full bg-brand-ink text-white">Alışverişe Başla</Link>
           </div>
         ) : (
-          <div className="grid lg:grid-cols-[1fr_360px] gap-8">
-            <div>
+          <div className="grid lg:grid-cols-[minmax(0,1fr)_360px] gap-8">
+            <div className="min-w-0">
               <div className="bg-white rounded-2xl border border-border divide-y">
               {items.map((i) => (
                 <div key={i.product_id} className="p-5 flex gap-4 items-center">

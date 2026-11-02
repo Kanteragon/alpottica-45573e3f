@@ -35,6 +35,7 @@ function inScope(productId: string, catMap: CategoryMap, s: Scope) {
 
 function discountLabel(c: Campaign) {
   if (c.tip === "ucretsiz_kargo") return "ücretsiz kargo";
+  if (c.tip === "paket_fiyat") return `${c.min_adet} al ${Math.round(Number(c.esik))} ₺`;
   if (Number(c.indirim_tutar) > 0) return `${Math.round(Number(c.indirim_tutar))} ₺ indirim`;
   if (Number(c.indirim_oran) > 0) return `%${Math.round(Number(c.indirim_oran))} indirim`;
   return "ekstra indirim";
@@ -55,7 +56,7 @@ export function useCartSuggestions(items: CartItem[], limitPerGroup = 6) {
   const { data: catMap = {} } = useCartCategoryMap(items);
 
   // hangi kampanya için hangi hedef scope önerilecek
-  const targets: { c: Campaign; scope: Scope; gap?: number }[] = [];
+  const targets: { c: Campaign; scope: Scope; gap?: number; hint?: string }[] = [];
   const subtotal = items.reduce((n, i) => n + i.price * i.qty, 0);
   const now = Date.now();
   const live = (c: Campaign) =>
@@ -72,11 +73,26 @@ export function useCartSuggestions(items: CartItem[], limitPerGroup = 6) {
         targets.push({ c, scope, gap: Math.ceil(Number(c.esik) - subtotal) });
         continue;
       }
+      if (c.tip === "paket_fiyat") {
+        const scope = scopeOf(c.hedef_tip, c.hedef_kategori_ids, c.hedef_urun_ids);
+        const n = items.filter((i) => inScope(i.product_id, catMap, scope)).reduce((x, i) => x + i.qty, 0);
+        const need = (c.min_adet || 0) - n;
+        if (need > 0 && Number(c.esik) > 0) {
+          targets.push({
+            c,
+            scope,
+            hint: `${need} ürün daha eklersen ${c.min_adet} adedi toplam ${Math.round(Number(c.esik))} ₺ olur`,
+          });
+        }
+        continue;
+      }
       if (c.tip === "ikinci_urun") {
         const kosul = scopeOf(c.kosul_tip, c.kosul_kategori_ids, c.kosul_urun_ids);
         const hedef = scopeOf(c.hedef_tip, c.hedef_kategori_ids, c.hedef_urun_ids);
         if (items.some((i) => inScope(i.product_id, catMap, kosul))) {
           targets.push({ c, scope: hedef });
+        } else {
+          targets.push({ c, scope: kosul });
         }
       } else if (c.tip === "kombine_indirim") {
         const a = scopeOf(
@@ -93,6 +109,7 @@ export function useCartSuggestions(items: CartItem[], limitPerGroup = 6) {
         const hasB = items.some((i) => inScope(i.product_id, catMap, b));
         if (hasA && !hasB) targets.push({ c, scope: b });
         else if (hasB && !hasA) targets.push({ c, scope: a });
+        else if (!hasA && !hasB) targets.push({ c, scope: a });
       }
     }
   }
@@ -116,7 +133,7 @@ export function useCartSuggestions(items: CartItem[], limitPerGroup = 6) {
       }
 
       const groups: SuggestionGroup[] = [];
-      for (const { c, scope, gap } of targets) {
+      for (const { c, scope, gap, hint } of targets) {
         let ids: string[] | null = null;
         if (scope.tip === "urun") {
           ids = scope.prods.filter((p) => !inCart.includes(p));
@@ -164,7 +181,7 @@ export function useCartSuggestions(items: CartItem[], limitPerGroup = 6) {
           campaignName: c.ad,
           scopeLabel: scopeLabel || "Tüm modeller",
           discountLabel: discountLabel(c),
-          hint: gap ? `Sepetine ${gap} ₺ daha eklersen` : undefined,
+          hint: hint ?? (gap ? `Sepetine ${gap} ₺ daha eklersen` : undefined),
           products,
         });
       }

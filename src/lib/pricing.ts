@@ -44,6 +44,7 @@ export const CAMPAIGN_TYPES: { value: string; label: string }[] = [
   { value: "sepet_indirim", label: "Sepet İndirimi (eşik üzerinde otomatik)" },
   { value: "ikinci_urun", label: "2. Ürüne İndirim (X adet alana)" },
   { value: "kombine_indirim", label: "Kombine İndirim (iki ürün birlikte)" },
+  { value: "paket_fiyat", label: "Paket Fiyat (X adet = toplam ₺)" },
   { value: "kupon", label: "İndirim Kodu (kupon)" },
 ];
 
@@ -247,6 +248,33 @@ export function computeTotals(
         const amount = capped(c.indirim_tutar > 0 ? c.indirim_tutar : (base * c.indirim_oran) / 100, c);
         if (amount > 0) { discount += amount; applied.push(c.ad); }
       }
+    }
+  }
+
+  // Paket fiyat: aynı ürün grubundaki kademeler (2 adet 700, 3 adet 900...) birlikte değerlendirilir
+  const paket = (campaigns ?? []).filter(
+    (c) => c.aktif && inWindow(c) && c.tip === "paket_fiyat" && (c.min_adet || 0) >= 2 && Number(c.esik) > 0,
+  );
+  const groups = new Map<string, Campaign[]>();
+  for (const c of paket) {
+    const k = `${c.hedef_tip}|${[...(c.hedef_kategori_ids ?? [])].sort()}|${[...(c.hedef_urun_ids ?? [])].sort()}`;
+    groups.set(k, [...(groups.get(k) ?? []), c]);
+  }
+  for (const tiers of groups.values()) {
+    tiers.sort((a, b) => b.min_adet - a.min_adet);
+    const units = unitsOf(items.filter((i) => inScope(i, tiers[0], catMap))).reverse(); // pahalıdan ucuza
+    let idx = 0;
+    for (const t of tiers) {
+      let used = false;
+      while (units.length - idx >= t.min_adet) {
+        const set = units.slice(idx, idx + t.min_adet);
+        const save = set.reduce((n, x) => n + x, 0) - Number(t.esik);
+        if (save <= 0) break;
+        discount += save;
+        idx += t.min_adet;
+        used = true;
+      }
+      if (used) applied.push(t.ad);
     }
   }
 

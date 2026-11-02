@@ -12,16 +12,16 @@ export function CartSuggestions() {
   if (items.length === 0 || isLoading || groups.length === 0) return null;
 
   return (
-    <div className="space-y-5 mt-6">
+    <div className="space-y-5 mt-6 min-w-0 max-w-full">
       {groups.map((g) => (
-        <section key={g.campaignId} className="bg-white rounded-2xl border border-border p-4 sm:p-5">
+        <section key={g.campaignId} className="bg-white rounded-2xl border border-border p-4 sm:p-5 min-w-0 overflow-hidden">
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="w-4 h-4 text-brand-cta" />
             <h3 className="font-semibold text-brand-ink">{g.campaignName}</h3>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
             {g.hint ? (
-              <>{g.hint}{" "}</>
+              <>{g.hint}{g.discountLabel.includes(" al ") ? "." : " "}</>
             ) : (
               <>Sepetine <strong className="text-brand-ink">{g.scopeLabel}</strong> arasından bir ürün eklersen{" "}</>
             )}
