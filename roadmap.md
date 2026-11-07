@@ -5,3 +5,4 @@
 - [x] Restore category showcase rendering controlled by the panel; enabled and all three images verified.
 - [x] Verify customer reviews remain in the homepage before the footer; navigation leaves only one instance.
 - [ ] Restore first-product photos for series cards and support panel product selection/manual uploads.
+- [ ] Correct cart suggestions to show the nearest package tier and actual missing quantity; polish Turkish messages and verify without page-width overflow.
