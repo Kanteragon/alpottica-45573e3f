@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ImageUploader } from "@/components/ImageUploader";
+import { showcaseRows } from "@/lib/showcase-rows";
+import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
@@ -73,17 +75,10 @@ function HomepageAdmin() {
   const saveCats = async () => {
     setBusy(true);
     try {
-      const rows = cats.map((c, i) => ({
-        ...(c.id.startsWith("new-") ? {} : { id: c.id }),
-        title: c.title,
-        tag: c.tag,
-        image_url: c.image_url,
-        href: c.href,
-        sort_order: i + 1,
-        is_active: c.is_active,
-      }));
-      const { error } = await supabase.from("showcase_categories").upsert(rows);
+      const rows = showcaseRows(cats);
+      const { error } = await supabase.from("showcase_categories").upsert(rows, { onConflict: "id" });
       if (error) throw error;
+      setCats(rows);
       qc.invalidateQueries({ queryKey: ["showcase_categories"] });
       toast.success("Kategori vitrini kaydedildi");
     } catch (e) {
@@ -145,12 +140,13 @@ function HomepageAdmin() {
       <div className="bg-white rounded-2xl border p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-sm font-semibold text-brand-ink">Kategori Vitrini Kartları</h2>
-          <button
-            onClick={() => setCats((l) => [...l, { id: `new-${Date.now()}`, title: "", tag: "", image_url: "", href: "/urunler", sort_order: l.length + 1, is_active: true }])}
+          <Button
+            variant="outline" size="sm" disabled={busy}
+            onClick={() => setCats((l) => [...l, { id: `new-${crypto.randomUUID()}`, title: "", tag: "", image_url: "", href: "/urunler", sort_order: l.length + 1, is_active: true }])}
             className="flex items-center gap-1.5 text-xs font-semibold text-brand-ink border rounded-full px-3 py-1.5 hover:bg-muted"
           >
             <Plus className="w-3.5 h-3.5" /> Kart Ekle
-          </button>
+          </Button>
         </div>
         <div className="space-y-4">
           {cats.map((c) => (

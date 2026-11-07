@@ -12,8 +12,9 @@ export function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { count } = useCart();
   const { user } = useAuth();
-  const { data: menu } = useMenu();
-  const { data: settings } = useSiteSettings();
+  const { data: menu, isPending: menuPending } = useMenu();
+  const { data: settings, isPending: settingsPending } = useSiteSettings();
+  const ready = !menuPending && !settingsPending;
   const path = useRouterState({ select: (s) => s.location.pathname });
 
   const isHome = path === "/";
@@ -37,7 +38,7 @@ export function Navbar() {
     return () => { document.body.style.overflow = ""; };
   }, [menuOpen]);
 
-  const items = menu?.length ? menu : [
+  const items = menuPending ? [] : menu?.length ? menu : [
     { id: "1", label: "KLİPSLİ MODELLER", url: "/urunler?tag=klipsli" },
     { id: "2", label: "OUTLET MODELLER", url: "/urunler?tag=outlet" },
     { id: "3", label: "TÜM MODELLER", url: "/urunler" },
@@ -55,7 +56,7 @@ export function Navbar() {
         }`}
       >
         <div className="max-w-[1720px] mx-auto pl-3 pr-4 sm:pr-6 lg:pl-4 lg:pr-10 h-20 grid grid-cols-[auto_1fr_auto] items-center gap-4 lg:gap-8">
-          <div className="flex items-center gap-2">
+          <div className={`flex items-center gap-2 ${ready ? "visible" : "invisible"}`}>
             <button
               onClick={() => setMenuOpen((v) => !v)}
               aria-label="Menü"
@@ -63,15 +64,15 @@ export function Navbar() {
             >
               {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
-            <Link to="/" className="flex items-center shrink-0" aria-label={brand}>
+            <Link to="/" className="flex items-center justify-start shrink-0 h-10 sm:h-12 lg:h-14 max-w-[28vw] sm:max-w-[32vw] lg:max-w-none" style={{ width: `${logoMax}px` }} aria-label={brand}>
               {logoSrc ? (
                 <img
                   src={logoSrc}
                   alt={brand}
-                  loading="lazy"
+                  loading="eager"
+                  fetchPriority="high"
                   decoding="async"
-                  style={{ maxWidth: `${logoMax}px` }}
-                  className={`h-10 sm:h-12 lg:h-14 w-auto object-contain transition-all duration-500 border-0 outline-none ${solid ? "invert" : "invert-0"}`}
+                  className={`h-full w-full object-contain object-left border-0 outline-none ${solid ? "invert" : "invert-0"}`}
                 />
               ) : (
                 <span className={`font-display tracking-widest text-xl sm:text-2xl ${solid ? "text-brand-ink" : "text-white"}`}>{brand.toUpperCase()}</span>
@@ -79,7 +80,7 @@ export function Navbar() {
             </Link>
           </div>
 
-          <nav className="hidden lg:flex items-center justify-center gap-12">
+          <nav className={`hidden lg:flex min-w-0 items-center justify-center gap-6 xl:gap-12 ${ready ? "visible" : "invisible"}`}>
             {items.map((item) => (
               <a
                 key={item.id}
@@ -94,7 +95,7 @@ export function Navbar() {
             ))}
           </nav>
 
-          <div className={`flex items-center justify-end gap-0.5 sm:gap-1 transition-colors ${solid ? "text-brand-ink" : "text-white"}`}>
+          <div className={`flex items-center justify-end gap-0.5 sm:gap-1 transition-colors ${ready ? "visible" : "invisible"} ${solid ? "text-brand-ink" : "text-white"}`}>
             <SearchBox solid={solid} />
             <Link
               to={user ? "/hesabim" : "/giris"}
