@@ -6,8 +6,8 @@ import {
   useCampaigns,
   useCartCategoryMap,
   type Campaign,
-  type CategoryMap,
 } from "@/lib/pricing";
+import { getSuggestionTargets, suggestionMessage } from "@/lib/suggestion-targets";
 
 export type SuggestionGroup = {
   campaignId: string;
@@ -15,27 +15,13 @@ export type SuggestionGroup = {
   /** "Klipsli Modeller" gibi hedef grubun adı */
   scopeLabel: string;
   discountLabel: string;
-  /** Eşik kampanyalarında hazır açıklama metni */
-  hint?: string;
+  message: string;
   products: Product[];
 };
 
-type Scope = { tip: string; cats: string[]; prods: string[] };
-
-function scopeOf(tip: string, cats: string[] | null, prods: string[] | null): Scope {
-  return { tip: tip || "tumu", cats: cats ?? [], prods: prods ?? [] };
-}
-
-function inScope(productId: string, catMap: CategoryMap, s: Scope) {
-  if (s.tip === "tumu") return true;
-  if (s.tip === "kategori") return (catMap[productId] ?? []).some((c) => s.cats.includes(c));
-  if (s.tip === "urun") return s.prods.includes(productId);
-  return true;
-}
-
 function discountLabel(c: Campaign) {
   if (c.tip === "ucretsiz_kargo") return "ücretsiz kargo";
-  if (c.tip === "paket_fiyat") return `${c.min_adet} al ${Math.round(Number(c.esik))} ₺`;
+  if (c.tip === "paket_fiyat") return `${c.min_adet} ürün toplam ${Math.round(Number(c.esik))} ₺`;
   if (Number(c.indirim_tutar) > 0) return `${Math.round(Number(c.indirim_tutar))} ₺ indirim`;
   if (Number(c.indirim_oran) > 0) return `%${Math.round(Number(c.indirim_oran))} indirim`;
   return "ekstra indirim";
@@ -55,68 +41,11 @@ export function useCartSuggestions(items: CartItem[], limitPerGroup = 6) {
   const { data: campaigns = [] } = useCampaigns();
   const { data: catMap = {} } = useCartCategoryMap(items);
 
-  // hangi kampanya için hangi hedef scope önerilecek
-  const targets: { c: Campaign; scope: Scope; gap?: number; hint?: string }[] = [];
-  const subtotal = items.reduce((n, i) => n + i.price * i.qty, 0);
-  const now = Date.now();
-  const live = (c: Campaign) =>
-    (!c.baslangic || new Date(c.baslangic).getTime() <= now) &&
-    (!c.bitis || new Date(c.bitis).getTime() >= now);
-  if (items.length > 0) {
-    for (const c of campaigns) {
-      if (!c.aktif || c.oneri_goster === false || !live(c)) continue;
-      if ((c.tip === "sepet_indirim" || c.tip === "ucretsiz_kargo") && Number(c.esik) > subtotal) {
-        const scope =
-          c.tip === "sepet_indirim"
-            ? scopeOf(c.hedef_tip, c.hedef_kategori_ids, c.hedef_urun_ids)
-            : scopeOf("tumu", null, null);
-        targets.push({ c, scope, gap: Math.ceil(Number(c.esik) - subtotal) });
-        continue;
-      }
-      if (c.tip === "paket_fiyat") {
-        const scope = scopeOf(c.hedef_tip, c.hedef_kategori_ids, c.hedef_urun_ids);
-        const n = items.filter((i) => inScope(i.product_id, catMap, scope)).reduce((x, i) => x + i.qty, 0);
-        const need = (c.min_adet || 0) - n;
-        if (need > 0 && Number(c.esik) > 0) {
-          targets.push({
-            c,
-            scope,
-            hint: `${need} ürün daha eklersen ${c.min_adet} adedi toplam ${Math.round(Number(c.esik))} ₺ olur`,
-          });
-        }
-        continue;
-      }
-      if (c.tip === "ikinci_urun") {
-        const kosul = scopeOf(c.kosul_tip, c.kosul_kategori_ids, c.kosul_urun_ids);
-        const hedef = scopeOf(c.hedef_tip, c.hedef_kategori_ids, c.hedef_urun_ids);
-        if (items.some((i) => inScope(i.product_id, catMap, kosul))) {
-          targets.push({ c, scope: hedef });
-        } else {
-          targets.push({ c, scope: kosul });
-        }
-      } else if (c.tip === "kombine_indirim") {
-        const a = scopeOf(
-          (c.grup_a_kategori_ids?.length ?? 0) > 0 ? "kategori" : "urun",
-          c.grup_a_kategori_ids,
-          [...(c.grup_a_urun_ids ?? []), ...(c.urun_a ? [c.urun_a] : [])],
-        );
-        const b = scopeOf(
-          (c.grup_b_kategori_ids?.length ?? 0) > 0 ? "kategori" : "urun",
-          c.grup_b_kategori_ids,
-          [...(c.grup_b_urun_ids ?? []), ...(c.urun_b ? [c.urun_b] : [])],
-        );
-        const hasA = items.some((i) => inScope(i.product_id, catMap, a));
-        const hasB = items.some((i) => inScope(i.product_id, catMap, b));
-        if (hasA && !hasB) targets.push({ c, scope: b });
-        else if (hasB && !hasA) targets.push({ c, scope: a });
-        else if (!hasA && !hasB) targets.push({ c, scope: a });
-      }
-    }
-  }
+  const targets = getSuggestionTargets(items, campaigns, catMap);
 
   const inCart = items.map((i) => i.product_id);
   const key = targets
-    .map((t) => `${t.c.id}:${t.scope.tip}:${t.scope.cats.join("|")}:${t.scope.prods.join("|")}:${t.gap ?? ""}`)
+    .map((t) => `${t.c.id}:${t.scope.tip}:${t.scope.cats.join("|")}:${t.scope.prods.join("|")}:${t.gap ?? ""}:${t.missingQuantity ?? ""}:${t.c.esik}:${t.c.indirim_tutar}:${t.c.indirim_oran}:${t.c.ad}`)
     .join(";");
 
   return useQuery({
@@ -133,7 +62,8 @@ export function useCartSuggestions(items: CartItem[], limitPerGroup = 6) {
       }
 
       const groups: SuggestionGroup[] = [];
-      for (const { c, scope, gap, hint } of targets) {
+      for (const target of targets) {
+        const { c, scope, gap } = target;
         let ids: string[] | null = null;
         if (scope.tip === "urun") {
           ids = scope.prods.filter((p) => !inCart.includes(p));
@@ -181,7 +111,7 @@ export function useCartSuggestions(items: CartItem[], limitPerGroup = 6) {
           campaignName: c.ad,
           scopeLabel: scopeLabel || "Tüm modeller",
           discountLabel: discountLabel(c),
-          hint: hint ?? (gap ? `Sepetine ${gap} ₺ daha eklersen` : undefined),
+          message: suggestionMessage(target, scopeLabel || "Tüm modeller", discountLabel(c)),
           products,
         });
       }
