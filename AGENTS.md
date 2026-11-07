@@ -13,3 +13,4 @@
 - Shared image uploaders use dnd-kit pointer and keyboard sorting with separate delete controls so dragging supports touch and cannot intercept deletion clicks.
 - Homepage section visibility and ordering come from homepage_sections; category cards come from showcase_categories, with explicit public-read grants and admin-only write policies.
 - Homepage custom-script markup mounts in the homepage before the footer; injection tracks moved nodes so navigation removes them cleanly.
+- Cart suggestion eligibility and complete messages live in a browser-safe pure module so nearest-tier selection and missing quantities can be regression-tested independently of data fetching.

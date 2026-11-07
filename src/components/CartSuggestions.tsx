@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { useCart } from "@/lib/cart";
 import { formatTL } from "@/lib/products";
 import { useCartSuggestions } from "@/lib/suggestions";
+import { Button } from "@/components/ui/button";
 
 export function CartSuggestions() {
   const { items, add } = useCart();
@@ -14,32 +15,27 @@ export function CartSuggestions() {
   return (
     <div className="space-y-5 mt-6 min-w-0 max-w-full">
       {groups.map((g) => (
-        <section key={g.campaignId} className="bg-white rounded-2xl border border-border p-4 sm:p-5 min-w-0 overflow-hidden">
+        <section key={g.campaignId} className="bg-card rounded-2xl border border-border p-4 sm:p-5 min-w-0 overflow-hidden">
           <div className="flex items-center gap-2 mb-1">
             <Sparkles className="w-4 h-4 text-brand-cta" />
             <h3 className="font-semibold text-brand-ink">{g.campaignName}</h3>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            {g.hint ? (
-              <>{g.hint}{g.discountLabel.includes(" al ") ? "." : " "}</>
-            ) : (
-              <>Sepetine <strong className="text-brand-ink">{g.scopeLabel}</strong> arasından bir ürün eklersen{" "}</>
-            )}
-            <span className="text-brand-cta font-semibold">{g.discountLabel}</span> kazanırsın.
+            {g.message}
           </p>
 
           <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x">
             {g.products.map((p) => (
               <div
                 key={p.id}
-                className="snap-start shrink-0 w-[150px] sm:w-[170px] rounded-xl border border-border overflow-hidden bg-white"
+                className="snap-start shrink-0 w-[150px] sm:w-[170px] rounded-xl border border-border overflow-hidden bg-card"
               >
                 <Link to="/urun/$slug" params={{ slug: p.slug }} className="block">
                   <div className="relative aspect-square bg-brand-sand/30">
                     {p.image ? (
                       <img src={p.image} alt={p.name} loading="lazy" className="absolute inset-0 w-full h-full object-contain p-2" />
                     ) : null}
-                    <span className="absolute top-1.5 left-1.5 bg-brand-cta text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                    <span className="absolute top-1.5 left-1.5 max-w-[calc(100%-0.75rem)] bg-brand-cta text-primary-foreground text-[10px] font-semibold px-2 py-0.5 rounded-full">
                       {g.discountLabel}
                     </span>
                   </div>
@@ -49,7 +45,8 @@ export function CartSuggestions() {
                 </Link>
                 <div className="px-2 pb-2">
                   <p className="text-sm font-bold text-brand-ink mb-1.5">{formatTL(p.price)}</p>
-                  <button
+                  <Button
+                    size="sm"
                     onClick={() => {
                       add({
                         product_id: p.id,
@@ -59,12 +56,12 @@ export function CartSuggestions() {
                         price: p.price,
                         stock: p.stock,
                       });
-                      toast.success("Sepete eklendi — indirim uygulandı");
+                      toast.success("Ürün sepetinize eklendi.");
                     }}
-                    className="w-full flex items-center justify-center gap-1 text-[11px] tracking-wider font-semibold text-white bg-brand-ink rounded-full py-1.5 hover:opacity-90"
+                    className="w-full gap-1 text-[11px] tracking-wider font-semibold text-primary-foreground bg-brand-ink rounded-full hover:opacity-90"
                   >
                     <Plus className="w-3 h-3" /> EKLE
-                  </button>
+                  </Button>
                 </div>
               </div>
             ))}
