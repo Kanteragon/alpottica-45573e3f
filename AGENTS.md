@@ -14,3 +14,5 @@
 - Homepage section visibility and ordering come from homepage_sections; category cards come from showcase_categories, with explicit public-read grants and admin-only write policies.
 - Homepage custom-script markup mounts in the homepage before the footer; injection tracks moved nodes so navigation removes them cleanly.
 - Cart suggestion eligibility and complete messages live in a browser-safe pure module so nearest-tier selection and missing quantities can be regression-tested independently of data fetching.
+- Showcase saves send explicit stable UUIDs for all cards so external databases need no ID default; preserve existing photo/product associations.
+- Navbar waits for settings and menu before showing fallback content, and uses a fixed logo frame with eager image loading to avoid first-load layout shifts.

@@ -143,6 +143,8 @@ export function useBrands() {
 export function useMenu() {
   return useQuery({
     queryKey: ["menu"],
+    staleTime: 5 * 60_000,
+    gcTime: 30 * 60_000,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("menu_items")
