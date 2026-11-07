@@ -1,9 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { getSuggestionTargets } from "./suggestion-targets";
-import type { Campaign } from "./pricing";
-import type { CartItem } from "./cart";
 
-const campaign = (overrides: Partial<Campaign>): Campaign => ({
+const campaign = (overrides) => ({
   id: "two", ad: "Outlet", tip: "paket_fiyat", esik: 700, min_adet: 2,
   aktif: true, oneri_goster: true, baslangic: null, bitis: null,
   hedef_tip: "kategori", hedef_kategori_ids: ["outlet"], hedef_urun_ids: [],
@@ -14,7 +12,7 @@ const campaign = (overrides: Partial<Campaign>): Campaign => ({
   uye_zorunlu: false, kullanim_limiti: 0, ...overrides,
 });
 const tiers = [campaign({ id: "three", min_adet: 3, esik: 900 }), campaign({})];
-const item = (qty: number): CartItem => ({
+const item = (qty) => ({
   product_id: "outlet-product", qty, price: 400, stock: 10,
   slug: "outlet-product", name: "Outlet", image: "",
 });
