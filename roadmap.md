@@ -5,6 +5,7 @@
 - [x] Restore category showcase rendering controlled by the panel; enabled and all three images verified.
 - [x] Verify customer reviews remain in the homepage before the footer; navigation leaves only one instance.
 - [ ] Restore first-product photos for series cards and support panel product selection/manual uploads.
-- [ ] Fix new showcase card IDs without requiring changes to the external database.
-- [ ] Prevent initial logo and menu fallback flashes; verify delayed loading on desktop and mobile.
+- [x] Fix new showcase card IDs without requiring changes to the external database; 3 regression tests passed.
+- [ ] Verify card save/readback in the admin UI (blocked: requesting user's preview account redirects to account page without admin access).
+- [x] Prevent initial logo and menu fallback flashes; delayed loading verified and mobile has no page-width overflow.
 - [x] Correct cart suggestions to show the nearest package tier and actual missing quantity; polished Turkish messages; 8 regression tests passed and live cart verified through 2-for-700 and 3-for-900 tiers without page-width overflow.
