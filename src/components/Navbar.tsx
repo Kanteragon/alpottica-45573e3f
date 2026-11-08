@@ -55,8 +55,8 @@ export function Navbar() {
           solid ? "bg-white/95 backdrop-blur-md shadow-[0_2px_20px_rgba(0,0,0,0.06)]" : "bg-transparent"
         }`}
       >
-        <div className="max-w-[1720px] mx-auto pl-3 pr-4 sm:pr-6 lg:pl-4 lg:pr-10 h-20 grid grid-cols-[auto_1fr_auto] items-center gap-4 lg:gap-8">
-          <div className={`flex items-center gap-2 ${ready ? "visible" : "invisible"}`}>
+        <div className="relative max-w-[1720px] mx-auto px-3 sm:px-6 h-20 grid grid-cols-[auto_1fr_auto] lg:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-4">
+          <div className={`flex min-w-0 items-center gap-2 ${ready ? "visible" : "invisible"}`}>
             <button
               onClick={() => setMenuOpen((v) => !v)}
               aria-label="Menü"
@@ -64,7 +64,7 @@ export function Navbar() {
             >
               {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
-            <Link to="/" className="flex items-center justify-start shrink-0 h-10 sm:h-12 lg:h-14 max-w-[28vw] sm:max-w-[32vw] lg:max-w-[18vw]" style={{ width: `${logoMax}px` }} aria-label={brand}>
+            <Link to="/" className="flex items-center justify-start shrink-0 h-10 sm:h-12 lg:h-14 max-w-[28vw] sm:max-w-[32vw] lg:max-w-[160px] xl:max-w-[220px] 2xl:max-w-[260px]" style={{ width: `${logoMax}px` }} aria-label={brand}>
               {logoSrc ? (
                 <img
                   src={logoSrc}
@@ -80,12 +80,12 @@ export function Navbar() {
             </Link>
           </div>
 
-          <nav className={`hidden lg:flex min-w-0 items-center justify-center gap-6 xl:gap-12 ${ready ? "visible" : "invisible"}`}>
+          <nav className={`relative hidden lg:flex min-w-0 items-center justify-center gap-4 xl:gap-6 2xl:gap-8 ${ready ? "visible" : "invisible"}`}>
             {items.map((item) => (
               <a
                 key={item.id}
                 href={item.url}
-                className={`group relative text-[15px] tracking-[0.16em] font-medium transition-colors py-2 ${
+                className={`group relative shrink-0 whitespace-nowrap text-[13px] xl:text-sm 2xl:text-[15px] tracking-normal font-medium transition-colors py-2 ${
                   solid ? "text-brand-ink hover:text-brand-cta" : "text-white/95 hover:text-white"
                 }`}
               >
