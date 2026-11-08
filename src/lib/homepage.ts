@@ -17,6 +17,8 @@ export type ShowcaseCategory = {
   tag: string;
   image_url: string;
   product_id?: string | null;
+  image_position_x?: number;
+  image_position_y?: number;
   href: string;
   sort_order: number;
   is_active: boolean;

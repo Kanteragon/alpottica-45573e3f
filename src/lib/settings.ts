@@ -1,8 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { normalizeProductImageFit, type ProductImageFit } from "@/lib/image-framing";
 
 export type SiteSettings = {
   maintenance_mode: boolean;
+  product_image_fit: ProductImageFit;
   logo_url: string | null;
   favicon_url: string | null;
   logo_max_width: number;
@@ -48,6 +50,7 @@ export function useSiteSettings() {
       };
       return {
         maintenance_mode: typeof d?.["maintenance_mode"] === "boolean" ? d["maintenance_mode"] : false,
+        product_image_fit: normalizeProductImageFit(d?.["product_image_fit"]),
         logo_url: (d?.["logo_url"] as string | null) ?? null,
         favicon_url: (d?.["favicon_url"] as string | null) ?? null,
         logo_max_width: (d?.["logo_max_width"] as number | null) ?? 260,
