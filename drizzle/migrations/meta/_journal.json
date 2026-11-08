@@ -15,6 +15,13 @@
       "when": 1793523020052,
       "tag": "0001_showcase_linked_product",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1794132710313,
+      "tag": "0002_image_framing_settings",
+      "breakpoints": true
     }
   ]
 }
