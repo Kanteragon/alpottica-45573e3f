@@ -9,6 +9,6 @@
 - [ ] Verify card save/readback in the admin UI (blocked: requesting user's preview account redirects to account page without admin access).
 - [x] Prevent initial logo and menu fallback flashes; delayed loading verified and mobile has no page-width overflow.
 - [x] Correct cart suggestions to show the nearest package tier and actual missing quantity; polished Turkish messages; 8 regression tests passed and live cart verified through 2-for-700 and 3-for-900 tiers without page-width overflow.
-- [ ] Add per-showcase photo positioning with preview and persist selected framing.
-- [ ] Add general product-card photo sizing setting, preserving current appearance by default.
-- [ ] Verify photo controls and saved appearance through the panel and storefront.
+- [x] Add per-showcase photo positioning with preview and persistence; additive columns applied and external SQL prepared.
+- [x] Add general product-card photo sizing setting, preserving current appearance by default; 6 framing/save tests passed.
+- [ ] Verify saved photo controls through the panel (blocked: requesting user's preview account redirects to account page without admin access); public product listing loads with existing appearance.
