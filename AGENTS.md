@@ -16,3 +16,4 @@
 - Cart suggestion eligibility and complete messages live in a browser-safe pure module so nearest-tier selection and missing quantities can be regression-tested independently of data fetching.
 - Showcase saves send explicit stable UUIDs for all cards so external databases need no ID default; preserve existing photo/product associations.
 - Navbar waits for settings and menu before showing fallback content, and uses a fixed logo frame with eager image loading to avoid first-load layout shifts.
+- Persist showcase focal coordinates on each card and product-card fit in site_settings; share browser-safe normalization between admin previews and storefront rendering to keep framing consistent.

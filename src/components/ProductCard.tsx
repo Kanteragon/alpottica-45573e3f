@@ -6,8 +6,11 @@ import { discountPct, formatTL } from "@/lib/products";
 import { useCart } from "@/lib/cart";
 import { useFavorites } from "@/lib/favorites";
 import { toast } from "sonner";
+import { useSiteSettings } from "@/lib/settings";
+import { productImageClass } from "@/lib/image-framing";
 
 export function ProductCard({ product }: { product: Product }) {
+  const { data: settings } = useSiteSettings();
   const disc = discountPct(product);
   const { add } = useCart();
   const { isFavorite, toggle: toggleFav } = useFavorites();
@@ -44,7 +47,7 @@ export function ProductCard({ product }: { product: Product }) {
             src={gallery[idx]}
             alt={product.name}
             loading="lazy"
-            className="absolute inset-0 w-full h-full object-contain p-1 sm:p-2 transition-all duration-300 pointer-events-none"
+            className={`absolute inset-0 w-full h-full ${productImageClass(settings?.product_image_fit)} transition-all duration-300 pointer-events-none`}
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center text-muted-foreground text-xs">Görsel yok</div>

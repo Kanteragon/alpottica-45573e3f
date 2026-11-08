@@ -787,6 +787,8 @@ export type Database = {
         Row: {
           href: string
           id: string
+          image_position_x: number
+          image_position_y: number
           image_url: string
           is_active: boolean
           product_id: string | null
@@ -797,6 +799,8 @@ export type Database = {
         Insert: {
           href?: string
           id?: string
+          image_position_x?: number
+          image_position_y?: number
           image_url?: string
           is_active?: boolean
           product_id?: string | null
@@ -807,6 +811,8 @@ export type Database = {
         Update: {
           href?: string
           id?: string
+          image_position_x?: number
+          image_position_y?: number
           image_url?: string
           is_active?: boolean
           product_id?: string | null
@@ -895,6 +901,7 @@ export type Database = {
           logo_max_width: number
           logo_url: string | null
           phone: string | null
+          product_image_fit: string
           seo_description: string | null
           seo_keywords: string | null
           seo_title: string | null
@@ -915,6 +922,7 @@ export type Database = {
           logo_max_width?: number
           logo_url?: string | null
           phone?: string | null
+          product_image_fit?: string
           seo_description?: string | null
           seo_keywords?: string | null
           seo_title?: string | null
@@ -935,6 +943,7 @@ export type Database = {
           logo_max_width?: number
           logo_url?: string | null
           phone?: string | null
+          product_image_fit?: string
           seo_description?: string | null
           seo_keywords?: string | null
           seo_title?: string | null

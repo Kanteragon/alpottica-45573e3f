@@ -6,6 +6,10 @@ import { ImageUploader } from "@/components/ImageUploader";
 import { useSiteSettings, SETTINGS_DEFAULTS } from "@/lib/settings";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { normalizeProductImageFit, productImageClass, type ProductImageFit } from "@/lib/image-framing";
+import { useProducts } from "@/lib/queries";
 import type { Database } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/admin/ayarlar")({
@@ -16,6 +20,8 @@ export const Route = createFileRoute("/admin/ayarlar")({
 function SettingsPage() {
   const qc = useQueryClient();
   const { data: settings } = useSiteSettings();
+  const { data: previewProducts } = useProducts();
+  const [productImageFit, setProductImageFit] = useState<ProductImageFit>("current");
   const [logoUrl, setLogoUrl] = useState<string>("");
   const [faviconUrl, setFaviconUrl] = useState<string>("");
   const [maxWidth, setMaxWidth] = useState<number>(260);
@@ -39,6 +45,7 @@ function SettingsPage() {
   useEffect(() => {
     if (settings) {
       setMaintenanceMode(settings.maintenance_mode);
+      setProductImageFit(settings.product_image_fit);
       setLogoUrl(settings.logo_url ?? "");
       setFaviconUrl(settings.favicon_url ?? "");
       setMaxWidth(settings.logo_max_width);
@@ -65,6 +72,7 @@ function SettingsPage() {
       const payload = {
         id: 1,
         maintenance_mode: maintenanceMode,
+        product_image_fit: productImageFit,
         logo_url: logoUrl || null,
         favicon_url: faviconUrl || null,
         logo_max_width: Math.max(40, Math.min(600, Number(maxWidth) || 260)),
@@ -80,7 +88,7 @@ function SettingsPage() {
       qc.invalidateQueries({ queryKey: ["site_settings"] });
       toast.success("Ayarlar kaydedildi");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Hata");
+      toast.error(e && typeof e === "object" && "message" in e ? String(e.message) : "Ayarlar kaydedilemedi");
     } finally {
       setBusy(false);
     }
@@ -115,6 +123,19 @@ function SettingsPage() {
             className="w-full border border-border rounded-lg px-3 py-2 text-sm"
           />
           <p className="text-xs text-muted-foreground mt-2">Site genelindeki marka yazıları bu isme göre güncellenir.</p>
+        </div>
+
+        <div className="space-y-4">
+          <label htmlFor="product-image-fit" className="block text-sm font-semibold text-foreground">Ürün Fotoğrafları</label>
+          <Select value={productImageFit} onValueChange={(value) => setProductImageFit(normalizeProductImageFit(value))}>
+            <SelectTrigger id="product-image-fit"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="current">Mevcut görünüm</SelectItem>
+              <SelectItem value="contain">Karta sığdır — fotoğrafın tamamı</SelectItem>
+              <SelectItem value="cover">Kartı doldur — kenarlar kırpılabilir</SelectItem>
+            </SelectContent>
+          </Select>
+          {previewProducts?.[0]?.image && <div className="relative aspect-[4/5] sm:aspect-square w-full max-w-56 overflow-hidden rounded-md bg-muted"><img src={previewProducts[0].image} alt={previewProducts[0].name} className={`absolute inset-0 w-full h-full ${productImageClass(productImageFit)}`} /></div>}
         </div>
 
         <div>
@@ -223,9 +244,9 @@ function SettingsPage() {
           </div>
         </div>
 
-        <button onClick={save} disabled={busy} className="bg-brand-ink text-white px-8 py-3 rounded-full text-sm font-semibold tracking-widest disabled:opacity-60">
+        <Button onClick={save} disabled={busy || !settings} className="px-8 py-3 text-sm font-semibold">
           {busy ? "..." : "KAYDET"}
-        </button>
+        </Button>
       </div>
     </div>
   );

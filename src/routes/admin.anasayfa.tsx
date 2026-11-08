@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ImageUploader } from "@/components/ImageUploader";
+import { ShowcaseImagePosition } from "@/components/ShowcaseImagePosition";
 import { showcaseRows } from "@/lib/showcase-rows";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -163,6 +164,7 @@ function HomepageAdmin() {
                 <input value={c.href} onChange={(e) => updateCat(c.id, { href: e.target.value })} placeholder="Bağlantı (ör. /urunler?tag=klipsli)" className="border border-border rounded-lg px-3 py-2 text-sm" />
               </div>
               <ImageUploader bucket="slider-images" value={c.image_url ? [c.image_url] : []} onChange={(urls) => updateCat(c.id, { image_url: urls[0] ?? "" })} multiple={false} label="Kart Görseli Yükle" />
+              <ShowcaseImagePosition card={c} onChange={(patch) => updateCat(c.id, patch)} />
             </div>
           ))}
           {cats.length === 0 && <p className="text-xs text-muted-foreground">Henüz kart yok — site varsayılan üç kartı gösterir.</p>}
