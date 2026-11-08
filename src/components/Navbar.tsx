@@ -64,7 +64,7 @@ export function Navbar() {
             >
               {menuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
-            <Link to="/" className="flex items-center justify-start shrink-0 h-10 sm:h-12 lg:h-14 max-w-[28vw] sm:max-w-[32vw] lg:max-w-none" style={{ width: `${logoMax}px` }} aria-label={brand}>
+            <Link to="/" className="flex items-center justify-start shrink-0 h-10 sm:h-12 lg:h-14 max-w-[28vw] sm:max-w-[32vw] lg:max-w-[18vw]" style={{ width: `${logoMax}px` }} aria-label={brand}>
               {logoSrc ? (
                 <img
                   src={logoSrc}
