@@ -44,10 +44,12 @@ export function getSuggestionTargets(
           : scopeOf("tumu", null, null),
         gap: Math.ceil(Number(c.esik) - subtotal),
       });
-    } else if (c.tip === "paket_fiyat") {
+        } else if (c.tip === "paket_fiyat") {
       const scope = scopeOf(c.hedef_tip, c.hedef_kategori_ids, c.hedef_urun_ids);
       const quantity = items.filter((i) => inScope(i.product_id, catMap, scope))
         .reduce((n, i) => n + i.qty, 0);
+      // Sepette bu gruptan hiç ürün yoksa (0 adet) başka kategoriye önerme:
+      if (quantity === 0) continue;
       const missingQuantity = c.min_adet - quantity;
       if (c.min_adet < 2 || missingQuantity <= 0 || Number(c.esik) <= 0) continue;
       const key = scopeKey(scope);
@@ -61,6 +63,8 @@ export function getSuggestionTargets(
       const target = scopeOf(c.hedef_tip, c.hedef_kategori_ids, c.hedef_urun_ids);
       const hasCondition = items.some((i) => inScope(i.product_id, catMap, condition));
       const hasTarget = items.some((i) => inScope(i.product_id, catMap, target));
+      // Sepette ne şart ne de hedef ürünü yoksa gösterme:
+      if (!hasCondition && !hasTarget) continue;
       const quantity = items.filter((i) => inScope(i.product_id, catMap, condition) || inScope(i.product_id, catMap, target))
         .reduce((n, i) => n + i.qty, 0);
       const missingQuantity = Math.max(2, c.min_adet || 2) - quantity;
@@ -71,12 +75,26 @@ export function getSuggestionTargets(
         c.grup_a_kategori_ids, [...(c.grup_a_urun_ids ?? []), ...(c.urun_a ? [c.urun_a] : [])]);
       const b = scopeOf(c.grup_b_kategori_ids?.length ? "kategori" : "urun",
         c.grup_b_kategori_ids, [...(c.grup_b_urun_ids ?? []), ...(c.urun_b ? [c.urun_b] : [])]);
-      const hasA = items.some((i) => inScope(i.product_id, catMap, a));
-      const hasB = items.some((i) => inScope(i.product_id, catMap, b));
-      if (hasA && !hasB) targets.push({ c, scope: b });
-      else if (hasB && !hasA) targets.push({ c, scope: a });
-      else if (!hasA && !hasB) targets.push({ c, scope: a });
+
+      const sameGroup = scopeKey(a) === scopeKey(b);
+      if (sameGroup) {
+        // "İki Klipsli" gibi Grup A ve Grup B aynı kategori olan kampanyalar:
+        const quantity = items.filter((i) => inScope(i.product_id, catMap, a))
+          .reduce((n, i) => n + i.qty, 0);
+        // Yalnızca sepette tam 1 adet varsa "1 ürün daha ekleyin" önerisi ver:
+        if (quantity === 1) {
+          targets.push({ c, scope: a, missingQuantity: 1 });
+        }
+      } else {
+        // Grup A ve Grup B farklı kategoriler ise (örneğin Gözlük + Kılıf):
+        const hasA = items.some((i) => inScope(i.product_id, catMap, a));
+        const hasB = items.some((i) => inScope(i.product_id, catMap, b));
+        if (hasA && !hasB) targets.push({ c, scope: b, missingQuantity: 1 });
+        else if (hasB && !hasA) targets.push({ c, scope: a, missingQuantity: 1 });
+        // (!hasA && !hasB) yani ikisi de yoksa artık hiçbir şey önermiyoruz!
+      }
     }
+
   }
   return [...targets, ...packages.values()];
 }
